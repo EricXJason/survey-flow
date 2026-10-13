@@ -27,7 +27,6 @@ import {
   ExportFormat,
 } from '../@interfaces/survey-analytics-model';
 import { SurveyPayload, SurveySummaryItem } from '../@interfaces/survey-model';
-import surveys from '../datas/surveys.json';
 
 @Injectable({
   providedIn: 'root',
@@ -176,17 +175,7 @@ export class SurveyAnalyticsService {
           };
           return report;
         }
-        throw new Error('Fallback to local analytics');
-      }),
-      catchError(() => {
-        const rawList = surveys as unknown as (SurveyPayload & {
-          id?: string;
-          authorId?: string;
-        })[];
-        const targetSurvey =
-          rawList.find((s) => s.id === surveyId) ?? rawList[0];
-        const report = this._generateReport(targetSurvey, surveyId);
-        return of(report);
+        throw new Error('查無問卷數據報表或後端服務異常');
       })
     );
   }

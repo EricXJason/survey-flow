@@ -615,11 +615,29 @@ select.form-control {
   .mat-mdc-paginator-page-size-select {
     margin: 0 !important;
 
+    // [Why]: 隱藏 MDC 內建 notched-outline 與疊加層，消除與 select-trigger 重疊的雙重邊框
+    .mdc-notched-outline,
+    .mat-mdc-form-field-focus-overlay,
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none !important;
+    }
+
+    .mat-mdc-text-field-wrapper {
+      padding: 0 !important;
+      background: transparent !important;
+    }
+
+    .mat-mdc-form-field-infix {
+      padding: 0 !important;
+      min-height: unset !important;
+      width: auto !important;
+    }
+
     .mat-mdc-select-trigger {
-      min-height: 3.8rem !important;
-      min-width: 7.6rem !important;
+      min-height: 3.6rem !important;
+      min-width: 7.2rem !important;
       padding: 0.4rem 1rem !important;
-      border: 1.5px solid var(--c-border-strong) !important;
+      border: 1px solid var(--c-border-strong) !important;
       border-radius: var(--r-md) !important;
       background: #ffffff !important;
       display: inline-flex !important;

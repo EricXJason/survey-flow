@@ -5,6 +5,16 @@
 
 ---
 
+## [2026-10-13 19:05] - 徹底排除前端靜態假資料、修復分頁選擇器雙重框框與全端未實現功能深度評估
+- **改動原因**: 依據使用者指示，徹底刪除前端 `datas/` 資料夾中寫死的 `surveys.json` 與 `users.json`，全站所有問卷檢索與分析 100% 直連後端與 MySQL 資料庫；修復 Material Paginator 內部 MDC Notched Outline 與 select-trigger 樣式衝突產生的雙重框框；並對前後端未對接與未實現功能進行全盤嚴格稽核。
+- **具體內容**:
+  - **修復分頁雙重邊框**: 於 `common.scss` 的 `.mat-mdc-paginator-page-size-select` 隱藏 MDC 預設的 `.mdc-notched-outline` 與 `.mat-mdc-form-field-focus-overlay`，重設 `.mat-mdc-text-field-wrapper` 背景與內距，確保每頁筆數下拉選單呈現單一純粹圓角邊框。
+  - **徹底排除前端假資料依賴**: 永久移除 `frontend/src/app/datas/` 資料夾，移除 `SurveyGetterService`、`SurveyAnalyticsService` 與 `SurveyStateService` 中對 `surveys.json` 的所有 import 與本地假資料 fallback，全站全面以 Spring Boot RESTful API 與 MySQL 真實持久化資料為單一真實資料源 (SSOT)。
+  - **完成全端功能對齊評估**: 深度列出前端目前具備但後端尚未實現之 10 大關鍵功能斷層與架構落差分析。
+- **影響範圍**: `common.scss`, `survey-getter.service.ts`, `survey-analytics.service.ts`, `survey-state.service.ts`, `frontend/src/app/datas/`
+
+---
+
 ## [2026-10-13 18:55] - 全面清除 MySQL 亂碼、修正會員問卷數據分析權限阻斷與直接寫入真實資料庫
 - **改動原因**: 依據使用者回饋，先前因 MySQL client 連線字元集預設為 latin1 導致中文字儲存為亂碼，且前端 authorId 綁定為作者姓名而非 ID 導致會員無法查閱自身問卷分析；依指示不生成 seed 檔案，改由直接寫入 MySQL 資料庫。
 - **具體內容**:

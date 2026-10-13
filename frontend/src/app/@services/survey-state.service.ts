@@ -13,7 +13,44 @@
 
 import { Injectable, signal } from '@angular/core';
 import { SurveyPayload } from '../@interfaces/survey-model';
-import surveys from '../datas/surveys.json';
+
+/**
+ * 建立空白預設問卷酬載物件
+ */
+function createDefaultSurveyPayload(): SurveyPayload {
+  return {
+    title: '',
+    category: '綜合調查',
+    isPublished: false,
+    hasTimeLimit: false,
+    hasDescription: false,
+    description: '',
+    hasDescriptionImage: false,
+    basicInfoRequirements: {
+      collectBasicInfo: true,
+      requireName: true,
+      requireGender: true,
+      requireAge: true,
+      requireBirthday: false,
+      requireHeight: false,
+      requireWeight: false,
+      requireMobilePhone: false,
+      requireHomePhone: false,
+      requireEmail: false,
+      requireRegisteredAddress: false,
+      requireResidentialAddress: false,
+      requireDepartment: false,
+      requireAcademicMajor: false,
+      requireClassName: false,
+      requireStudentId: false,
+      requireEmployeeId: false,
+      requireNationalId: false,
+      requireJobIndustry: false,
+      requireJobTitle: false,
+    },
+    questions: [],
+  };
+}
 
 /**
  * 問卷狀態管理服務 (SurveyStateService)
@@ -27,18 +64,7 @@ export class SurveyStateService {
   public readonly isPreviewMode = signal<boolean>(false);
 
   /** 當前問卷模型訊號 (Signal) */
-  public readonly currentSurvey = signal<SurveyPayload>(
-    this.getFakeSurveyByIndex(0),
-  );
-
-  /**
-   * 依索引取得預設假問卷資料
-   * @param index 目標問卷在資料集中的索引位置
-   * @returns 預設問卷酬載物件
-   */
-  public getFakeSurveyByIndex(index: number): SurveyPayload {
-    return (surveys as unknown as SurveyPayload[])[index];
-  }
+  public readonly currentSurvey = signal<SurveyPayload>(createDefaultSurveyPayload());
 
   /**
    * 切換為設計預覽模式
@@ -64,7 +90,7 @@ export class SurveyStateService {
    */
   public resetSurveyState(): void {
     this.isPreviewMode.set(false);
-    this.currentSurvey.set(this.getFakeSurveyByIndex(0));
+    this.currentSurvey.set(createDefaultSurveyPayload());
   }
 }
 

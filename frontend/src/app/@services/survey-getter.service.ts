@@ -16,7 +16,6 @@ import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { SurveyPayload, SurveySummaryItem } from '../@interfaces/survey-model';
 import { ApiClientService } from './api-client.service';
-import surveys from '../datas/surveys.json';
 
 @Injectable({
   providedIn: 'root',
@@ -25,7 +24,7 @@ export class SurveyGetterService {
   private readonly apiClient = inject(ApiClientService);
 
   /**
-   * 取得大廳公開問卷清單 (優先請求後端 /api/public/surveys/lobby，斷線降級本地)
+   * 取得大廳公開問卷清單 (請求後端 /api/public/surveys/lobby，以資料庫真實資料為主)
    */
   public getLobbySurveys(): Observable<SurveySummaryItem[]> {
     return this.apiClient.get<any>('/api/public/surveys/lobby').pipe(
@@ -41,28 +40,14 @@ export class SurveyGetterService {
             isPublished: item.status === 'PUBLISHED',
           }));
         }
-        throw new Error('Fallback to local mock');
+        return [];
       }),
-      catchError(() => {
-        const rawSurveys = (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
-        const summaries: SurveySummaryItem[] = rawSurveys
-          .filter((survey) => survey.isPublished)
-          .map((survey, index) => ({
-            id: survey.id ?? `survey_${index + 1}`,
-            title: survey.title,
-            category: survey.category ?? '一般問卷',
-            authorId: survey.authorId,
-            startDate: survey.timeLimit?.startDate ?? '',
-            endDate: survey.timeLimit?.endDate ?? '',
-            isPublished: survey.isPublished,
-          }));
-        return of(summaries);
-      })
+      catchError(() => of([]))
     );
   }
 
   /**
-   * 依使用者編號取得個人問卷清單 (優先請求後端 /api/user/surveys)
+   * 依使用者編號取得個人問卷清單 (請求後端 /api/user/surveys，以資料庫真實資料為主)
    */
   public getMemberSurveys(userId: string): Observable<SurveySummaryItem[]> {
     return this.apiClient.get<any>('/api/user/surveys').pipe(
@@ -78,35 +63,14 @@ export class SurveyGetterService {
             isPublished: item.status === 'PUBLISHED',
           }));
         }
-        throw new Error('Fallback to local mock');
+        return [];
       }),
-      catchError(() => {
-        const rawSurveys =
-          (surveys as unknown as (SurveyPayload & {
-            id?: string;
-            authorId?: string;
-            userId?: string;
-          })[]) ?? [];
-
-        const memberSurveys = rawSurveys
-          .filter((survey) => survey.authorId === userId || survey.userId === userId)
-          .map((survey, index) => ({
-            id: survey.id ?? `survey_${index + 1}`,
-            title: survey.title,
-            category: survey.category ?? '一般問卷',
-            authorId: survey.authorId || userId,
-            startDate: survey.timeLimit?.startDate ?? '',
-            endDate: survey.timeLimit?.endDate ?? '',
-            isPublished: survey.isPublished,
-          }));
-
-        return of(memberSurveys);
-      })
+      catchError(() => of([]))
     );
   }
 
   /**
-   * 取得全系統所有問卷清單 (管理員請求 /api/admin/surveys)
+   * 取得全系統所有問卷清單 (管理員請求 /api/admin/surveys，以資料庫真實資料為主)
    */
   public getAllSurveys(): Observable<SurveySummaryItem[]> {
     return this.apiClient.get<any>('/api/admin/surveys').pipe(
@@ -122,26 +86,14 @@ export class SurveyGetterService {
             isPublished: item.status === 'PUBLISHED',
           }));
         }
-        throw new Error('Fallback to local mock');
+        return [];
       }),
-      catchError(() => {
-        const rawSurveys = (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
-        const summaries: SurveySummaryItem[] = rawSurveys.map((survey, index) => ({
-          id: survey.id ?? `survey_${index + 1}`,
-          title: survey.title,
-          category: survey.category ?? '一般問卷',
-          authorId: survey.authorId,
-          startDate: survey.timeLimit?.startDate ?? '',
-          endDate: survey.timeLimit?.endDate ?? '',
-          isPublished: survey.isPublished,
-        }));
-        return of(summaries);
-      })
+      catchError(() => of([]))
     );
   }
 
   /**
-   * 依問卷編號取得單一問卷內容 (請求 /api/public/surveys/{id})
+   * 依問卷編號取得單一問卷內容 (請求 /api/public/surveys/{id}，以資料庫真實資料為主)
    */
   public getSurveyById(id: string): Observable<SurveyPayload | null> {
     const numericId = parseInt(id.replace(/\D/g, ''), 10);
@@ -201,13 +153,9 @@ export class SurveyGetterService {
             })),
           } as SurveyPayload;
         }
-        throw new Error('Fallback to local mock');
+        return null;
       }),
-      catchError(() => {
-        const rawSurveys = (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
-        const matched = rawSurveys.find((survey) => survey.id === id) ?? rawSurveys[0] ?? null;
-        return of(matched);
-      })
+      catchError(() => of(null))
     );
   }
 }
