@@ -102,32 +102,6 @@ export class LogInComponent {
   }
 
   /**
-   * 測試專用：管理員帳號快速填入並登入
-   * 快速填入測試管理員憑證並立即執行登入。
-   */
-  protected quickLoginAsAdmin(): void {
-    const payload: AccountLogInPayload = {
-      username: 'admin',
-      password: 'Admin123!',
-    };
-    this.formBuilderGroup.patchValue(payload);
-    this._userEmitter.emitLogin(payload);
-  }
-
-  /**
-   * 測試專用：一般會員帳號快速填入並登入
-   * 快速填入測試一般會員憑證並立即執行登入。
-   */
-  protected quickLoginAsMember(): void {
-    const payload: AccountLogInPayload = {
-      username: 'testuser',
-      password: 'User1234!',
-    };
-    this.formBuilderGroup.patchValue(payload);
-    this._userEmitter.emitLogin(payload);
-  }
-
-  /**
    * 導向忘記密碼頁面 (/forget-password)
    */
   protected goToForgetPasswordPage(): void {
@@ -140,11 +114,5 @@ export class LogInComponent {
   protected goToRegisterAccountPage(): void {
     this._router.navigateByUrl('/register');
   }
-
-  /**
-   * 導向重設密碼頁面 (/reset-password)
-   */
-  protected goToResetPasswordPage(): void {
-    this._router.navigateByUrl('/reset-password');
-  }
 }
+

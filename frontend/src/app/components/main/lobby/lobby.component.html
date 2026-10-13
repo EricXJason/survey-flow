@@ -70,6 +70,28 @@
         </div>
       </div>
 
+      <!-- 分類下拉式選單 -->
+      <div class="lobby-category-dropdown-container">
+        <svg class="dropdown-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        <select
+          id="lobbyCategorySelect"
+          class="lobby-category-select"
+          aria-label="問卷主題分類篩選"
+          [value]="selectedCategory()"
+          (change)="onCategorySelectChange($event)"
+        >
+          <option value="all">全部分類 ({{ surveyList().length }})</option>
+          @for (cat of categories(); track cat) {
+            <option [value]="cat">{{ cat }} ({{ getCategoryCount(cat) }})</option>
+          }
+        </select>
+        <svg class="dropdown-chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
       <!-- 篩選結果筆數統計 -->
       <div class="search-results-summary">
         <span class="results-badge">
@@ -77,35 +99,6 @@
         </span>
       </div>
 
-    </div>
-
-    <!-- 分類標籤滑動列 -->
-    <div class="category-pills-row" role="tablist" aria-label="問卷主題分類篩選">
-      <button
-        type="button"
-        class="cat-pill"
-        [class.active]="selectedCategory() === 'all'"
-        (click)="setCategory('all')"
-        role="tab"
-        [attr.aria-selected]="selectedCategory() === 'all'"
-      >
-        <span>全部問卷</span>
-        <span class="cat-count">({{ surveyList().length }})</span>
-      </button>
-      @for (cat of categories(); track cat) {
-        <button
-          type="button"
-          class="cat-pill"
-          [attr.data-cat]="cat"
-          [class.active]="selectedCategory() === cat"
-          (click)="setCategory(cat)"
-          role="tab"
-          [attr.aria-selected]="selectedCategory() === cat"
-        >
-          <span>{{ cat }}</span>
-          <span class="cat-count">({{ getCategoryCount(cat) }})</span>
-        </button>
-      }
     </div>
   </div>
 </section>

@@ -222,6 +222,17 @@ export class LobbyComponent implements OnInit, AfterViewInit {
     this.selectedCategory.set(category);
   }
 
+  /**
+   * 處理下拉式選單之分類變更事件
+   * @param event 原生 Select 變更事件
+   */
+  public onCategorySelectChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    if (target) {
+      this.setCategory(target.value);
+    }
+  }
+
   public onSelectSurvey(surveyId: string): void {
     this._surveyGetter.getSurveyById(surveyId).subscribe((fullSurvey) => {
       if (!fullSurvey) {

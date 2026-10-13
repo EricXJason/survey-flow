@@ -84,12 +84,12 @@
 - [x] **全域佈局架構**: 建立 `AppComponent`、`HeaderComponent`（含行動版漢堡抽屜與權限標籤）、`FooterComponent`、`DialogComponent` 與 `ScrollToTopButtonComponent`。
 - [x] **路由與離開守衛**: 配置 `app.routes.ts`，並在問卷設計 (`SurveyDesignComponent`)、問卷填答 (`SurveyRunnerComponent`) 及個人資料 (`UserProfileComponent`) 導入 `canDeactivateGuard` 攔截未儲存跳出防呆。
 - [x] **平台官方首頁**: 建立 `HomeComponent` 與 `HeroComponent`，包含 macOS 擬真問卷即時預覽視窗與特色介紹。
-- [x] **問卷公開大廳**: 建立 `LobbyComponent`，支援 12 大主題分類標籤切換、即時關鍵字模糊搜尋、⌘K 快捷鍵聚焦、Angular Material Table 排序與分頁。
-- [x] **問卷設計工作台**: 建立 `SurveyDesignComponent`，支援問卷標題、分類、期限、受訪者身分欄位開關、動態題目增刪改、多維度量表題型、題目 UID 動態跳題解鎖與即時預覽模式。
+- [x] **問卷公開大廳**: 建立 `LobbyComponent`，支援現代化下拉式主題分類篩選（取代擁擠藥丸列）、即時關鍵字模糊搜尋、⌘K 快捷鍵聚焦、Angular Material Table 排序與分頁。
+- [x] **問卷設計工作台**: 建立 `SurveyDesignComponent`，支援問卷標題、分類、期限、受訪者身分欄位開關、動態題目增刪改、多維度量表題型、題目 UID 動態跳題解鎖與即時預覽模式（修復前言說明重複紅字問題）。
 - [x] **題目順序重排彈窗**: 建立 `SurveyReorderDialogComponent`，採用 `@angular/cdk/drag-drop` 實現視覺化題型拖曳排序並原子化回寫表單。
 - [x] **問卷填答運行器**: 建立 `SurveyRunnerComponent`，支援受訪者身分欄位校驗、單選動態跳題隱藏/顯現邏輯、量表選項切換與作答成果封裝。
 - [x] **會員與後台管理**:
-  - [x] 建立 `LogInComponent`（支援管理員與會員快速登入測試按鈕）。
+  - [x] 建立 `LogInComponent`（固定 90rem 雙欄版面防止錯誤文字撐寬容器，正式移除開發測試面板）。
   - [x] 建立 `RegisterComponent`（身分證與手機防呆校驗）。
   - [x] 建立 `ForgetPasswordComponent` 與 `ResetPasswordComponent`。
   - [x] 建立 `UserProfileComponent`（折疊式修改密碼面板）。

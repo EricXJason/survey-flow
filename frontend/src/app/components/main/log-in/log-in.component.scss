@@ -10,25 +10,29 @@
 
 .page-auth {
   width: 100%;
-  max-width: 104rem;
+  max-width: 90rem;
   margin-inline: auto;
 }
 
 .auth-split-layout {
   display: grid;
-  grid-template-columns: 42rem 1fr;
+  grid-template-columns: 42rem 48rem;
+  width: 90rem;
+  max-width: 100%;
+  margin-inline: auto;
   background: #ffffff;
   border-radius: var(--r-2xl);
   overflow: hidden;
   box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.05);
   border: 1px solid var(--c-border);
-  height: 64rem;
+  height: 60rem;
   max-height: calc(100vh - var(--header-h) - 2.8rem);
-  min-height: 56rem;
+  min-height: 52rem;
 
   @media (max-width: 960px) {
     grid-template-columns: 1fr;
-    max-width: 52rem;
+    width: 100%;
+    max-width: 48rem;
     height: auto;
     max-height: none;
     min-height: auto;
@@ -233,6 +237,9 @@
 .auth-form-side {
   height: 100%;
   min-height: 0;
+  width: 100%;
+  min-width: 0;
+  max-width: 48rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,9 +261,11 @@
 /* ── 認證資訊卡片 ── */
 .auth-card {
   width: 100%;
+  max-width: 42rem;
   background: #ffffff;
-  padding: 1.6rem 2.8rem;
+  padding: 2rem 2.8rem;
   box-sizing: border-box;
+  margin-inline: auto;
 
   @media (max-width: 640px) {
     padding: var(--sp-6) var(--sp-4);
@@ -364,8 +373,13 @@
   font-size: 1.15rem;
   color: var(--c-error);
   font-weight: 500;
-  line-height: 1.25;
-  margin-top: 0.15rem;
+  line-height: 1.4;
+  margin-top: 0.25rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 100%;
+  display: block;
 }
 
 .auth-aux-links {
@@ -492,97 +506,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
-  padding-top: 0.7rem;
+  padding-top: 1.2rem;
   border-top: 1px solid var(--c-border);
-  margin-top: 0.7rem;
-}
-
-/* ── 開發測試快速填入面板 ── */
-.test-panel {
-  margin-top: 0.7rem;
-  padding: 0.7rem 1.1rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border: 1.5px dashed #cbd5e1;
-  border-radius: var(--r-xl);
-}
-
-.test-panel-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--c-neutral-600);
-  margin-bottom: 0.4rem;
-
-  svg {
-    color: var(--c-brand-600);
-  }
-}
-
-.test-panel-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--c-neutral-700);
-}
-
-.test-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.test-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: var(--r-md);
-  font-size: 1.15rem;
-  font-weight: 600;
-  border: 1px solid var(--c-border);
-  background: #ffffff;
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
-  }
-
-  &.test-btn-admin {
-    color: #1d4ed8;
-    background: #eff6ff;
-    border-color: #bfdbfe;
-    svg { color: #2563eb; }
-
-    &:hover {
-      background: #dbeafe;
-      border-color: #93c5fd;
-    }
-  }
-
-  &.test-btn-member {
-    color: #047857;
-    background: #ecfdf5;
-    border-color: #a7f3d0;
-    svg { color: #059669; }
-
-    &:hover {
-      background: #d1fae5;
-      border-color: #6ee7b7;
-    }
-  }
-
-  &.test-btn-reset {
-    color: #6d28d9;
-    background: #f5f3ff;
-    border-color: #ddd6fe;
-    svg { color: #7c3aed; }
-
-    &:hover {
-      background: #ede9fe;
-      border-color: #c4b5fd;
-    }
-  }
+  margin-top: 1.2rem;
 }

@@ -135,13 +135,7 @@
                   ></textarea>
                   @if (
                     formBuilderGroup.get("description")?.invalid &&
-                    formBuilderGroup.get("description")?.touched
-                  ) {
-                    <span class="field-error">問卷說明內容不可為空</span>
-                  }
-                  @if (
-                    !formBuilderGroup.get("description")?.value &&
-                    formBuilderGroup.get("hasDescription")?.touched
+                    (formBuilderGroup.get("description")?.touched || formBuilderGroup.get("hasDescription")?.touched)
                   ) {
                     <span class="field-error">問卷說明內容不可為空</span>
                   }

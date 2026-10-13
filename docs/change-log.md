@@ -3,7 +3,28 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
-## [2026-10-13 20:40] - 根除中文編碼亂碼、全面支援前端 7 大題型與持久化注入 4 筆問卷及 40 筆填答數據
+## [2026-10-13 20:50] - 修復問卷說明重複紅字、固定登入版面寬度防止撐破、移除測試快速登入與大廳分類改為下拉式選單
+- **改動原因**: 依據使用者反饋與截圖指引，消除問卷前言說明處重複顯示之兩行錯誤紅字；修復登入頁面因長密碼校驗紅字而導致容器寬度被彈性撐開變形之 CSS Grid 缺陷；徹底移除前端登入頁面之「測試快速登入」面板；並將問卷大廳擁擠的藥丸標籤列重構為現代精緻下拉式選單。
+- **具體內容**:
+  - **消除問卷說明重複紅字**:
+    - 排查 `survey-design.component.html`，原先同時存在兩個獨立 `@if` 條件（分別檢驗 `description.touched` 與 `hasDescription.touched`），當勾選且內容為空時兩條件同時觸發。
+    - 合併為單一 `@if (description.invalid && (description.touched || hasDescription.touched))`，確保僅渲染單一「問卷說明內容不可為空」提示。
+  - **鎖定登入頁面寬度，徹底根除長字撐寬**:
+    - 將 `page-auth` 與 `auth-split-layout` 寬度固定為 `90rem`（左側視覺區 `42rem`、右側表單區 `48rem`），避免採用 `1fr` 導致最小寬度 auto 被子元素撐破。
+    - 為右側 `auth-form-side` 與 `auth-card` 設置 `min-width: 0` 與最大寬度限制。
+    - 為 `.field-error` 加入 `word-break: break-word`、`overflow-wrap: break-word` 與 `white-space: normal`，確保各類特殊符號與長規則提示均在輸入框寬度內自動折行，登入卡片尺寸始終維持穩定。
+  - **移除測試快速登入面板**:
+    - 移除 `log-in.component.html` 內整組 `test-panel` 元素。
+    - 同步清理 `log-in.component.ts` 與 `log-in.component.scss` 中對應之方法與樣式。
+  - **問卷大廳分類改為下拉式選單**:
+    - 移除原本散落一整排的 12 個 `category-pills-row` 標籤按鈕，大幅簡化大廳垂直空間。
+    - 於 `controls-wrapper` 內整合具備篩選圖示與下拉箭頭的現代 Cyberpunk 質感下拉式選單 (`.lobby-category-dropdown-container`)，支援即時切換「全部分類 (N)」與各專題分類，並與既有 Signal 篩選邏輯完全無縫聯動。
+  - **全端品質驗證 100% 通過**:
+    - 前端執行 `npm run build`，0 錯誤順利產出 Bundle。
+    - 後端執行 `./mvnw test`，14/14 項單元與整合測試全數通過（`BUILD SUCCESS`）。
+- **影響範圍**: `survey-design.component.html`, `log-in.component.html`, `log-in.component.scss`, `log-in.component.ts`, `lobby.component.html`, `lobby.component.scss`, `lobby.component.ts`
+
+---
 - **改動原因**: 依據使用者反饋，排查修復登入與 Header 使用者姓名亂碼問題；全面擴展後端問卷題目類型以 100% 匹配前端設計器之 7 種題型；並於 MySQL 資料庫為 test user 注入 4 筆問卷（3 筆公開於大廳、1 筆非公開）以及各 10 筆（共 40 筆）真實作答紀錄，精確對齊官方 12 大分類。
 - **具體內容**:
   - **根除使用者姓名編碼亂碼**:

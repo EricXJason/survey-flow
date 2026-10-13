@@ -152,10 +152,9 @@
 .controls-wrapper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--sp-4);
   flex-wrap: wrap;
-  margin-bottom: var(--sp-5);
+  margin-bottom: 0;
 
   @media (max-width: 760px) {
     flex-direction: column;
@@ -266,12 +265,78 @@
   }
 }
 
-/* 分類滑動膠囊標籤 */
-.category-pills-row {
+/* 分類下拉式選單 */
+.lobby-category-dropdown-container {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
+  min-width: 24rem;
+
+  .dropdown-filter-icon {
+    position: absolute;
+    left: 1.4rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    color: var(--c-brand-600);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .dropdown-chevron-icon {
+    position: absolute;
+    right: 1.4rem;
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--c-neutral-400);
+    pointer-events: none;
+    z-index: 1;
+    transition: transform 0.2s ease;
+  }
+
+  &:focus-within .dropdown-chevron-icon {
+    color: var(--c-brand-600);
+    transform: rotate(180deg);
+  }
+
+  @media (max-width: 760px) {
+    min-width: 100%;
+    width: 100%;
+  }
+}
+
+.lobby-category-select {
+  width: 100%;
+  padding: 1.2rem 4rem 1.2rem 4rem;
+  font-family: inherit;
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--c-neutral-800);
+  background: var(--c-neutral-50);
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-full);
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: var(--c-brand-300);
+    background: #ffffff;
+  }
+
+  &:focus {
+    border-color: var(--c-brand-600);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    outline: none;
+  }
+
+  option {
+    font-size: 1.45rem;
+    font-weight: 500;
+    color: var(--c-neutral-800);
+    background: #ffffff;
+    padding: 0.8rem 1rem;
+  }
 }
 
 .cat-pill {
