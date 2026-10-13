@@ -1,0 +1,52 @@
+<div class="modal-backdrop" (click)="onCancel()">
+  <div class="modal-container" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="reorder-dialog-title">
+    <!-- 右上角關閉按鈕 (X) -->
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="關閉調整順序視窗"
+      title="關閉 (Esc)"
+      (click)="onCancel()"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <header class="modal-header">
+      <div class="modal-header-icon-wrap" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="22" height="22">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+      </div>
+      <div class="modal-title-group">
+        <span class="modal-mode-pill">結構調整</span>
+        <h3 id="reorder-dialog-title" class="modal-title">調整題目順序</h3>
+        <p class="modal-subtitle">拖曳左側抓取圖示以重新編排題目顯示順序</p>
+      </div>
+    </header>
+
+    <div class="reorder-list" cdkDropList (cdkDropListDropped)="dropItem($event)">
+      @for (item of items; track item.uid; let idx = $index) {
+        <div cdkDrag class="reorder-item">
+          <span cdkDragHandle class="drag-handle" aria-label="拖曳題目" title="拖曳以排序">⠿</span>
+          <span class="item-badge">第 {{ idx + 1 }} 題</span>
+          <span class="item-desc">{{ item.description || "（未輸入題目內容）" }}</span>
+        </div>
+      }
+    </div>
+
+    <footer class="modal-actions">
+      <button type="button" class="btn btn-ghost" (click)="onCancel()">取消</button>
+      <button type="button" class="btn btn-primary" (click)="onConfirm()">
+        確認套用
+      </button>
+    </footer>
+  </div>
+</div>

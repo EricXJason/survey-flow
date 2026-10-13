@@ -1,0 +1,286 @@
+<div class="page-auth">
+  <div class="form-card profile-card">
+    <header class="auth-header">
+      <span class="auth-badge">帳號設定</span>
+      <h1 class="auth-title">會員個人資料維護</h1>
+      <p class="auth-subtitle">檢視並更新您的個人基本資訊與登入安全設定</p>
+    </header>
+
+    <form [formGroup]="formBuilderGroup" (ngSubmit)="checkProfileData()" novalidate>
+      <!-- 系統帳號固定資訊區塊 -->
+      <div class="form-section-title">
+        <span>系統帳號資訊</span>
+        <span class="section-tag">不可修改</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="prof-username">會員帳號</label>
+          <div class="readonly-input-wrap">
+            <input
+              id="prof-username"
+              type="text"
+              formControlName="username"
+              placeholder="系統帳號"
+              readonly
+            />
+            <span class="lock-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="prof-email">綁定電子信箱</label>
+          <div class="readonly-input-wrap">
+            <input
+              id="prof-email"
+              type="email"
+              formControlName="email"
+              placeholder="綁定信箱"
+              readonly
+            />
+            <span class="lock-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 變更登入密碼區塊 -->
+      <div class="form-section-title">
+        <span>安全與密碼</span>
+      </div>
+
+      <div class="password-toggle-bar">
+        <button
+          type="button"
+          class="btn btn-secondary btn-sm"
+          (click)="togglePasswordChange()"
+        >
+          {{ isPasswordChangeExpanded ? "取消變更密碼" : "變更登入密碼" }}
+        </button>
+        <span class="toggle-hint">
+          {{ isPasswordChangeExpanded ? "填寫新密碼後點擊「儲存修改」生效" : "若無需變更密碼請保留原狀" }}
+        </span>
+      </div>
+
+      @if (isPasswordChangeExpanded) {
+        <div class="password-expand-box">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="prof-new-password">設定新密碼 <span class="required-star">*</span></label>
+              <input
+                id="prof-new-password"
+                type="password"
+                formControlName="password"
+                maxlength="16"
+                placeholder="8 至 16 碼新密碼"
+                autocomplete="new-password"
+                (copy)="$event.preventDefault()"
+                (cut)="$event.preventDefault()"
+                [attr.aria-invalid]="formBuilderGroup.get('password')?.invalid && formBuilderGroup.get('password')?.touched"
+                aria-describedby="prof-pwd-err"
+              />
+              @if (
+                formBuilderGroup.get("password")?.invalid &&
+                formBuilderGroup.get("password")?.touched
+              ) {
+                <span id="prof-pwd-err" class="field-error" role="alert">
+                  密碼須為 8 至 16 碼，且須包含大小寫字母、數字及特殊符號
+                </span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label for="prof-confirm-password">確認新密碼 <span class="required-star">*</span></label>
+              <input
+                id="prof-confirm-password"
+                type="password"
+                formControlName="confirmPassword"
+                maxlength="16"
+                placeholder="再次輸入新密碼核對"
+                autocomplete="new-password"
+                (paste)="$event.preventDefault()"
+                (copy)="$event.preventDefault()"
+                (cut)="$event.preventDefault()"
+                [attr.aria-invalid]="(formBuilderGroup.get('confirmPassword')?.invalid || formBuilderGroup.hasError('passwordMismatch')) && formBuilderGroup.get('confirmPassword')?.touched"
+                aria-describedby="prof-confirm-err"
+              />
+              @if (
+                (formBuilderGroup.get("confirmPassword")?.invalid ||
+                  formBuilderGroup.hasError("passwordMismatch")) &&
+                formBuilderGroup.get("confirmPassword")?.touched
+              ) {
+                <span id="prof-confirm-err" class="field-error" role="alert">
+                  確認密碼未填寫或與新密碼不一致
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- 基本個人資料區塊 -->
+      <div class="form-section-title">
+        <span>基本個人資料</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="prof-name">真實姓名 <span class="required-star">*</span></label>
+          <input
+            id="prof-name"
+            type="text"
+            formControlName="name"
+            maxlength="6"
+            placeholder="請輸入 2 至 6 字中文姓名"
+            autocomplete="name"
+            [attr.aria-invalid]="formBuilderGroup.get('name')?.invalid && formBuilderGroup.get('name')?.touched"
+            aria-describedby="prof-name-err"
+          />
+          @if (
+            formBuilderGroup.get("name")?.invalid &&
+            formBuilderGroup.get("name")?.touched
+          ) {
+            <span id="prof-name-err" class="field-error" role="alert">
+              請輸入 2 至 6 字純中文真實姓名
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="prof-national-id">身分證字號 <span class="required-star">*</span></label>
+          <input
+            id="prof-national-id"
+            type="text"
+            formControlName="nationalId"
+            maxlength="10"
+            placeholder="例如：A123456789"
+            [attr.aria-invalid]="formBuilderGroup.get('nationalId')?.invalid && formBuilderGroup.get('nationalId')?.touched"
+            aria-describedby="prof-natid-err"
+          />
+          @if (
+            formBuilderGroup.get("nationalId")?.invalid &&
+            formBuilderGroup.get("nationalId")?.touched
+          ) {
+            <span id="prof-natid-err" class="field-error" role="alert">
+              請輸入格式正確的中華民國身分證字號
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="prof-phone">手機號碼 <span class="required-star">*</span></label>
+          <input
+            id="prof-phone"
+            type="tel"
+            formControlName="phone"
+            maxlength="10"
+            placeholder="例如：0912345678"
+            autocomplete="tel"
+            [attr.aria-invalid]="formBuilderGroup.get('phone')?.invalid && formBuilderGroup.get('phone')?.touched"
+            aria-describedby="prof-phone-err"
+          />
+          @if (
+            formBuilderGroup.get("phone")?.invalid &&
+            formBuilderGroup.get("phone")?.touched
+          ) {
+            <span id="prof-phone-err" class="field-error" role="alert">
+              請輸入正確的 10 碼臺灣手機號碼（09 開頭）
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="prof-birthday">出生日期 <span class="required-star">*</span></label>
+          <input
+            id="prof-birthday"
+            type="date"
+            formControlName="birthday"
+            min="1900-01-01"
+            [max]="maxBirthday"
+            [attr.aria-invalid]="formBuilderGroup.get('birthday')?.invalid && formBuilderGroup.get('birthday')?.touched"
+            aria-describedby="prof-birth-err"
+          />
+          @if (
+            formBuilderGroup.get("birthday")?.invalid &&
+            formBuilderGroup.get("birthday")?.touched
+          ) {
+            <span id="prof-birth-err" class="field-error" role="alert">
+              請選擇出生日期
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <fieldset class="radio-fieldset">
+            <legend class="fieldset-legend">生理性別 <span class="required-star">*</span></legend>
+            <div class="radio-group" role="radiogroup">
+              <label class="radio-label">
+                <input type="radio" value="male" formControlName="gender" />
+                <span>男</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="female" formControlName="gender" />
+                <span>女</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="other" formControlName="gender" />
+                <span>其他</span>
+              </label>
+            </div>
+          </fieldset>
+          @if (
+            formBuilderGroup.get("gender")?.invalid &&
+            formBuilderGroup.get("gender")?.touched
+          ) {
+            <span class="field-error" role="alert">請選擇生理性別</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="prof-role">身分職業 <span class="required-star">*</span></label>
+          <select
+            id="prof-role"
+            formControlName="role"
+            [attr.aria-invalid]="formBuilderGroup.get('role')?.invalid && formBuilderGroup.get('role')?.touched"
+            aria-describedby="prof-role-err"
+          >
+            <option value="" disabled selected>請選擇身分職業</option>
+            <option value="student">學生</option>
+            <option value="teacher">教師</option>
+            <option value="researcher">研究人員</option>
+            <option value="employee">上班族</option>
+            <option value="retired">已退休</option>
+            <option value="other">其他</option>
+          </select>
+          @if (
+            formBuilderGroup.get("role")?.invalid &&
+            formBuilderGroup.get("role")?.touched
+          ) {
+            <span id="prof-role-err" class="field-error" role="alert">
+              請選擇一個身分職業
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button type="submit" class="btn btn-primary btn-block">
+          儲存個人資料修改
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

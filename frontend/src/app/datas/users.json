@@ -1,0 +1,44 @@
+[
+  {
+    "id": "00000",
+    "access": "guest",
+    "username": "guest",
+    "userName": "guest",
+    "password": "",
+    "name": "訪客",
+    "nationalId": "",
+    "email": "",
+    "phone": "",
+    "gender": "",
+    "birthday": "",
+    "role": "訪客"
+  },
+  {
+    "id": "00001",
+    "access": "member",
+    "username": "member01",
+    "userName": "member01",
+    "password": "Password123!",
+    "name": "陳小明",
+    "nationalId": "A123456789",
+    "email": "member01@example.com",
+    "phone": "0912345678",
+    "gender": "male",
+    "birthday": "1995-06-15",
+    "role": "一般會員"
+  },
+  {
+    "id": "11111",
+    "access": "admin",
+    "username": "admin",
+    "userName": "admin",
+    "password": "Password123!",
+    "name": "系統管理員",
+    "nationalId": "B234567890",
+    "email": "admin@example.com",
+    "phone": "0987654321",
+    "gender": "male",
+    "birthday": "1990-01-01",
+    "role": "管理員"
+  }
+]

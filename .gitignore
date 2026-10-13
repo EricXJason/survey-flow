@@ -1,0 +1,90 @@
+# ============================================================================
+# survey-flow 統一 .gitignore
+# 涵蓋：Angular 前端 / Java Spring Boot 後端 / 通用工具
+# ============================================================================
+
+# --------------------------------------------------
+# 系統檔案
+# --------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# --------------------------------------------------
+# IDE 與編輯器
+# --------------------------------------------------
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/
+*.sublime-workspace
+*.sublime-project
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+
+# --------------------------------------------------
+# Angular 前端 (frontend/)
+# --------------------------------------------------
+frontend/node_modules/
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+frontend/bazel-out/
+frontend/.angular/cache
+frontend/.sass-cache/
+frontend/connect.lock
+frontend/coverage/
+frontend/libpeerconnection.log
+frontend/testem.log
+frontend/typings/
+frontend/npm-debug.log
+frontend/yarn-error.log
+
+# figma-bridge 工具依賴
+frontend/tools/**/node_modules/
+frontend/tools/**/package-lock.json
+
+# --------------------------------------------------
+# Java Spring Boot 後端 (backend/)
+# --------------------------------------------------
+backend/target/
+backend/build/
+backend/.gradle/
+backend/bin/
+backend/out/
+backend/*.jar
+backend/*.war
+backend/*.class
+
+# Spring Boot / Maven / Gradle
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/mvnw
+backend/mvnw.cmd
+backend/gradlew
+backend/gradlew.bat
+
+# 環境與機敏設定
+backend/src/main/resources/application-local.yml
+backend/src/main/resources/application-local.properties
+.env
+.env.local
+.env.*.local
+
+# 日誌
+backend/logs/
+backend/*.log
+
+# --------------------------------------------------
+# 通用測試與覆蓋率
+# --------------------------------------------------
+coverage/
+*.lcov
+.nyc_output/

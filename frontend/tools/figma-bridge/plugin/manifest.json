@@ -1,0 +1,10 @@
+{
+  "name": "Antigravity Bridge (Universal Figma MCP)",
+  "id": "antigravity-universal-figma-bridge",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": ["figma"]
+}

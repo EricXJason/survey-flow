@@ -1,0 +1,526 @@
+<app-hero></app-hero>
+
+<!-- 第一區塊：核心特色展示 -->
+<section class="section home-features" aria-labelledby="features-heading">
+  <div class="container">
+    <div class="section-title-group text-center">
+      <span class="section-tag">設計與題型</span>
+      <h2 id="features-heading" class="section-heading">
+        豐富題型與直覺的表單設計
+      </h2>
+      <p class="section-lead centered">
+        提供多元題型選擇、直覺的拖曳排序與靈活的條件邏輯，輕鬆滿足各類調研情境。
+      </p>
+    </div>
+
+    <div class="bento-grid">
+
+      <!-- 特色卡片一：多元題型與量化評分量表 -->
+      <article class="bento-card bento-card-featured">
+        <div class="bento-featured-split">
+          <div class="bento-card-content">
+            <div class="bento-badge-row">
+              <span class="bento-pill">題型配置</span>
+              <span class="bento-sub-pill">支援量化評分</span>
+            </div>
+            <h3 class="bento-title">多元題型與量化評分量表</h3>
+            <p class="bento-desc">
+              支援是非題、單選題、多選題以及 10 點評分量表。可針對個別題目設定必填屬性、說明文字與題目參考圖片，滿足多樣化調研需求。
+            </p>
+            <div class="bento-tags-list">
+              <span class="bento-tag-chip">滿意度 5 點量表</span>
+              <span class="bento-tag-chip">NPS 0–10 淨推薦量表</span>
+              <span class="bento-tag-chip">是非與單複選題</span>
+            </div>
+          </div>
+
+          <!-- 4 大核心題型卡片化直觀展示元件 -->
+          <div class="bento-visual-preview qtype-preview-widget" aria-hidden="true">
+            <div class="widget-header">
+              <span class="widget-title">核心題型直觀展示</span>
+              <span class="widget-sub-badge">4 大專業題型</span>
+            </div>
+
+            <div class="qtype-mini-cards-grid">
+              <!-- 題型一：是非題 -->
+              <div class="qtype-mini-card">
+                <div class="qtype-card-head">
+                  <span class="qtype-badge badge-blue">是非題</span>
+                  <span class="qtype-card-sub">雙態快速決策</span>
+                </div>
+                <p class="qtype-card-q">您是否曾參與過線上問卷調查？</p>
+                <div class="qtype-bool-row">
+                  <span class="mini-bool-btn active">✓ 是 (Yes)</span>
+                  <span class="mini-bool-btn">✕ 否 (No)</span>
+                </div>
+              </div>
+
+              <!-- 題型二：單選題 -->
+              <div class="qtype-mini-card">
+                <div class="qtype-card-head">
+                  <span class="qtype-badge badge-emerald">單選題</span>
+                  <span class="qtype-card-sub">互斥單一選項</span>
+                </div>
+                <p class="qtype-card-q">您最常用的使用裝置為何？</p>
+                <div class="qtype-opts-list">
+                  <div class="mini-opt-item active">
+                    <span class="mini-radio-dot active"></span>
+                    <span>桌上型電腦 / 筆電</span>
+                  </div>
+                  <div class="mini-opt-item">
+                    <span class="mini-radio-dot"></span>
+                    <span>行動手機 / 平板</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 題型三：多選題 -->
+              <div class="qtype-mini-card">
+                <div class="qtype-card-head">
+                  <span class="qtype-badge badge-violet">多選題</span>
+                  <span class="qtype-card-sub">複選核取方塊</span>
+                </div>
+                <p class="qtype-card-q">偏好接收調研通知管道？</p>
+                <div class="qtype-opts-list">
+                  <div class="mini-opt-item active">
+                    <span class="mini-check-box active">✓</span>
+                    <span>電子信箱通知</span>
+                  </div>
+                  <div class="mini-opt-item active">
+                    <span class="mini-check-box active">✓</span>
+                    <span>站內即時訊息</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 題型四：評分量表 (NPS / 滿意度) -->
+              <div class="qtype-mini-card qtype-card-wide">
+                <div class="qtype-card-head">
+                  <span class="qtype-badge badge-amber">評分量表</span>
+                  <span class="qtype-card-sub">1–5 點滿意度 / 0–10 淨推薦 NPS</span>
+                </div>
+                <p class="qtype-card-q">整體系統操作流程的滿意滿意程度？</p>
+                <div class="nps-scale-bar-wrapper">
+                  <div class="nps-scale-bar">
+                    <span class="nps-pill nps-detractor">0</span>
+                    <span class="nps-pill nps-detractor">1</span>
+                    <span class="nps-pill nps-detractor">2</span>
+                    <span class="nps-pill nps-detractor">3</span>
+                    <span class="nps-pill nps-detractor">4</span>
+                    <span class="nps-pill nps-detractor">5</span>
+                    <span class="nps-pill nps-detractor">6</span>
+                    <span class="nps-pill nps-passive">7</span>
+                    <span class="nps-pill nps-passive">8</span>
+                    <span class="nps-pill nps-promoter nps-pill-active">9</span>
+                    <span class="nps-pill nps-promoter">10</span>
+                  </div>
+                </div>
+                <div class="nps-legend-row">
+                  <span class="legend-item text-red">0-6 待改善</span>
+                  <span class="legend-item text-yellow">7-8 普通</span>
+                  <span class="legend-item text-green">9-10 滿意</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 特色卡片二：條件邏輯跳題 -->
+      <article class="bento-card">
+        <div class="bento-card-content">
+          <div class="bento-badge-row">
+            <span class="bento-pill">邏輯跳題</span>
+          </div>
+          <h3 class="bento-title">題目條件關聯顯示</h3>
+          <p class="bento-desc">
+            當受訪者選取特定選項時，系統將自動展開對應的延伸子題目，減少無效閱讀並提升作答體驗。
+          </p>
+        </div>
+
+        <!-- 邏輯跳題視覺示意元件 -->
+        <div class="bento-visual-preview logic-preview-widget" aria-hidden="true">
+          <div class="flow-step">
+            <div class="flow-dot active"></div>
+            <div class="flow-box">
+              <span class="flow-q">Q1 是否使用過行動支付？</span>
+              <span class="flow-a text-blue">勾選「是」✓</span>
+            </div>
+          </div>
+          <div class="flow-connector">
+            <div class="flow-line"></div>
+            <span class="flow-condition">觸發展開條件</span>
+          </div>
+          <div class="flow-step">
+            <div class="flow-dot unlocked"></div>
+            <div class="flow-box flow-box-unlocked">
+              <span class="flow-q">↳ Q1-A 您最常用的行動支付工具？</span>
+              <span class="flow-status">已依條件展開</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- 特色卡片三：表單設計與拖曳排序 -->
+      <article class="bento-card">
+        <div class="bento-card-content">
+          <div class="bento-badge-row">
+            <span class="bento-pill">表單設計</span>
+          </div>
+          <h3 class="bento-title">直覺拖曳排序與題目編輯</h3>
+          <p class="bento-desc">
+            支援題目即時拖曳重新排列順序、必填與非必填自由切換，並可為個別題目自訂補充說明與參考附圖。
+          </p>
+        </div>
+
+        <!-- 題目拖曳排序預覽元件 -->
+        <div class="bento-visual-preview reorder-preview-widget" aria-hidden="true">
+          <div class="reorder-item reorder-item-active">
+            <div class="reorder-handle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                <circle cx="9" cy="5" r="1"/>
+                <circle cx="9" cy="12" r="1"/>
+                <circle cx="9" cy="19" r="1"/>
+                <circle cx="15" cy="5" r="1"/>
+                <circle cx="15" cy="12" r="1"/>
+                <circle cx="15" cy="19" r="1"/>
+              </svg>
+            </div>
+            <div class="reorder-info">
+              <span class="reorder-num">01</span>
+              <span class="reorder-text">整體產品滿意度評分</span>
+            </div>
+            <span class="reorder-badge badge-req">必填</span>
+          </div>
+
+          <div class="reorder-item">
+            <div class="reorder-handle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                <circle cx="9" cy="5" r="1"/>
+                <circle cx="9" cy="12" r="1"/>
+                <circle cx="9" cy="19" r="1"/>
+                <circle cx="15" cy="5" r="1"/>
+                <circle cx="15" cy="12" r="1"/>
+                <circle cx="15" cy="19" r="1"/>
+              </svg>
+            </div>
+            <div class="reorder-info">
+              <span class="reorder-num">02</span>
+              <span class="reorder-text">具體改進建議與回饋</span>
+            </div>
+            <span class="reorder-badge badge-opt">選填</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- 特色卡片四：免註冊填答與欄位配置 -->
+      <article class="bento-card">
+        <div class="bento-card-content">
+          <div class="bento-badge-row">
+            <span class="bento-pill">欄位配置</span>
+          </div>
+          <h3 class="bento-title">受訪者免註冊與背景欄位配置</h3>
+          <p class="bento-desc">
+            受訪者點選問卷連結即可直接填答，免除註冊門檻。發起者可依調研目的自由開關姓名、性別與年齡等背景欄位。
+          </p>
+        </div>
+
+        <!-- 填答權限與背景欄位切換元件 -->
+        <div class="bento-visual-preview privacy-preview-widget" aria-hidden="true">
+          <div class="privacy-item">
+            <div class="privacy-meta">
+              <span class="privacy-title">受訪者免註冊填答</span>
+              <span class="privacy-sub">點擊專屬連結即可直接作答</span>
+            </div>
+            <span class="toggle-mock active"></span>
+          </div>
+          <div class="privacy-item">
+            <div class="privacy-meta">
+              <span class="privacy-title">基本資料彈性配置</span>
+              <span class="privacy-sub">可依調研需求選填背景欄位</span>
+            </div>
+            <span class="toggle-mock active"></span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- 第二區塊：三步發布流程 -->
+<section class="section home-journey" aria-labelledby="journey-heading">
+  <div class="container">
+    <div class="section-title-group text-center">
+      <span class="section-tag">三步流暢發布</span>
+      <h2 id="journey-heading" class="section-heading">
+        從設計到發布，直覺流暢的問卷旅程
+      </h2>
+      <p class="section-lead centered">
+        清晰流暢的設計流程，輕鬆完成問卷配置、檢驗與上架。
+      </p>
+    </div>
+
+    <div class="journey-cards-grid">
+      <!-- 步驟一：藍色標記 -->
+      <div class="journey-card card-step-1">
+        <div class="journey-step-header">
+          <span class="journey-step-num step-1">01</span>
+          <span class="journey-step-badge badge-1">步驟一</span>
+        </div>
+        <h3 class="journey-title">自訂題型與欄位配置</h3>
+        <p class="journey-desc">
+          建立問卷分類、說明引言與期限設定。自由搭配是非、單選、多選或評分量表，隨題附上說明圖片以輔助理解。
+        </p>
+      </div>
+
+      <!-- 步驟二：紫色標記 -->
+      <div class="journey-card card-step-2">
+        <div class="journey-step-header">
+          <span class="journey-step-num step-2">02</span>
+          <span class="journey-step-badge badge-2">步驟二</span>
+        </div>
+        <h3 class="journey-title">即時預覽與拖曳排序</h3>
+        <p class="journey-desc">
+          一鍵切換「受訪者視角」即時檢驗填答手感與跳題規則。開啟拖曳排序視窗即可快速重新編排題目順序。
+        </p>
+      </div>
+
+      <!-- 步驟三：綠色標記 -->
+      <div class="journey-card card-step-3">
+        <div class="journey-step-header">
+          <span class="journey-step-num step-3">03</span>
+          <span class="journey-step-badge badge-3">步驟三</span>
+        </div>
+        <h3 class="journey-title">發布專案與數據追蹤</h3>
+        <p class="journey-desc">
+          將問卷上架至公開大廳或作為專屬連結發布。在管理後台掌握問卷狀態，即時維護回收專案。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 第三區塊：多元調研情境 -->
+<section class="section home-usecases" aria-labelledby="usecases-heading">
+  <div class="container">
+    <div class="section-title-group text-center">
+      <span class="section-tag">全領域適用</span>
+      <h2 id="usecases-heading" class="section-heading">
+        廣泛適用各類專業調研情境
+      </h2>
+      <p class="section-lead centered">
+        無論身處企業、校園、研究機構或公眾社群，SurveyFlow 都能提供穩定流暢的問卷體驗。
+      </p>
+    </div>
+
+    <div class="usecases-grid" role="list">
+      <!-- 調研場景 1：顧客滿意度 -->
+      <article class="usecase-card" role="listitem" data-cat="顧客滿意度">
+        <div class="usecase-img-wrap">
+          <img
+            src="/images/usecases/usecase-customer.jpg"
+            alt="顧客滿意度與 NPS 調查真實情境"
+            class="usecase-img"
+            loading="lazy"
+            width="360"
+            height="190"
+          />
+        </div>
+        <div class="usecase-body">
+          <div class="usecase-header">
+            <span class="usecase-pill" data-cat="顧客滿意度">顧客滿意度</span>
+          </div>
+          <div class="usecase-content">
+            <h3 class="usecase-card-title">顧客滿意度與 NPS 調查</h3>
+            <p class="usecase-card-desc">購後服務體驗回饋、客服品質綜合評估、淨推薦值（NPS）定期追蹤與忠誠度衡量。</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- 調研場景 2：產品體驗研究 -->
+      <article class="usecase-card" role="listitem" data-cat="產品體驗研究">
+        <div class="usecase-img-wrap">
+          <img
+            src="/images/usecases/usecase-product.jpg"
+            alt="產品體驗與易用性研究真實情境"
+            class="usecase-img"
+            loading="lazy"
+            width="360"
+            height="190"
+          />
+        </div>
+        <div class="usecase-body">
+          <div class="usecase-header">
+            <span class="usecase-pill" data-cat="產品體驗研究">產品體驗研究</span>
+          </div>
+          <div class="usecase-content">
+            <h3 class="usecase-card-title">產品易用性與體驗研究</h3>
+            <p class="usecase-card-desc">新功能上線可用性驗證、UI/UX 介面操作痛點訪查、原型功能盲測與體驗收集。</p>
+          </div>
+        </div>
+      </article>
+
+      <!-- 調研場景 3：市場商業調研 -->
+      <article class="usecase-card" role="listitem" data-cat="市場商業調研">
+        <div class="usecase-img-wrap">
+          <img
+            src="/images/usecases/usecase-market.jpg"
+            alt="市場商業調研與競品分析真實情境"
+            class="usecase-img"
+            loading="lazy"
+            width="360"
+            height="190"
+          />
+        </div>
+        <div class="usecase-body">
+          <div class="usecase-header">
+            <span class="usecase-pill" data-cat="市場商業調研">市場商業調研</span>
+          </div>
+          <div class="usecase-content">
+            <h3 class="usecase-card-title">市場商機與競品分析</h3>
+            <p class="usecase-card-desc">目標受眾消費習慣輪廓、產品定價敏感度（PSM）分析、市場競品優勢比對。</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 第四區塊：常見問題解答 -->
+<section class="section home-faq" aria-labelledby="faq-heading">
+  <div class="container">
+    <div class="section-title-group text-center">
+      <span class="section-tag">常見解答</span>
+      <h2 id="faq-heading" class="section-heading">常見問題說明</h2>
+      <p class="section-lead centered">
+        關於問卷題型支援、表單設計方式與填答權限的常見說明。
+      </p>
+    </div>
+
+    <div class="faq-list" role="list">
+      <article class="faq-item" role="listitem">
+        <h3 class="faq-q">填寫問卷需要先註冊或登入帳號嗎？</h3>
+        <p class="faq-a">
+          <strong>不需要。</strong>受訪者只要透過問卷專屬連結或在公開問卷大廳中點選問卷，即可直接進行作答，無須註冊會員。僅有需要「建立問卷」與「管理問卷數據」的發起者才需登入帳號。
+        </p>
+      </article>
+
+      <article class="faq-item" role="listitem">
+        <h3 class="faq-q">題目間的「條件關聯跳題」是如何運作的？</h3>
+        <p class="faq-a">
+          在單選題的選項設定中，可指定特定選項觸發關聯子題。當受訪者選取該選項時，後續關聯題目才會即時展開顯示；未選取該答案時子題目維持隱藏，避免受訪者閱讀無關題目。
+        </p>
+      </article>
+
+      <article class="faq-item" role="listitem">
+        <h3 class="faq-q">平台支援哪些問卷題目類型？</h3>
+        <p class="faq-a">
+          SurveyFlow 支援<strong>是非題、單選題、多選題以及 10 點評分量表（包含 NPS 淨推薦分數與 1–5 滿意度評分）</strong>。每一題皆可獨立設定必填條件、補充說明與參考圖片，滿足各類調研場景。
+        </p>
+      </article>
+
+      <article class="faq-item" role="listitem">
+        <h3 class="faq-q">建立問卷後可以重新調整題目順序嗎？</h3>
+        <p class="faq-a">
+          可以。在問卷設計頁面點選「重新排序」，即可透過直覺的拖曳方式重新排列題目順序，確認後立即套用更新。
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 第五區塊：行動呼籲橫幅 -->
+<section class="section home-cta" aria-labelledby="cta-heading">
+  <div class="container">
+    <div class="cta-band">
+      <div class="cta-backdrop" aria-hidden="true">
+        <div class="cta-glow cta-glow-primary"></div>
+        <div class="cta-glow cta-glow-accent"></div>
+        <div class="cta-grid-pattern"></div>
+      </div>
+
+      <div class="cta-inner">
+        <!-- 左側：主標語與行動按鈕 -->
+        <div class="cta-copy">
+          <h2 id="cta-heading" class="cta-title">
+            開始建立您的第一份線上問卷
+          </h2>
+
+          <p class="cta-desc">
+            透過直覺的題目配置與流暢的填答體驗，快速收集受訪者的真實回饋與想法。
+          </p>
+
+          <div class="cta-actions">
+            <a routerLink="/survey-design" class="btn btn-cta-primary">
+              <span>立即建立問卷</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" width="18" height="18" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+            <a routerLink="/lobby" class="btn btn-cta-secondary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d="M8 10h8M8 14h5"/>
+              </svg>
+              <span>瀏覽問卷大廳</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 右側：亮點功能展示卡片 -->
+        <div class="cta-showcase">
+          <div class="showcase-card">
+            <div class="showcase-card-header">
+              <span class="showcase-header-title">功能特色</span>
+            </div>
+
+            <div class="showcase-pipeline">
+              <div class="pipeline-item">
+                <div class="pipeline-icon-wrap completed">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                </div>
+                <div class="pipeline-info">
+                  <span class="pipeline-title">多元題型支援</span>
+                  <p class="pipeline-desc">支援是非、單選、多選與評分量表等題型</p>
+                </div>
+              </div>
+
+              <div class="pipeline-item">
+                <div class="pipeline-icon-wrap completed">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                    <polyline points="16 3 21 3 21 8"/>
+                    <line x1="4" y1="20" x2="21" y2="3"/>
+                    <polyline points="21 16 21 21 16 21"/>
+                    <line x1="15" y1="15" x2="21" y2="21"/>
+                    <line x1="4" y1="4" x2="9" y2="9"/>
+                  </svg>
+                </div>
+                <div class="pipeline-info">
+                  <span class="pipeline-title">條件邏輯關聯</span>
+                  <p class="pipeline-desc">選取特定選項即時展開延伸子題目</p>
+                </div>
+              </div>
+
+              <div class="pipeline-item">
+                <div class="pipeline-icon-wrap completed">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <div class="pipeline-info">
+                  <span class="pipeline-title">免登入直接填答</span>
+                  <p class="pipeline-desc">受訪者透過專屬連結即可立即開始填答</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

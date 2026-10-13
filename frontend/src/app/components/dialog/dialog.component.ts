@@ -1,0 +1,81 @@
+/**
+ * ============================================================================
+ * 檔案名稱: dialog.component.ts
+ * 所屬模組: 全域彈出視窗組件模組 (Modal Dialog Module)
+ * 責任描述: 負責訂閱 DialogService 串流並呈現 Notice、Check、Error 等三種互動對話框，處理無障礙 ESC 關閉與按鈕點擊反饋。
+ * 架構分層: Presentation Layer / Shared Modal Component
+ * 聯動關係:
+ *   - 上游依賴: ../../@services/dialog.service
+ *   - 下游消費: AppComponent 宿主直接調用
+ * 邊界處理: 鍵盤 ESC 快捷鍵關閉；按鈕文字動態防呆回退支援
+ * ============================================================================
+ */
+
+import { Component, HostListener, inject } from '@angular/core';
+import { DialogService, DialogData } from '../../@services/dialog.service';
+import { CommonModule } from '@angular/common';
+import { Observable } from 'rxjs';
+
+/**
+ * 全域互動式對話框組件 (Dialog Component)
+ * 負責渲染 Notice (通知)、Check (雙鈕確認)、Error (錯誤警報) 等三種不同情境的視窗對話框，
+ * 支援無障礙鍵盤 ESC 關閉、高對比主題及自訂按鈕文字。
+ */
+@Component({
+  selector: 'app-dialog',
+  imports: [CommonModule],
+  templateUrl: './dialog.component.html',
+  styleUrl: './dialog.component.scss',
+})
+export class DialogComponent {
+  /** 注入對話框管理服務，控制開關與按鈕回饋 */
+  protected readonly dialogService = inject(DialogService);
+
+  /** 對話框當前狀態與資料之 RxJS Observable 串流 */
+  protected readonly dialogState$: Observable<DialogData | null> =
+    this.dialogService.dialogState$;
+
+  /**
+   * 監聽鍵盤 ESC 按鍵事件 (window:keydown.escape)
+   * 當使用者在對話框開啟期間按下 ESC，自動執行取消/關閉對話框，符合 WCAG 無障礙規範。
+   */
+  @HostListener('window:keydown.escape')
+  protected handleEscape(): void {
+    this.dialogService.cancel();
+  }
+
+  /**
+   * 解析確認按鈕（主要操作）的顯示文字
+   * 若對話框資料有設定 confirmText 則優先採用；noticeMode 預設為「我知道了」，其餘為「確認」。
+   * @param data 對話框設定資料物件
+   * @returns 確認按鈕文字字串
+   */
+  protected getConfirmText(data: DialogData): string {
+    return data.confirmText?.trim() || (data.mode === 'noticeMode' ? '我知道了' : '確認');
+  }
+
+  /**
+   * 解析取消按鈕（次要操作）的顯示文字
+   * 優先採用 cancelText 或 errorText，若未設定則回退為「取消」。
+   * @param data 對話框設定資料物件
+   * @returns 取消按鈕文字字串
+   */
+  protected getCancelText(data: DialogData): string {
+    return data.cancelText?.trim() || data.errorText?.trim() || '取消';
+  }
+
+  /**
+   * 解析錯誤模式 (errorMode) 下操作按鈕的顯示文字
+   * 依序核對 errorText、confirmText、cancelText，若無設定則預設為「了解」。
+   * @param data 對話框設定資料物件
+   * @returns 錯誤按鈕文字字串
+   */
+  protected getErrorButtonText(data: DialogData): string {
+    return (
+      data.errorText?.trim() ||
+      data.confirmText?.trim() ||
+      data.cancelText?.trim() ||
+      '了解'
+    );
+  }
+}

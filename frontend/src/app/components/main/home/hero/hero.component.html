@@ -1,0 +1,191 @@
+<!-- 首頁主視覺橫幅組件 -->
+<section class="hero" aria-label="SurveyFlow 智慧問卷平台主視覺">
+  <!-- 背景情境圖層 -->
+  <div class="hero-bg-backdrop" aria-hidden="true">
+    <img
+      src="/images/hero-bg.jpg"
+      alt="現代化專業調研與團隊協作情境背景"
+      class="hero-bg-photo"
+      loading="eager"
+      fetchpriority="high"
+    />
+    <div class="hero-bg-overlay"></div>
+  </div>
+
+  <div class="hero-inner container">
+
+    <!-- 左側：標題排版與產品定位說明 -->
+    <div class="hero-copy">
+      <!-- 產品標籤 -->
+      <div class="hero-eyebrow-wrap">
+        <span class="hero-eyebrow">專業線上問卷調研系統</span>
+      </div>
+
+      <!-- 主要標題 -->
+      <h1 class="hero-title">
+        讓每一次意見蒐集，<br/>
+        都具備<span class="hero-title-accent">精準洞察力</span>。
+      </h1>
+
+      <!-- 副標題描述 -->
+      <p class="hero-desc">
+        支援是非題、單選、多選與 10 點評分量表，提供直覺的題目拖曳排序與智慧條件跳題設計，適用於滿意度調查、產品體驗研究等多種調研領域。
+      </p>
+
+      <!-- 行動呼籲按鈕 -->
+      <div class="hero-actions">
+        <a routerLink="/survey-design" class="btn btn-hero-primary">
+          <span>開始設計問卷</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-icon" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+        <a routerLink="/lobby" class="btn btn-hero-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M8 10h8M8 14h5"/>
+          </svg>
+          <span>瀏覽公開問卷大廳</span>
+        </a>
+      </div>
+
+      <!-- 核心能力特色卡片 -->
+      <div class="hero-proof-grid" role="list" aria-label="核心功能特色">
+        <div class="proof-card" role="listitem">
+          <div class="proof-icon-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          </div>
+          <div class="proof-text">
+            <span class="proof-title">多樣化題目類型</span>
+            <span class="proof-sub">是非、單選、多選與量表題</span>
+          </div>
+        </div>
+
+        <div class="proof-card" role="listitem">
+          <div class="proof-icon-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="6" x2="20" y2="6"/>
+              <line x1="4" y1="12" x2="20" y2="12"/>
+              <line x1="4" y1="18" x2="20" y2="18"/>
+            </svg>
+          </div>
+          <div class="proof-text">
+            <span class="proof-title">直覺式表單設計</span>
+            <span class="proof-sub">拖曳題目排序與必填說明設定</span>
+          </div>
+        </div>
+
+        <div class="proof-card" role="listitem">
+          <div class="proof-icon-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 3 21 3 21 8"/>
+              <line x1="4" y1="20" x2="21" y2="3"/>
+              <polyline points="21 16 21 21 16 21"/>
+              <line x1="15" y1="15" x2="21" y2="21"/>
+              <line x1="4" y1="4" x2="9" y2="9"/>
+            </svg>
+          </div>
+          <div class="proof-text">
+            <span class="proof-title">條件關聯跳題</span>
+            <span class="proof-sub">選取特定選項動態展開追問</span>
+          </div>
+        </div>
+
+        <div class="proof-card" role="listitem">
+          <div class="proof-icon-box" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </div>
+          <div class="proof-text">
+            <span class="proof-title">多情境調研應用</span>
+            <span class="proof-sub">滿意度、產品體驗與活動調查</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右側：即時問卷互動展示視窗 -->
+    <div class="hero-visual" aria-hidden="true">
+      <div class="studio-window">
+        <!-- 視窗標題列 -->
+        <div class="studio-header">
+          <div class="window-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            <span>問卷填答即時預覽</span>
+          </div>
+        </div>
+
+        <!-- 視窗主內容區 -->
+        <div class="studio-body">
+          <!-- 題目互動卡片 -->
+          <div class="studio-question-card">
+            <div class="question-meta-row">
+              <span class="q-badge">Q1 · 滿意度量表</span>
+              <span class="q-required-tag">必填</span>
+            </div>
+            <h3 class="q-title">「整體而言，您對本次線上系統的使用體驗滿意程度為何？」</h3>
+            
+            <!-- 評分量表選項標籤 -->
+            <div class="q-scale-options">
+              <button type="button" class="scale-btn" tabindex="-1">
+                <span>1 非常不滿意</span>
+              </button>
+              <button type="button" class="scale-btn" tabindex="-1">
+                <span>2 待改善</span>
+              </button>
+              <button type="button" class="scale-btn" tabindex="-1">
+                <span>3 普通</span>
+              </button>
+              <button type="button" class="scale-btn" tabindex="-1">
+                <span>4 滿意</span>
+              </button>
+              <button type="button" class="scale-btn scale-btn-active" tabindex="-1">
+                <span>5 極度滿意</span>
+              </button>
+            </div>
+
+            <!-- 條件跳題關聯指示標籤 -->
+            <div class="q-logic-trigger">
+              <div class="logic-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </div>
+              <span class="logic-label">條件關聯跳題：</span>
+              <span class="logic-val">勾選「5 極度滿意」↳ 自動展開 Q1-A 體驗亮點回饋</span>
+              <span class="logic-status">已啟用</span>
+            </div>
+          </div>
+
+          <!-- 平台核心能力指標列 -->
+          <div class="telemetry-bar">
+            <div class="telemetry-item">
+              <span class="telemetry-num">4 種題型</span>
+              <span class="telemetry-sub">是非、單複選與量表</span>
+            </div>
+            <div class="telemetry-sep-vert" aria-hidden="true"></div>
+            <div class="telemetry-item">
+              <span class="telemetry-num">免登入</span>
+              <span class="telemetry-sub">受訪者直接填答</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>

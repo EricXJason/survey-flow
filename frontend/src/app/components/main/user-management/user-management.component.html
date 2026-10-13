@@ -1,0 +1,329 @@
+<section class="user-mgmt-section section" aria-labelledby="user-mgmt-title">
+  <div class="container">
+
+    <!-- 1. 頁頭資訊與導覽路徑 -->
+    <header class="mgmt-header">
+      <div class="header-left">
+        <div class="header-breadcrumbs">
+          <span class="crumb-lead">會員中心</span>
+          <span class="crumb-sep">/</span>
+          <span class="crumb-active">系統管理員專區</span>
+        </div>
+        <h1 id="user-mgmt-title" class="section-title">
+          全站會員與帳號管理
+        </h1>
+        <p class="section-subtitle">
+          檢視與管理全平台註冊會員帳號、即時切換帳號啟用/凍結狀態、重設初始密碼並維持平台資料安全。
+        </p>
+      </div>
+
+      <div class="header-right">
+        <a routerLink="/survey-management" class="btn btn-ghost btn-survey-link">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>前往問卷管理</span>
+        </a>
+      </div>
+    </header>
+
+    @if (isLoading()) {
+      <div class="status-box loading-box" role="status" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>正在載入會員帳號資料庫，請稍候...</p>
+      </div>
+    } @else {
+      <!-- 2. 關鍵指標統計數據卡片 -->
+      <div class="kpi-grid">
+        <!-- 指標一：會員總數 -->
+        <div class="kpi-card card-total">
+          <div class="kpi-icon-wrap">
+            <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">註冊會員總數</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value">{{ totalUsers() }}</span>
+              <span class="kpi-unit">位</span>
+            </div>
+            <span class="kpi-desc">全平台累計登記之帳號總數</span>
+          </div>
+        </div>
+
+        <!-- 指標二：正常啟用 -->
+        <div class="kpi-card card-active">
+          <div class="kpi-icon-wrap">
+            <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">正常啟用中</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value">{{ activeUsers() }}</span>
+              <span class="kpi-unit">位</span>
+            </div>
+            <span class="kpi-desc">具備正常登入與填答權限</span>
+          </div>
+        </div>
+
+        <!-- 指標三：帳號已停用 -->
+        <div class="kpi-card card-suspended">
+          <div class="kpi-icon-wrap">
+            <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">已凍結 / 停用</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value">{{ suspendedUsers() }}</span>
+              <span class="kpi-unit">位</span>
+            </div>
+            <span class="kpi-desc">遭暫停使用或處於審核狀態</span>
+          </div>
+        </div>
+
+        <!-- 指標四：管理員帳號 -->
+        <div class="kpi-card card-admin">
+          <div class="kpi-icon-wrap">
+            <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <div class="kpi-content">
+            <span class="kpi-label">系統管理員</span>
+            <div class="kpi-value-row">
+              <span class="kpi-value">{{ adminUsers() }}</span>
+              <span class="kpi-unit">位</span>
+            </div>
+            <span class="kpi-desc">具備全站管理與審核權限</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. 搜尋與過濾工具列 -->
+      <div class="filter-toolbar">
+        <!-- 搜尋列 -->
+        <div class="search-input-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            placeholder="搜尋會員姓名、電子郵件、手機號碼或 ID..."
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+            aria-label="搜尋會員清單"
+          />
+          @if (searchQuery()) {
+            <button
+              type="button"
+              class="btn-clear-search"
+              (click)="clearSearch()"
+              title="清除搜尋內容"
+              aria-label="清除搜尋內容"
+            >
+              ✕
+            </button>
+          }
+        </div>
+
+        <!-- 狀態分頁切換標籤 -->
+        <div class="filter-tabs" role="tablist" aria-label="會員狀態篩選">
+          <button
+            type="button"
+            role="tab"
+            class="filter-tab-btn"
+            [class.active]="statusFilter() === 'all'"
+            [attr.aria-selected]="statusFilter() === 'all'"
+            (click)="setStatusFilter('all')"
+          >
+            全部 ({{ totalUsers() }})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="filter-tab-btn"
+            [class.active]="statusFilter() === 'active'"
+            [attr.aria-selected]="statusFilter() === 'active'"
+            (click)="setStatusFilter('active')"
+          >
+            正常啟用 ({{ activeUsers() }})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            class="filter-tab-btn"
+            [class.active]="statusFilter() === 'suspended'"
+            [attr.aria-selected]="statusFilter() === 'suspended'"
+            (click)="setStatusFilter('suspended')"
+          >
+            已停用 ({{ suspendedUsers() }})
+          </button>
+        </div>
+
+        <!-- 身分角色過濾下拉選單 -->
+        <div class="role-select-wrap">
+          <label for="role-filter-select" class="role-select-label">身分：</label>
+          <select
+            id="role-filter-select"
+            class="role-select"
+            [value]="roleFilter()"
+            (change)="onRoleSelectChange($event)"
+          >
+            <option value="all">全部身分角色</option>
+            <option value="employee">上班族</option>
+            <option value="student">學生</option>
+            <option value="teacher">教師</option>
+            <option value="researcher">研究人員</option>
+            <option value="retired">已退休</option>
+            <option value="admin">系統管理員</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 4. 會員清單表格卡片 -->
+      <div class="table-card">
+        @if (filteredUsers().length === 0) {
+          <div class="empty-search-state">
+            <div class="empty-search-icon">🔍</div>
+            <h3>查無符合條件的會員帳號</h3>
+            <p>請嘗試使用不同的搜尋關鍵字或調整身分與狀態過濾器。</p>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="clearSearch(); setStatusFilter('all');">
+              重設所有過濾條件
+            </button>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" matSort class="custom-user-table" aria-label="全站會員列表">
+
+              <!-- 會員基本資訊欄 (姓名、頭像、Email、ID) -->
+              <ng-container matColumnDef="user">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>會員帳號</th>
+                <td mat-cell *matCellDef="let user">
+                  <div class="user-cell">
+                    <div class="user-avatar" [class.avatar-admin]="user.role === 'admin'">
+                      {{ getUserInitial(user.name) }}
+                    </div>
+                    <div class="user-info">
+                      <div class="user-name-line">
+                        <span class="user-fullname">{{ user.name }}</span>
+                        <span class="user-id-badge">{{ user.id }}</span>
+                      </div>
+                      <span class="user-email">{{ user.email }}</span>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- 身分角色欄 -->
+              <ng-container matColumnDef="role">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>身分角色</th>
+                <td mat-cell *matCellDef="let user">
+                  <span class="role-pill" [attr.data-role]="user.role">
+                    {{ getRoleLabel(user.role) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <!-- 手機號碼欄 -->
+              <ng-container matColumnDef="phone">
+                <th mat-header-cell *matHeaderCellDef>聯絡電話</th>
+                <td mat-cell *matCellDef="let user">
+                  <span class="phone-text">{{ user.phone }}</span>
+                </td>
+              </ng-container>
+
+              <!-- 註冊與登入時間欄 -->
+              <ng-container matColumnDef="registeredAt">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>註冊與上線</th>
+                <td mat-cell *matCellDef="let user">
+                  <div class="time-cell">
+                    <span class="reg-date">註冊：{{ user.registeredAt }}</span>
+                    <span class="login-date">最後上線：{{ user.lastLoginAt }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- 帳號狀態欄 (啟用中 / 已停用) -->
+              <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>帳號狀態</th>
+                <td mat-cell *matCellDef="let user">
+                  <div class="status-cell">
+                    @if (user.status === 'active') {
+                      <span class="status-badge status-active">
+                        <span class="dot"></span>
+                        正常啟用
+                      </span>
+                    } @else {
+                      <span class="status-badge status-suspended">
+                        <span class="dot"></span>
+                        已停用
+                      </span>
+                    }
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- 操作管理欄：僅保留刪除帳號 -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="col-actions">操作</th>
+                <td mat-cell *matCellDef="let user" class="col-actions">
+                  <div class="action-buttons-wrap">
+                    @if (user.role !== 'admin') {
+                      <button
+                        type="button"
+                        class="btn-delete-account"
+                        title="永久刪除此會員帳號"
+                        (click)="onDeleteUser(user)"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                        <span>刪除帳號</span>
+                      </button>
+                    } @else {
+                      <span class="admin-protected-tag">系統保護</span>
+                    }
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns" class="user-table-row"></tr>
+            </table>
+          </div>
+
+          <!-- 分頁器 -->
+          <div class="paginator-wrap">
+            <mat-paginator
+              [pageSizeOptions]="[5, 10, 20]"
+              [pageSize]="10"
+              showFirstLastButtons
+              aria-label="選取會員清單分頁"
+            >
+            </mat-paginator>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</section>

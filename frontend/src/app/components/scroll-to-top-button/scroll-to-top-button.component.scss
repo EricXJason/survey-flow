@@ -1,0 +1,57 @@
+:host {
+  display: contents;
+}
+
+/* 回到頂端浮動按鈕：遵循現代 SaaS 簡約純色標準，去除怪異半透明與暈光 */
+.scroll-to-top-btn {
+  position: fixed;
+  right: 2.4rem;
+  bottom: 2.4rem;
+  z-index: 990;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: var(--r-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1.5px solid var(--c-border);
+  color: var(--c-neutral-700);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    background: var(--c-brand-600);
+    border-color: var(--c-brand-600);
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.35);
+
+    svg {
+      transform: translateY(-2px);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--c-brand-500);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    right: 1.4rem;
+    bottom: 1.6rem;
+    width: 4rem;
+    height: 4rem;
+  }
+}

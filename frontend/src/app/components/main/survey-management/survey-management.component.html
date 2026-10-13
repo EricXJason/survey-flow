@@ -1,0 +1,1002 @@
+<section class="management-section section" aria-labelledby="mgmt-title">
+  <div class="container">
+
+    <!-- =====================================================================
+         視圖一：問卷管理清單
+         ===================================================================== -->
+    @if (activeView() === 'list') {
+
+      <!-- 管理後台頁頭區塊 -->
+      <header class="management-header">
+        <div class="header-left">
+          <div class="header-breadcrumbs">
+            <span class="crumb-lead">問卷中心</span>
+            <span class="crumb-sep">/</span>
+            <span class="crumb-active">{{ isAdmin() ? "系統管理後台" : "專案總覽" }}</span>
+          </div>
+          <h1 id="mgmt-title" class="section-title">
+            {{ isAdmin() ? "全系統問卷管理" : "個人問卷管理" }}
+          </h1>
+          <p class="section-subtitle">
+            {{
+              isAdmin()
+                ? "檢視並管理系統中所有會員發布之問卷資料，即時監控全域填答數據"
+                : "管理與追蹤您所擁有的所有問卷專案，即時掌握填答時程與回收狀態"
+            }}
+          </p>
+        </div>
+
+        <div class="header-right">
+          <a routerLink="/survey-design" class="btn btn-primary btn-create" id="btn-create-new-survey">
+            <svg class="btn-create-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>建立新問卷</span>
+          </a>
+        </div>
+      </header>
+
+      @if (isLoading()) {
+        <div class="status-box loading-box" role="status" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>正在載入問卷資料庫，請稍候...</p>
+        </div>
+      } @else if (surveyList().length === 0) {
+        <div class="status-box empty-box" role="status">
+          <div class="empty-icon-wrap">
+            <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="9" y1="13" x2="15" y2="13"></line>
+              <line x1="9" y1="17" x2="13" y2="17"></line>
+            </svg>
+          </div>
+          <h3 class="empty-title">目前尚未建立任何問卷專案</h3>
+          <p class="empty-desc">點選上方「建立新問卷」開始設計您的第一份線上表單，蒐集寶貴回饋。</p>
+          <a routerLink="/survey-design" class="btn btn-primary mt-4">
+            + 立即建立第一份問卷
+          </a>
+        </div>
+      } @else {
+
+        <!-- 核心 KPI 摘要卡片 -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap blue-theme">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">問卷專案總數</span>
+              <div class="kpi-val-row">
+                <span class="kpi-value">{{ totalCount() }}</span>
+                <span class="kpi-unit">份專案</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap green-theme">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">公開展示中</span>
+              <div class="kpi-val-row">
+                <span class="kpi-value">{{ publishedCount() }}</span>
+                <span class="kpi-unit">份大廳問卷</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon-wrap slate-theme">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <div class="kpi-content">
+              <span class="kpi-label">私人／專屬連結</span>
+              <div class="kpi-val-row">
+                <span class="kpi-value">{{ privateCount() }}</span>
+                <span class="kpi-unit">份私人專案</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 篩選與搜尋工具列 -->
+        <div class="management-toolbar">
+          <div class="toolbar-filter-tabs" role="tablist">
+            <button
+              type="button"
+              id="filter-tab-all"
+              class="filter-tab"
+              [class.active]="activeFilter() === 'all'"
+              (click)="setFilter('all')"
+              role="tab"
+            >
+              全部問卷
+              <span class="tab-badge">{{ totalCount() }}</span>
+            </button>
+            <button
+              type="button"
+              id="filter-tab-published"
+              class="filter-tab"
+              [class.active]="activeFilter() === 'published'"
+              (click)="setFilter('published')"
+              role="tab"
+            >
+              已公開發布
+              <span class="tab-badge green">{{ publishedCount() }}</span>
+            </button>
+            <button
+              type="button"
+              id="filter-tab-private"
+              class="filter-tab"
+              [class.active]="activeFilter() === 'private'"
+              (click)="setFilter('private')"
+              role="tab"
+            >
+              私人專案
+              <span class="tab-badge slate">{{ privateCount() }}</span>
+            </button>
+          </div>
+
+          <div class="toolbar-search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="text"
+              id="survey-list-search"
+              class="search-input"
+              placeholder="搜尋問卷名稱、編號或分類..."
+              [value]="searchQuery()"
+              (input)="onSearchInput($event)"
+            />
+            @if (searchQuery()) {
+              <button type="button" class="btn-clear-search" (click)="clearSearch()" aria-label="清除搜尋">
+                ✕
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- 問卷表格與分頁控制卡片 -->
+        <div class="table-card">
+          @if (displaySurveys().length === 0) {
+            <div class="no-results-box">
+              <p>找不到符合「<strong>{{ searchQuery() }}</strong>」的問卷紀錄</p>
+              <button type="button" class="btn btn-secondary btn-sm" (click)="clearSearch()">
+                重設搜尋條件
+              </button>
+            </div>
+          } @else {
+            <div class="table-wrapper">
+              <table mat-table [dataSource]="dataSource" matSort class="survey-table" aria-label="問卷列表清單">
+                <!-- 編號欄位 -->
+                <ng-container matColumnDef="id">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-id">編號</th>
+                  <td mat-cell *matCellDef="let item" class="col-id">
+                    <span class="id-badge font-mono">{{ item.id }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- 標題欄位 -->
+                <ng-container matColumnDef="title">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-title">問卷名稱</th>
+                  <td mat-cell *matCellDef="let item" class="col-title">
+                    <span class="title-primary">{{ item.title }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- 分類欄位 -->
+                <ng-container matColumnDef="category">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-category">分類</th>
+                  <td mat-cell *matCellDef="let item" class="col-category">
+                    <span class="cat-badge-chip" [attr.data-cat]="item.category">{{ item.category }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- 填答時效欄位 -->
+                <ng-container matColumnDef="timeRange">
+                  <th mat-header-cell *matHeaderCellDef class="th-time">填答有效區間</th>
+                  <td mat-cell *matCellDef="let item" class="col-time">
+                    @if (item.startDate && item.endDate) {
+                      <div class="time-container">
+                        <svg class="time-calendar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                          <line x1="16" y1="2" x2="16" y2="6"></line>
+                          <line x1="8" y1="2" x2="8" y2="6"></line>
+                          <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span class="time-text">{{ item.startDate }} ~ {{ item.endDate }}</span>
+                      </div>
+                    } @else {
+                      <span class="time-permanent-chip">
+                        <svg class="time-infinity-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                          <path d="M18.178 8c5.096 0 5.096 8 0 8-2.673 0-4.35-2.667-6.178-5.333C10.172 8 8.495 8 5.822 8 0.726 8 .726 16 5.822 16c2.673 0 4.35-2.667 6.178-5.333C13.828 8 15.505 8 18.178 8z"/>
+                        </svg>
+                        <span>常態開放（無填答時限）</span>
+                      </span>
+                    }
+                  </td>
+                </ng-container>
+
+                <!-- 狀態欄位 -->
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-status">發布狀態</th>
+                  <td mat-cell *matCellDef="let item" class="col-status">
+                    @if (item.isPublished) {
+                      <span class="status-chip chip-public">
+                        <span class="status-dot dot-published" aria-hidden="true"></span>
+                        <span>已公開發布</span>
+                      </span>
+                    } @else {
+                      <span class="status-chip chip-private">
+                        <span class="status-dot" aria-hidden="true"></span>
+                        <span>私人／未發布</span>
+                      </span>
+                    }
+                  </td>
+                </ng-container>
+
+                <!-- 功能操作欄位 -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef class="th-actions">功能操作</th>
+                  <td mat-cell *matCellDef="let item" class="col-actions">
+                    <div class="action-btn-group">
+                      <button
+                        type="button"
+                        class="btn-act btn-act-preview"
+                        [attr.aria-label]="'預覽問卷：' + item.title"
+                        (click)="onPreviewSurvey(item.id)"
+                      >
+                        <svg class="act-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span>預覽</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        class="btn-act btn-act-data"
+                        [class.loading]="isAnalyticsLoading() && currentAnalyticsSurveyId() === item.id"
+                        [attr.aria-label]="'查看問卷數據：' + item.title"
+                        (click)="onViewAnalytics(item)"
+                      >
+                        @if (isAnalyticsLoading() && currentAnalyticsSurveyId() === item.id) {
+                          <div class="act-spinner" aria-hidden="true"></div>
+                        } @else {
+                          <svg class="act-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                          </svg>
+                        }
+                        <span>數據</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        class="btn-act btn-act-delete"
+                        [attr.aria-label]="'刪除問卷：' + item.title"
+                        (click)="onDeleteSurvey(item)"
+                      >
+                        <svg class="act-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        <span>刪除</span>
+                      </button>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                    [class.row-analyzing]="currentAnalyticsSurveyId() === row.id"></tr>
+              </table>
+            </div>
+
+            <mat-paginator
+              [pageSizeOptions]="[5, 10, 25]"
+              [pageSize]="5"
+              showFirstLastButtons
+              aria-label="選擇問卷分頁"
+            >
+            </mat-paginator>
+          }
+        </div>
+
+      }
+
+    }
+
+    <!-- =====================================================================
+         視圖二：數據分析儀表板
+         ===================================================================== -->
+    @else if (activeView() === 'analytics') {
+      @if (currentAnalyticsReport(); as report) {
+
+      <div class="analytics-view-container">
+
+        <!-- ── 導航工具列 ── -->
+        <header class="analytics-header">
+          <div class="analytics-header-top">
+            <button type="button" class="btn-back" (click)="onBackToList()" id="btn-back-to-list">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>返回管理清單</span>
+            </button>
+            <div class="analytics-breadcrumbs">
+              <span class="crumb-lead">問卷管理</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-lead">{{ report.category }}</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-active">數據分析報表</span>
+            </div>
+          </div>
+
+          <div class="analytics-title-block">
+            <div class="analytics-meta-badges">
+              <span class="cat-badge-chip" [attr.data-cat]="report.category">{{ report.category }}</span>
+              <span class="id-badge font-mono">{{ report.surveyId }}</span>
+              <span class="author-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                {{ report.authorName || report.authorId }}
+              </span>
+              @if (report.isPublished) {
+                <span class="status-chip chip-public">已公開發布</span>
+              } @else {
+                <span class="status-chip chip-private">私人專案</span>
+              }
+            </div>
+
+            <div class="analytics-title-actions">
+              <h1 class="analytics-main-title">{{ report.surveyTitle }}</h1>
+
+              <!-- 匯出下拉選單 -->
+              <div class="export-dropdown-wrap">
+                <button
+                  type="button"
+                  id="btn-export-menu"
+                  class="btn btn-secondary btn-export-trigger"
+                  (click)="toggleExportMenu()"
+                  [attr.aria-expanded]="isExportMenuOpen()"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>匯出報表</span>
+                  <svg class="chevron-icon" [class.open]="isExportMenuOpen()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+
+                @if (isExportMenuOpen()) {
+                  <div class="export-dropdown-menu" role="menu" aria-label="匯出格式選單">
+                    <button type="button" id="btn-export-json" class="export-option" (click)="onExportReport('json')" role="menuitem">
+                      <div class="export-opt-icon export-opt-json">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="16 18 22 12 16 6"></polyline>
+                          <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                      </div>
+                      <div class="export-opt-text">
+                        <span class="export-opt-label">JSON 原始資料</span>
+                        <span class="export-opt-desc">適合開發者與 API 對接使用</span>
+                      </div>
+                    </button>
+
+                    <button type="button" id="btn-export-csv" class="export-option" (click)="onExportReport('csv')" role="menuitem">
+                      <div class="export-opt-icon export-opt-csv">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                          <line x1="8" y1="21" x2="16" y2="21"></line>
+                          <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                      </div>
+                      <div class="export-opt-text">
+                        <span class="export-opt-label">CSV 逗號分隔值</span>
+                        <span class="export-opt-desc">通用格式，可匯入各類試算表</span>
+                      </div>
+                    </button>
+
+                    <div class="export-divider"></div>
+
+                    <button type="button" id="btn-export-excel" class="export-option" (click)="onExportReport('excel')" role="menuitem">
+                      <div class="export-opt-icon export-opt-excel">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                          <polyline points="14 2 14 8 20 8"></polyline>
+                          <line x1="16" y1="13" x2="8" y2="13"></line>
+                          <line x1="16" y1="17" x2="8" y2="17"></line>
+                          <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                      </div>
+                      <div class="export-opt-text">
+                        <span class="export-opt-label">Excel XLSX 格式</span>
+                        <span class="export-opt-desc">UTF-8 BOM，直接以 Excel 開啟</span>
+                      </div>
+                      <span class="export-opt-badge">推薦</span>
+                    </button>
+
+                    <button type="button" id="btn-export-spss" class="export-option" (click)="onExportReport('spss')" role="menuitem">
+                      <div class="export-opt-icon export-opt-spss">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <line x1="18" y1="20" x2="18" y2="10"></line>
+                          <line x1="12" y1="20" x2="12" y2="4"></line>
+                          <line x1="6" y1="20" x2="6" y2="14"></line>
+                          <line x1="2" y1="20" x2="22" y2="20"></line>
+                        </svg>
+                      </div>
+                      <div class="export-opt-text">
+                        <span class="export-opt-label">SPSS 相容格式</span>
+                        <span class="export-opt-desc">英文變數命名 CSV，直接匯入 SPSS</span>
+                      </div>
+                      <span class="export-opt-badge badge-research">學術</span>
+                    </button>
+
+                    <div class="export-divider"></div>
+
+                    <button type="button" id="btn-print-report" class="export-option" (click)="onPrintReport()" role="menuitem">
+                      <div class="export-opt-icon export-opt-print">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                          <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                      </div>
+                      <div class="export-opt-text">
+                        <span class="export-opt-label">列印報表</span>
+                        <span class="export-opt-desc">瀏覽器原生列印或另存 PDF</span>
+                      </div>
+                    </button>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <p class="analytics-meta-info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              統計週期：{{ report.startDate ? (report.startDate + ' ～ ' + (report.endDate || '進行中')) : '常態開放調研' }}
+              ｜ 最新回覆：{{ report.lastResponseAt }}
+              ｜ 報表產生：{{ report.generatedAt }}
+            </p>
+          </div>
+        </header>
+
+        <!-- ── 核心 KPI 指標卡片列（5 大指標） ── -->
+        <div class="analytics-kpi-grid">
+
+          <div class="analytics-kpi-card kpi-responses">
+            <div class="akpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div class="akpi-body">
+              <span class="akpi-label">總回收樣本</span>
+              <div class="akpi-num-row">
+                <span class="akpi-value">{{ report.totalResponses }}</span>
+                <span class="akpi-unit">份</span>
+              </div>
+              @if (report.last24hCount !== undefined) {
+                <span class="akpi-sub-tag positive">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="19" x2="12" y2="5"></line>
+                    <polyline points="5 12 12 5 19 12"></polyline>
+                  </svg>
+                  近 24 小時 +{{ report.last24hCount }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="analytics-kpi-card kpi-completion">
+            <div class="akpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <div class="akpi-body">
+              <span class="akpi-label">有效完成率</span>
+              <div class="akpi-num-row">
+                <span class="akpi-value">{{ report.completionRate }}</span>
+                <span class="akpi-unit">%</span>
+              </div>
+              <div class="akpi-progress-bar">
+                <div class="akpi-progress-fill" [style.width.%]="report.completionRate"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-kpi-card kpi-duration">
+            <div class="akpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="akpi-body">
+              <span class="akpi-label">平均填答耗時</span>
+              <div class="akpi-num-row">
+                <span class="akpi-value">{{ report.averageDurationMinutes }}</span>
+                <span class="akpi-unit">分鐘</span>
+              </div>
+              <span class="akpi-sub-tag neutral">符合 3-5 分鐘預期標準</span>
+            </div>
+          </div>
+
+          <div class="analytics-kpi-card kpi-growth">
+            <div class="akpi-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+            <div class="akpi-body">
+              <span class="akpi-label">週期增長率</span>
+              <div class="akpi-num-row">
+                <span class="akpi-value">+{{ report.growthRate }}</span>
+                <span class="akpi-unit">%</span>
+              </div>
+              <span class="akpi-sub-tag positive">較前週期正成長</span>
+            </div>
+          </div>
+
+          @if (report.npsScore !== undefined) {
+            <div class="analytics-kpi-card kpi-nps">
+              <div class="akpi-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+              </div>
+              <div class="akpi-body">
+                <span class="akpi-label">NPS 凈推薦值</span>
+                <div class="akpi-num-row">
+                  <span class="akpi-value" [class]="getNpsClass(report.npsScore)">{{ report.npsScore }}</span>
+                  <span class="akpi-unit">/ 100</span>
+                </div>
+                <span class="akpi-sub-tag" [class]="getNpsClass(report.npsScore)">
+                  {{ report.npsScore >= 50 ? '優秀' : report.npsScore >= 20 ? '良好' : report.npsScore >= 0 ? '普通' : '待改善' }}
+                </span>
+              </div>
+            </div>
+          }
+
+        </div>
+
+        <!-- ── 雙欄資料視覺化：時間趨勢 + 受訪者輪廓 ── -->
+        <div class="analytics-charts-row">
+
+          <!-- 近 7 日每日填答走勢 -->
+          <div class="analytics-panel-card panel-timeline">
+            <div class="panel-header">
+              <div class="panel-title-group">
+                <h2 class="panel-title">近 7 日每日填答走勢</h2>
+                <span class="panel-subtitle">Daily Response Trend</span>
+              </div>
+              <span class="panel-tag">趨勢監控</span>
+            </div>
+            <div class="timeline-chart-wrap">
+              <div class="timeline-bars">
+                @for (item of report.timeline; track item.date) {
+                  <div class="timeline-bar-col">
+                    <span class="bar-count">{{ item.submissionsCount }}</span>
+                    <div class="bar-track">
+                      <div class="bar-fill" [style.height.%]="getBarHeightPct(item.submissionsCount, report.timeline)"></div>
+                    </div>
+                    <span class="bar-date">{{ item.date }}</span>
+                  </div>
+                }
+              </div>
+              <div class="timeline-cumulative-row">
+                <span class="cumulative-label">累積回收：</span>
+                @for (item of report.timeline; track item.date) {
+                  <span class="cumulative-chip">{{ item.cumulativeCount }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- 受訪者背景輪廓 -->
+          @if (report.demographics; as demo) {
+            <div class="analytics-panel-card panel-demographics">
+              <div class="panel-header">
+                <div class="panel-title-group">
+                  <h2 class="panel-title">受訪者基本輪廓</h2>
+                  <span class="panel-subtitle">Respondent Profile</span>
+                </div>
+                <span class="panel-tag">樣本屬性</span>
+              </div>
+
+              <!-- 性別分佈 -->
+              <div class="demo-section">
+                <span class="demo-section-label">生理性別分佈</span>
+                <div class="gender-bar-wrap">
+                  <div class="gender-bar male" [style.flex]="demo.genderDistribution.male" title="男性"></div>
+                  <div class="gender-bar female" [style.flex]="demo.genderDistribution.female" title="女性"></div>
+                  <div class="gender-bar other" [style.flex]="demo.genderDistribution.other" title="其他"></div>
+                </div>
+                <div class="gender-legend">
+                  <span class="legend-item male">
+                    <i class="legend-dot"></i>
+                    男性 {{ demo.genderDistribution.male }} 人（{{ getPct(demo.genderDistribution.male, report.totalResponses) }}%）
+                  </span>
+                  <span class="legend-item female">
+                    <i class="legend-dot"></i>
+                    女性 {{ demo.genderDistribution.female }} 人（{{ getPct(demo.genderDistribution.female, report.totalResponses) }}%）
+                  </span>
+                  <span class="legend-item other">
+                    <i class="legend-dot"></i>
+                    其他 {{ demo.genderDistribution.other }} 人（{{ getPct(demo.genderDistribution.other, report.totalResponses) }}%）
+                  </span>
+                </div>
+              </div>
+
+              <!-- 年齡層分佈 -->
+              <div class="demo-section">
+                <span class="demo-section-label">年齡層分佈</span>
+                <div class="age-bars">
+                  <div class="age-bar-row">
+                    <span class="age-label">18 歲以下</span>
+                    <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.under18, report.totalResponses)"></div></div>
+                    <span class="age-count">{{ demo.ageDistribution.under18 }}</span>
+                  </div>
+                  <div class="age-bar-row">
+                    <span class="age-label">18 – 24 歲</span>
+                    <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.age18to24, report.totalResponses)"></div></div>
+                    <span class="age-count">{{ demo.ageDistribution.age18to24 }}</span>
+                  </div>
+                  <div class="age-bar-row highlight-age">
+                    <span class="age-label">25 – 34 歲</span>
+                    <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.age25to34, report.totalResponses)"></div></div>
+                    <span class="age-count">{{ demo.ageDistribution.age25to34 }} ⬆</span>
+                  </div>
+                  <div class="age-bar-row">
+                    <span class="age-label">35 – 44 歲</span>
+                    <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.age35to44, report.totalResponses)"></div></div>
+                    <span class="age-count">{{ demo.ageDistribution.age35to44 }}</span>
+                  </div>
+                  <div class="age-bar-row">
+                    <span class="age-label">45 歲以上</span>
+                    <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.age45plus, report.totalResponses)"></div></div>
+                    <span class="age-count">{{ demo.ageDistribution.age45plus }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 填答裝置分佈 -->
+              @if (demo.deviceDistribution) {
+                <div class="demo-section">
+                  <span class="demo-section-label">填答裝置來源</span>
+                  <div class="device-chips">
+                    <div class="device-chip">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                      </svg>
+                      <span>桌機 {{ demo.deviceDistribution.desktop }} 人（{{ getPct(demo.deviceDistribution.desktop, report.totalResponses) }}%）</span>
+                    </div>
+                    <div class="device-chip">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                      </svg>
+                      <span>手機 {{ demo.deviceDistribution.mobile }} 人（{{ getPct(demo.deviceDistribution.mobile, report.totalResponses) }}%）</span>
+                    </div>
+                    <div class="device-chip">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                      </svg>
+                      <span>平板 {{ demo.deviceDistribution.tablet }} 人（{{ getPct(demo.deviceDistribution.tablet, report.totalResponses) }}%）</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- ── 三欄資料：產業 + 地區 + 問卷題數摘要 ── -->
+        @if (report.demographics) {
+          <div class="analytics-charts-row analytics-charts-row--triple">
+
+            <!-- 職業/產業前五排名 -->
+            @if (report.demographics.topJobIndustries.length) {
+              <div class="analytics-panel-card panel-industry">
+                <div class="panel-header">
+                  <h2 class="panel-title">職業 / 產業分佈</h2>
+                  <span class="panel-tag">TOP 5</span>
+                </div>
+                <div class="industry-list">
+                  @for (job of report.demographics.topJobIndustries; track job.industry; let iIdx = $index) {
+                    <div class="industry-item">
+                      <span class="industry-rank rank-{{ iIdx + 1 }}">{{ iIdx + 1 }}</span>
+                      <div class="industry-info">
+                        <div class="industry-name-row">
+                          <span class="industry-name">{{ job.industry }}</span>
+                          <span class="industry-count">{{ job.count }} 人</span>
+                        </div>
+                        <div class="industry-track">
+                          <div class="industry-fill" [style.width.%]="job.percentage"></div>
+                        </div>
+                      </div>
+                      <span class="industry-pct">{{ job.percentage }}%</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- 填答地區分佈 -->
+            @if (report.demographics.topRegions?.length) {
+              <div class="analytics-panel-card panel-region">
+                <div class="panel-header">
+                  <h2 class="panel-title">填答地區分佈</h2>
+                  <span class="panel-tag">TOP 5</span>
+                </div>
+                <div class="region-list">
+                  @for (region of report.demographics.topRegions; track region.region; let rIdx = $index) {
+                    <div class="region-item">
+                      <div class="region-info">
+                        <div class="region-name-row">
+                          <span class="region-name">{{ region.region }}</span>
+                          <span class="region-count">{{ region.count }} 人</span>
+                        </div>
+                        <div class="region-track">
+                          <div class="region-fill" [style.width.%]="region.percentage"></div>
+                        </div>
+                      </div>
+                      <span class="region-pct">{{ region.percentage }}%</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- 問卷結構摘要 -->
+            <div class="analytics-panel-card panel-structure">
+              <div class="panel-header">
+                <h2 class="panel-title">問卷題型結構</h2>
+                <span class="panel-tag">總覽</span>
+              </div>
+              <div class="structure-summary">
+                <div class="structure-num-row">
+                  <span class="structure-big-num">{{ report.questionsAnalytics.length }}</span>
+                  <span class="structure-num-label">道調研題目</span>
+                </div>
+                <div class="structure-type-grid">
+                  <div class="structure-type-item">
+                    <span class="stype-count">{{ report.questionsAnalytics | questionTypeCount: 'radio' }}</span>
+                    <span class="stype-label">單選題</span>
+                  </div>
+                  <div class="structure-type-item">
+                    <span class="stype-count">{{ report.questionsAnalytics | questionTypeCount: 'checkbox' }}</span>
+                    <span class="stype-label">多選題</span>
+                  </div>
+                  <div class="structure-type-item">
+                    <span class="stype-count">{{ report.questionsAnalytics | questionTypeCount: 'scale' }}</span>
+                    <span class="stype-label">量表題</span>
+                  </div>
+                  <div class="structure-type-item">
+                    <span class="stype-count">{{ report.questionsAnalytics | questionTypeCount: 'text' }}</span>
+                    <span class="stype-label">簡答題</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        }
+
+        <!-- ── 各題深度統計報表 ── -->
+        <div class="questions-section">
+          <div class="section-heading-row">
+            <h2 class="sub-section-title">
+              各題作答分佈詳細報表
+              <span class="heading-count">({{ report.questionsAnalytics.length }} 道題目)</span>
+            </h2>
+            <span class="heading-desc">點閱各題查看選項分佈、量表統計與填答摘錄</span>
+          </div>
+
+          <div class="question-cards-list">
+            @for (q of report.questionsAnalytics; track q.questionUid; let idx = $index) {
+              <div class="question-report-card" [attr.id]="'q-card-' + (idx + 1)">
+
+                <!-- 題目卡片 Header -->
+                <div class="q-card-header">
+                  <div class="q-card-meta">
+                    <span class="q-index-badge">第 {{ idx + 1 }} 題</span>
+                    <span class="q-type-badge q-type-{{ q.type }}">
+                      {{ q.type === 'scale' ? '📊 評分量表' : (q.type === 'checkbox' ? '☑ 多選題' : (q.type === 'text' ? '✏️ 簡答題' : '◉ 單選題')) }}
+                    </span>
+                    @if (q.isRequired) {
+                      <span class="req-badge">必填</span>
+                    }
+                  </div>
+                  <div class="q-stats-pills">
+                    <span class="q-stat-pill">有效 {{ q.totalAnswerCount }} 筆</span>
+                    @if (q.skippedCount) {
+                      <span class="q-stat-pill muted">跳過 {{ q.skippedCount }} 筆</span>
+                    }
+                    @if (q.responseRate !== undefined) {
+                      <span class="q-stat-pill rate">答題率 {{ q.responseRate }}%</span>
+                    }
+                  </div>
+                </div>
+
+                <h3 class="q-question-text">{{ q.description }}</h3>
+
+                <!-- (A) 單選 / 多選選項統計長條圖 -->
+                @if (q.optionsStats && q.optionsStats.length > 0) {
+                  <div class="options-stats-wrap">
+                    @for (opt of q.optionsStats; track opt.text) {
+                      <div class="option-row">
+                        <div class="opt-meta-line">
+                          <span class="opt-text">{{ opt.text }}</span>
+                          <div class="opt-count-group">
+                            <span class="opt-count">{{ opt.count }} 票</span>
+                            <span class="opt-pct">{{ opt.percentage }}%</span>
+                            @if (opt.trendDelta !== undefined) {
+                              <span class="opt-trend" [class.positive]="opt.trendDelta > 0" [class.negative]="opt.trendDelta < 0">
+                                {{ opt.trendDelta > 0 ? '▲' : opt.trendDelta < 0 ? '▼' : '－' }} {{ opt.trendDelta > 0 ? '+' : '' }}{{ opt.trendDelta }}%
+                              </span>
+                            }
+                          </div>
+                        </div>
+                        <div class="opt-bar-track">
+                          <div class="opt-bar-fill" [style.width.%]="opt.percentage">
+                            <span class="opt-bar-label">{{ opt.percentage }}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- (B) 量表題：完整統計面板 -->
+                @if (q.scaleStats; as scale) {
+                  <div class="scale-stats-wrap">
+
+                    <!-- 量表 KPI 統計指標列 -->
+                    <div class="scale-kpi-row">
+                      <div class="scale-kpi-item">
+                        <span class="scale-kpi-label">平均分</span>
+                        <span class="scale-kpi-value">{{ scale.averageScore.toFixed(1) }}</span>
+                      </div>
+                      <div class="scale-kpi-item">
+                        <span class="scale-kpi-label">中位數</span>
+                        <span class="scale-kpi-value">{{ scale.medianScore }}</span>
+                      </div>
+                      <div class="scale-kpi-item">
+                        <span class="scale-kpi-label">眾數</span>
+                        <span class="scale-kpi-value">{{ scale.modeScore }}</span>
+                      </div>
+                      <div class="scale-kpi-item">
+                        <span class="scale-kpi-label">標準差</span>
+                        <span class="scale-kpi-value">{{ scale.standardDeviation }}</span>
+                      </div>
+                      @if (scale.npsScore !== undefined) {
+                        <div class="scale-kpi-item scale-nps">
+                          <span class="scale-kpi-label">NPS</span>
+                          <span class="scale-kpi-value" [class]="getNpsClass(scale.npsScore)">{{ scale.npsScore }}</span>
+                        </div>
+                      }
+                      <div class="scale-kpi-item">
+                        <span class="scale-kpi-label">最高 / 最低</span>
+                        <span class="scale-kpi-value">{{ scale.highestScore }} / {{ scale.lowestScore }}</span>
+                      </div>
+                    </div>
+
+                    <!-- 分數分佈直方圖 -->
+                    <div class="scale-histogram">
+                      @for (item of scale.distribution; track item.score) {
+                        <div class="scale-col" [title]="item.score + ' 分：' + item.count + ' 人 (' + item.percentage + '%)'">
+                          <span class="scale-pct">{{ item.percentage }}%</span>
+                          <div class="scale-bar-track">
+                            <div class="scale-bar-fill" [class]="getScoreColorClass(item.score)"
+                                 [style.height.%]="item.percentage * 3.5"></div>
+                          </div>
+                          <span class="scale-score-label">{{ item.score }}</span>
+                          <span class="scale-count-label">{{ item.count }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- NPS 三分組說明 -->
+                    @if (scale.npsScore !== undefined) {
+                      <div class="nps-segmentation">
+                        <span class="nps-seg detractor">貶損者 (1-6)</span>
+                        <span class="nps-seg passive">消極者 (7-8)</span>
+                        <span class="nps-seg promoter">推薦者 (9-10)</span>
+                        <div class="nps-formula">
+                          NPS = 推薦者% − 貶損者% =
+                          <strong [class]="getNpsClass(scale.npsScore)">{{ scale.npsScore }}</strong>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- (C) 文字題填答摘錄卡片 -->
+                @if (q.textResponses && q.textResponses.length > 0) {
+                  <div class="text-responses-wrap">
+                    @if (q.textStats) {
+                      <div class="text-stats-bar">
+                        <span>共 {{ q.textStats.totalCount }} 則回覆</span>
+                        <span>平均字數：{{ q.textStats.averageLength }} 字</span>
+                        <span class="text-showing">顯示前 {{ q.textResponses.length }} 筆</span>
+                      </div>
+                    }
+                    <div class="text-cards-grid">
+                      @for (resp of q.textResponses; track resp.id) {
+                        <div class="text-card" [class]="'sentiment-' + (resp.sentiment ?? 'neutral')">
+                          <div class="text-card-header">
+                            <div class="text-card-author">
+                              <div class="text-avatar">{{ (resp.respondentName ?? '匿名')[0] }}</div>
+                              <span>{{ resp.respondentName ?? '匿名受訪者' }}</span>
+                            </div>
+                            <div class="text-card-meta">
+                              @if (resp.sentiment) {
+                                <span class="sentiment-badge sentiment-{{ resp.sentiment }}">
+                                  {{ resp.sentiment === 'positive' ? '😊 正面' : resp.sentiment === 'negative' ? '😞 負面' : '😐 中性' }}
+                                </span>
+                              }
+                              <span class="text-time">{{ resp.submittedAt }}</span>
+                            </div>
+                          </div>
+                          <p class="text-content">"{{ resp.content }}"</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      } @else if (isAnalyticsLoading()) {
+        <div class="status-box loading-box" role="status" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>正在生成問卷數據統計分析，請稍候...</p>
+        </div>
+      }
+    }
+
+  </div>
+</section>

@@ -1,0 +1,284 @@
+:host {
+  min-height: calc(100vh - var(--header-h));
+  background: linear-gradient(160deg, #eef5ff 0%, #f5f9ff 40%, #ffffff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(var(--sp-2), 2vh, var(--sp-5)) var(--container-px);
+  box-sizing: border-box;
+}
+
+.page-auth {
+  width: 100%;
+  max-width: 104rem;
+  margin-inline: auto;
+}
+
+/* ── 統一與登入完全相同尺寸的外框容器 ── */
+.auth-card-container {
+  width: 100%;
+  background: #ffffff;
+  border-radius: var(--r-2xl);
+  overflow: hidden;
+  box-shadow: 0 24px 60px -12px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--c-border);
+  height: 64rem;
+  max-height: calc(100vh - var(--header-h) - 2.8rem);
+  min-height: 56rem;
+  padding: clamp(2rem, 2.8vw, 3.2rem) clamp(2.8rem, 4.5vw, 5.4rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+
+  @media (max-width: 860px) {
+    height: auto;
+    max-height: none;
+    min-height: auto;
+    padding: var(--sp-6) var(--sp-5);
+  }
+}
+
+/* ── 頁頭區域 ── */
+.auth-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.4rem;
+}
+
+.auth-badge-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.auth-badge {
+  display: inline-flex;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--c-brand-700);
+  background: var(--c-brand-50);
+  border: 1px solid var(--c-brand-200);
+  padding: 0.25rem 1rem;
+  border-radius: var(--r-full);
+  letter-spacing: 0.04em;
+}
+
+.auth-title {
+  font-size: clamp(2.2rem, 2.6vw, 2.6rem);
+  font-weight: 850;
+  color: var(--c-neutral-900);
+  margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.auth-subtitle {
+  font-size: 1.35rem;
+  color: var(--c-neutral-500);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── 註冊表單容器與雙欄網格 ── */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-height: 0;
+}
+
+.form-columns-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2.4rem, 3.6vw, 4.4rem);
+  align-items: start;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+  }
+}
+
+.form-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.form-section-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--c-brand-700);
+  border-left: 3.5px solid var(--c-brand-600);
+  padding-left: 0.8rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.2rem;
+}
+
+/* ── 輸入群組與欄位排版 ── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label, .fieldset-legend {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--c-neutral-700);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .required-star {
+    color: #ef4444;
+    font-weight: 800;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="date"],
+  select {
+    width: 100%;
+    height: 3.8rem;
+    padding: 0 1.2rem;
+    font-size: 1.35rem;
+    color: var(--c-neutral-900);
+    background: #ffffff;
+    border: 1.5px solid var(--c-neutral-200);
+    border-radius: var(--r-md);
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.18s ease;
+
+    &::placeholder {
+      color: var(--c-neutral-400);
+      font-size: 1.25rem;
+    }
+
+    &:hover {
+      border-color: var(--c-neutral-400);
+    }
+
+    &:focus {
+      border-color: var(--c-brand-500);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    &[aria-invalid="true"] {
+      border-color: #ef4444;
+      background: #fef2f2;
+
+      &:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+      }
+    }
+  }
+
+  select {
+    cursor: pointer;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 生理性別單選列 ── */
+.radio-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.radio-group {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  height: 3.8rem;
+  padding: 0 0.4rem;
+}
+
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--c-neutral-700);
+  cursor: pointer;
+
+  input[type="radio"] {
+    width: 1.7rem;
+    height: 1.7rem;
+    accent-color: var(--c-brand-600);
+    cursor: pointer;
+  }
+}
+
+/* ── 紅色錯誤提示 ── */
+.field-error {
+  font-size: 1.15rem;
+  color: #ef4444;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* ── 底部操作按鈕與連結 ── */
+.form-actions-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+  padding-top: 0.8rem;
+}
+
+.btn-submit-reg {
+  width: 100%;
+  max-width: 42rem;
+  height: 4.2rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  }
+}
+
+.card-bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-size: 1.3rem;
+  color: var(--c-neutral-500);
+
+  .btn-link {
+    color: var(--c-brand-600);
+    text-decoration: none;
+    font-weight: 700;
+
+    &:hover {
+      text-decoration: underline;
+      color: var(--c-brand-700);
+    }
+  }
+}

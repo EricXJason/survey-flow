@@ -1,0 +1,220 @@
+:host {
+  min-height: calc(100vh - var(--header-h));
+  background: linear-gradient(160deg, #eef5ff 0%, #f5f9ff 40%, #ffffff 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(var(--sp-6), 6vw, var(--sp-12)) var(--container-px);
+}
+
+.page-auth {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 68rem;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--r-2xl);
+  box-shadow: var(--shadow-card-elevated);
+  padding: clamp(var(--sp-6), 5vw, var(--sp-10));
+  box-sizing: border-box;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: var(--sp-8);
+}
+
+.auth-badge {
+  display: inline-block;
+  background: var(--c-brand-50);
+  color: var(--c-brand-700);
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 0.3rem 1.1rem;
+  border-radius: var(--r-full);
+  margin-bottom: var(--sp-3);
+  border: 1px solid var(--c-brand-200);
+  letter-spacing: 0.04em;
+}
+
+.auth-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: var(--c-neutral-900);
+  margin-bottom: var(--sp-2);
+  letter-spacing: -0.02em;
+
+  &::after {
+    display: none;
+  }
+}
+
+.auth-subtitle {
+  font-size: 1.45rem;
+  color: var(--c-neutral-500);
+  line-height: 1.5;
+}
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--c-brand-800);
+  background: var(--c-brand-50);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  margin-top: var(--sp-6);
+  margin-bottom: var(--sp-4);
+  border-left: 3.5px solid var(--c-brand-600);
+}
+
+.section-tag {
+  font-size: 1.2rem;
+  font-weight: 600;
+  background: var(--c-neutral-200);
+  color: var(--c-neutral-700);
+  padding: 0.2rem 0.8rem;
+  border-radius: var(--r-full);
+}
+
+.required-star {
+  color: var(--c-error);
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+.readonly-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    background: var(--c-neutral-50);
+    color: var(--c-neutral-600);
+    border-color: var(--c-neutral-200);
+    cursor: not-allowed;
+    padding-right: var(--sp-8);
+  }
+
+  .lock-icon {
+    position: absolute;
+    right: var(--sp-3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--c-neutral-400);
+    pointer-events: none;
+    line-height: 1;
+
+    svg {
+      display: block;
+      width: 1.4rem;
+      height: 1.4rem;
+    }
+  }
+}
+
+.password-toggle-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.toggle-hint {
+  font-size: 1.3rem;
+  color: var(--c-neutral-500);
+}
+
+.password-expand-box {
+  background: var(--c-neutral-50);
+  border: 1px solid var(--c-brand-200);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-4);
+  animation: boxExpand 0.2s ease;
+}
+
+@keyframes boxExpand {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 單選欄位群組 */
+.radio-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fieldset-legend {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--c-neutral-700);
+  margin-bottom: var(--sp-2);
+}
+
+.radio-group {
+  display: flex;
+  gap: var(--sp-6);
+  align-items: center;
+  padding-top: var(--sp-1);
+}
+
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+  font-size: 1.45rem;
+  color: var(--c-neutral-700);
+  font-weight: 500;
+  transition: color 0.15s ease;
+
+  input[type="radio"] {
+    accent-color: var(--c-brand-600);
+    width: 1.6rem;
+    height: 1.6rem;
+    cursor: pointer;
+  }
+
+  &:hover {
+    color: var(--c-neutral-900);
+  }
+}
+
+.profile-actions {
+  margin-top: var(--sp-8);
+}
+
+.btn-block {
+  width: 100%;
+  padding: 1.25rem var(--sp-4);
+  font-size: 1.6rem;
+  font-weight: 700;
+}

@@ -1,0 +1,159 @@
+/* =====================================================
+   全域設計系統變數規範
+   定義全專案通用色彩、間距、排版、圓角與立體陰影層級
+   ===================================================== */
+
+:root {
+  /* ── 品牌藍色階（主操作與互動高亮） ── */
+  --c-brand-50:  #eff6ff;
+  --c-brand-100: #dbeafe;
+  --c-brand-200: #bfdbfe;
+  --c-brand-300: #93c5fd;
+  --c-brand-400: #60a5fa;
+  --c-brand-500: #3b82f6;
+  --c-brand-600: #2563eb;  /* 主要操作色（對白底符合 AA 規範） */
+  --c-brand-700: #1d4ed8;  /* 懸停狀態色（對白底符合 AA 規範） */
+  --c-brand-800: #1e40af;  /* 加深強調色（對白底符合 AAA 規範） */
+  --c-brand-900: #1e3a8a;  /* 深層底色（對白底符合 AAA 規範） */
+
+  /* ── 品牌主色相容別名 ── */
+  --c-primary-50:  var(--c-brand-50);
+  --c-primary-100: var(--c-brand-100);
+  --c-primary-200: var(--c-brand-200);
+  --c-primary-300: var(--c-brand-300);
+  --c-primary-400: var(--c-brand-400);
+  --c-primary-500: var(--c-brand-500);
+  --c-primary-600: var(--c-brand-600);
+  --c-primary-700: var(--c-brand-700);
+  --c-primary-800: var(--c-brand-800);
+  --c-primary-900: var(--c-brand-900);
+
+  /* ── 板岩中性灰色階（文字、邊框與中性底色） ── */
+  --c-neutral-50:  #f8fafc;
+  --c-neutral-100: #f1f5f9;
+  --c-neutral-200: #e2e8f0;
+  --c-neutral-300: #cbd5e1;
+  --c-neutral-400: #94a3b8;
+  --c-neutral-500: #64748b;  /* 輔助灰階（對白底符合 AA 規範） */
+  --c-neutral-600: #475569;  /* 次要文字（對白底符合 AA 規範） */
+  --c-neutral-700: #334155;  /* 主要內文（對白底符合 AAA 規範） */
+  --c-neutral-800: #1e293b;  /* 深色標題（對白底符合 AAA 規範） */
+  --c-neutral-900: #0f172a;  /* 極深文字（對白底符合 AAA 規範） */
+
+  /* ── 強調重點色系（微狀態與特色情境） ── */
+  --c-accent-amber:    #d97706;
+  --c-accent-amber-bg: #fef3c7;
+  --c-accent-amber-tx: #92400e;    /* 琥珀文字色（對白底符合 AAA 規範） */
+
+  --c-accent-emerald:    #059669;
+  --c-accent-emerald-bg: #ecfdf5;
+  --c-accent-emerald-tx: #065f46;  /* 翡翠文字色（對白底符合 AAA 規範） */
+
+  --c-accent-rose:    #e11d48;
+  --c-accent-rose-bg: #fff1f2;
+  --c-accent-rose-tx: #9f1239;
+
+  --c-accent-violet:    #7c3aed;
+  --c-accent-violet-bg: #f5f3ff;
+  --c-accent-violet-tx: #4c1d95;
+
+  /* 相容舊版自訂色彩變數 */
+  --c-accent-coral:    #e11d48;
+  --c-accent-coral-bg: #fff1f2;
+  --c-accent-coral-tx: #9f1239;
+  --c-accent-cyan:     #0891b2;
+  --c-accent-indigo:   #6366f1;
+
+  /* ── 狀態語意色彩 ── */
+  --c-error:   #dc2626;  /* 錯誤狀態（符合 AA 規範） */
+  --c-success: #059669;  /* 成功狀態（符合 AA 規範） */
+  --c-warning: #d97706;  /* 警告狀態（符合 AA 規範） */
+  --c-info:    #2563eb;  /* 資訊狀態（符合 AA 規範） */
+
+  /* ── 介面語意化別名 ── */
+  --c-bg:             #ffffff;
+  --c-surface:        #f8fafc;
+  --c-surface-alt:    #f1f5f9;
+  --c-text:           var(--c-neutral-900);
+  --c-text-body:      var(--c-neutral-700);
+  --c-text-muted:     var(--c-neutral-500);
+  --c-border:         #e2e8f0;
+  --c-border-muted:   #cbd5e1;
+  --c-border-strong:  #94a3b8;
+
+  /* ── 間距階層系統（基準 4px / 8px 遞增） ── */
+  --sp-1:  0.4rem;
+  --sp-2:  0.8rem;
+  --sp-3:  1.2rem;
+  --sp-4:  1.6rem;
+  --sp-5:  2.0rem;
+  --sp-6:  2.4rem;
+  --sp-8:  3.2rem;
+  --sp-10: 4.0rem;
+  --sp-12: 4.8rem;
+  --sp-14: 5.6rem;
+  --sp-16: 6.4rem;
+  --sp-20: 8.0rem;
+  --sp-24: 9.6rem;
+
+  /* ── 字型家族 ── */
+  --f-sans: 'Inter', 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --f-mono: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+
+  /* ── 流程階段循序色彩（1 藍、2 紫、3 綠、4 琥珀） ── */
+  --step-1-color:  #2563eb;
+  --step-1-bg:     #eff6ff;
+  --step-1-border: #bfdbfe;
+
+  --step-2-color:  #7c3aed;
+  --step-2-bg:     #f5f3ff;
+  --step-2-border: #ddd6fe;
+
+  --step-3-color:  #059669;
+  --step-3-bg:     #ecfdf5;
+  --step-3-border: #a7f3d0;
+
+  --step-4-color:  #d97706;
+  --step-4-bg:     #fffbeb;
+  --step-4-border: #fde68a;
+
+  /* ── 圓角半徑階層 ── */
+  --r-xs:   4px;
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   14px;
+  --r-xl:   20px;
+  --r-2xl:  28px;
+  --r-full: 9999px;
+
+  /* ── 陰影層次階層 ── */
+  --shadow-xs:            0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm:            0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md:            0 4px 8px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg:            0 12px 24px -4px rgba(15, 23, 42, 0.10), 0 4px 8px -4px rgba(15, 23, 42, 0.05);
+  --shadow-xl:            0 24px 32px -8px rgba(15, 23, 42, 0.12), 0 8px 12px -6px rgba(15, 23, 42, 0.06);
+  --shadow-card:          0 1px 4px rgba(15, 23, 42, 0.04), 0 8px 20px -4px rgba(15, 23, 42, 0.06);
+  --shadow-card-hover:    0 4px 16px rgba(15, 23, 42, 0.08), 0 16px 28px -8px rgba(15, 23, 42, 0.08);
+  --shadow-card-elevated: 0 0 0 1px rgba(15, 23, 42, 0.05), 0 8px 24px -4px rgba(15, 23, 42, 0.10);
+  --shadow-brand:         0 4px 14px rgba(37, 99, 235, 0.28);
+  --shadow-brand-lg:      0 8px 24px rgba(37, 99, 235, 0.35);
+  --focus-ring:           0 0 0 3px rgba(37, 99, 235, 0.22);
+
+  /* ── 轉場與動畫時間 ── */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── 版面容器配置 ── */
+  --container-max:    1200px;
+  --container-narrow: 840px;
+  --container-px:     clamp(2rem, 5.5vw, 3.6rem);
+  --header-h:         6.4rem;
+}
+
+/* 行動裝置內距自適應調整 */
+@media (max-width: 480px) {
+  :root {
+    --container-px: 2.2rem;
+  }
+}

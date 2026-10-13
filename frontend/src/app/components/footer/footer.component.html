@@ -1,0 +1,58 @@
+<footer class="site-footer" aria-label="網站全域頁尾">
+  <!-- 頁尾主要導航區塊 -->
+  <div class="footer-main">
+    <div class="container footer-grid">
+      <!-- 第一欄：品牌標識與簡介 -->
+      <div class="footer-col footer-col-brand">
+        <a routerLink="/home" class="footer-brand-link" aria-label="SurveyFlow — 返回首頁">
+          <img src="/logo.svg" alt="SurveyFlow" class="footer-logo" width="156" height="32" />
+        </a>
+        <p class="brand-desc">
+          簡單、直覺的線上問卷平台，協助您快速建立問卷、收集回饋與分析數據。
+        </p>
+      </div>
+
+      <!-- 第二欄：產品功能 -->
+      <nav class="footer-col" aria-label="產品功能導航">
+        <h3 class="footer-nav-title">產品功能</h3>
+        <ul class="footer-links">
+          <li><a routerLink="/lobby">問卷大廳</a></li>
+          <li><a routerLink="/survey-design">建立問卷</a></li>
+          <li><a routerLink="/survey-management">問卷管理</a></li>
+        </ul>
+      </nav>
+
+      <!-- 第三欄：問卷主題 -->
+      <nav class="footer-col" aria-label="問卷主題導航">
+        <h3 class="footer-nav-title">問卷主題</h3>
+        <ul class="footer-links">
+          <li><a routerLink="/lobby">顧客滿意度</a></li>
+          <li><a routerLink="/lobby">產品體驗</a></li>
+          <li><a routerLink="/lobby">市場調查</a></li>
+          <li><a routerLink="/lobby">活動回饋</a></li>
+          <li><a routerLink="/lobby">學術研究</a></li>
+        </ul>
+      </nav>
+
+      <!-- 第四欄：會員專區 -->
+      <nav class="footer-col" aria-label="會員專區導航">
+        <h3 class="footer-nav-title">會員專區</h3>
+        <ul class="footer-links">
+          <li><a routerLink="/log-in">會員登入</a></li>
+          <li><a routerLink="/register">免費註冊</a></li>
+          <li><a routerLink="/user-profile">個人檔案</a></li>
+          <li><a routerLink="/forget-password">忘記密碼</a></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- 頁尾版權列 -->
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p class="footer-copyright">
+        &copy; {{ year }} SurveyFlow. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>

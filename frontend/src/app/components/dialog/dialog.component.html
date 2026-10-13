@@ -1,0 +1,106 @@
+@if (dialogState$ | async; as dialogData) {
+  <div
+    class="dialog-overlay"
+    (click)="dialogService.cancel()"
+    role="presentation"
+  >
+    <div
+      class="dialog-card"
+      [ngClass]="{
+        'check-mode': (dialogData.mode || 'checkMode') === 'checkMode',
+        'error-mode': dialogData.mode === 'errorMode',
+        'notice-mode': dialogData.mode === 'noticeMode',
+      }"
+      (click)="$event.stopPropagation()"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dialog-title"
+      aria-describedby="dialog-desc"
+    >
+      <!-- 右上角通用關閉按鈕 -->
+      <button
+        type="button"
+        class="btn-close"
+        aria-label="關閉對話框"
+        title="關閉 (Esc)"
+        (click)="dialogService.cancel()"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="dialog-header">
+        <div class="dialog-icon-badge" aria-hidden="true">
+          @if (dialogData.mode === 'errorMode') {
+            <!-- 錯誤提示圖示 -->
+            <svg class="icon-svg icon-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          } @else if (dialogData.mode === 'noticeMode') {
+            <!-- 成功與通知圖示 -->
+            <svg class="icon-svg icon-notice" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          } @else {
+            <!-- 確認操作圖示 -->
+            <svg class="icon-svg icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          }
+        </div>
+
+        <div class="dialog-title-group">
+          <h3 id="dialog-title" class="dialog-title">
+            {{ dialogData.title || (dialogData.mode === 'errorMode' ? '提示訊息' : dialogData.mode === 'noticeMode' ? '系統通知' : '確認操作') }}
+          </h3>
+        </div>
+      </div>
+
+      <div class="dialog-message-container">
+        <p id="dialog-desc" class="dialog-message">{{ dialogData.message }}</p>
+      </div>
+
+      <div class="dialog-actions">
+        @if (dialogData.mode === 'errorMode') {
+          <button
+            type="button"
+            class="dialog-btn btn-error"
+            (click)="dialogService.cancel()"
+          >
+            {{ getErrorButtonText(dialogData) }}
+          </button>
+        } @else if (dialogData.mode === 'noticeMode') {
+          <button
+            type="button"
+            class="dialog-btn btn-notice"
+            (click)="dialogService.confirm()"
+          >
+            {{ getConfirmText(dialogData) }}
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="dialog-btn btn-cancel"
+            (click)="dialogService.cancel()"
+          >
+            {{ getCancelText(dialogData) }}
+          </button>
+          <button
+            type="button"
+            class="dialog-btn btn-check"
+            (click)="dialogService.confirm()"
+          >
+            {{ getConfirmText(dialogData) }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}

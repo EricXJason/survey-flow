@@ -1,0 +1,242 @@
+<!-- 大廳橫幅區塊 -->
+<header class="lobby-hero">
+  <div class="container lobby-hero-inner">
+    <div class="lobby-hero-copy">
+      <div class="lobby-badge" aria-label="公開問卷大廳資訊">
+        <span class="badge-dot" aria-hidden="true"></span>
+        <span class="badge-title">公開問卷專區</span>
+        <span class="badge-sep" aria-hidden="true">|</span>
+        <span class="badge-sub">受訪者免註冊 · 即刻參與填答</span>
+      </div>
+      <h1 id="lobby-title" class="lobby-main-title">
+        探索進行中的<span class="lobby-title-accent">公開調研問卷</span>
+      </h1>
+      <p class="lobby-main-desc">
+        匯集各領域開放填答之滿意度回饋、活動報名與學術調研。所有問卷皆支援全鍵盤無障礙與手機 RWD，點選即可直接填答。
+      </p>
+    </div>
+
+    <!-- 即時平台指標列 -->
+    <div class="lobby-stats-strip" role="list" aria-label="大廳調研指標與系統能力">
+      <div class="stat-item" role="listitem">
+        <span class="stat-val font-mono">{{ surveyList().length }}</span>
+        <span class="stat-label">份進行中問卷</span>
+      </div>
+      <div class="stat-divider" aria-hidden="true"></div>
+      <div class="stat-item" role="listitem">
+        <span class="stat-val font-mono">{{ publishedSurveysCount() }}</span>
+        <span class="stat-label">份公開展示問卷</span>
+      </div>
+      <div class="stat-divider" aria-hidden="true"></div>
+      <div class="stat-item" role="listitem">
+        <span class="stat-val font-mono">4 種題型</span>
+        <span class="stat-label">是非、單選、多選與量表</span>
+      </div>
+      <div class="stat-divider" aria-hidden="true"></div>
+      <div class="stat-item" role="listitem">
+        <span class="stat-val font-mono">免登入</span>
+        <span class="stat-label">訪客直接參與填答</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- 搜尋與類別篩選控制列 -->
+<section class="lobby-controls-bar">
+  <div class="container">
+    <div class="controls-wrapper">
+      
+      <!-- 搜尋輸入框 -->
+      <div class="lobby-search-container">
+        <svg class="search-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          #searchInput
+          type="search"
+          class="lobby-search-field"
+          placeholder="搜尋問卷名稱、標號或分類關鍵字..."
+          aria-label="搜尋問卷"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+        />
+        <div class="search-suffix">
+          @if (searchQuery()) {
+            <button type="button" class="btn-clear-search" (click)="clearSearch()" aria-label="清除搜尋關鍵字">✕</button>
+          } @else {
+            <span class="kbd-hint" aria-hidden="true">⌘K</span>
+          }
+        </div>
+      </div>
+
+      <!-- 篩選結果筆數統計 -->
+      <div class="search-results-summary">
+        <span class="results-badge">
+          符合條件共 <strong>{{ filteredSurveys().length }}</strong> 份公開問卷
+        </span>
+      </div>
+
+    </div>
+
+    <!-- 分類標籤滑動列 -->
+    <div class="category-pills-row" role="tablist" aria-label="問卷主題分類篩選">
+      <button
+        type="button"
+        class="cat-pill"
+        [class.active]="selectedCategory() === 'all'"
+        (click)="setCategory('all')"
+        role="tab"
+        [attr.aria-selected]="selectedCategory() === 'all'"
+      >
+        <span>全部問卷</span>
+        <span class="cat-count">({{ surveyList().length }})</span>
+      </button>
+      @for (cat of categories(); track cat) {
+        <button
+          type="button"
+          class="cat-pill"
+          [attr.data-cat]="cat"
+          [class.active]="selectedCategory() === cat"
+          (click)="setCategory(cat)"
+          role="tab"
+          [attr.aria-selected]="selectedCategory() === cat"
+        >
+          <span>{{ cat }}</span>
+          <span class="cat-count">({{ getCategoryCount(cat) }})</span>
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- 問卷主內容清單 -->
+<section class="lobby-content" aria-labelledby="lobby-title">
+  <div class="container">
+
+    @if (isLoading()) {
+      <div class="status-box loading-box" role="status" aria-live="polite" aria-label="正在載入問卷資料">
+        <div class="spinner" aria-hidden="true"></div>
+        <p class="status-text">正在檢索開放問卷資料，請稍候...</p>
+      </div>
+    } @else if (filteredSurveys().length === 0) {
+      <div class="status-box empty-box" role="status">
+        <div class="empty-icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <h3 class="empty-title">找不到符合條件的公開問卷</h3>
+        <p class="empty-desc">請嘗試更換搜尋關鍵字，或點選下方按鈕重設類別篩選條件。</p>
+        @if (searchQuery() || selectedCategory() !== 'all') {
+          <button type="button" class="btn btn-secondary btn-sm" (click)="clearSearch(); setCategory('all')">
+            重設所有篩選條件
+          </button>
+        }
+      </div>
+    } @else {
+      <!-- 問卷表格清單 -->
+      <div class="lobby-table-card">
+        <div class="table-wrapper">
+          <table mat-table [dataSource]="dataSource" matSort class="survey-mat-table" aria-label="公開問卷大廳列表">
+            
+            <!-- 編號欄位 -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-id">編號</th>
+              <td mat-cell *matCellDef="let item" class="col-id">
+                <span class="id-mono-chip font-mono">#{{ item.id }}</span>
+              </td>
+            </ng-container>
+
+            <!-- 標題欄位 -->
+            <ng-container matColumnDef="title">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-title">問卷名稱與說明</th>
+              <td mat-cell *matCellDef="let item" class="col-title">
+                <div class="title-cell-wrap">
+                  <span class="survey-title-text">{{ item.title }}</span>
+                  <span class="survey-time-est">約需 3 分鐘完成 · 免登入填答</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- 分類欄位 -->
+            <ng-container matColumnDef="category">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-category">主題分類</th>
+              <td mat-cell *matCellDef="let item" class="col-category">
+                <span class="cat-badge-chip" [attr.data-cat]="item.category">{{ item.category }}</span>
+              </td>
+            </ng-container>
+
+            <!-- 填答時效欄位 -->
+            <ng-container matColumnDef="timeRange">
+              <th mat-header-cell *matHeaderCellDef class="th-time">有效填答區間</th>
+              <td mat-cell *matCellDef="let item" class="col-time">
+                @if (item.startDate && item.endDate) {
+                  <div class="time-range-wrap">
+                    <svg class="calendar-mini-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span class="time-date-str">{{ item.startDate }} ~ {{ item.endDate }}</span>
+                  </div>
+                } @else {
+                  <span class="time-permanent-chip">
+                    <svg class="time-infinity-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                      <path d="M18.178 8c5.096 0 5.096 8 0 8-2.673 0-4.35-2.667-6.178-5.333C10.172 8 8.495 8 5.822 8 0.726 8 .726 16 5.822 16c2.673 0 4.35-2.667 6.178-5.333C13.828 8 15.505 8 18.178 8z"/>
+                    </svg>
+                    <span>常態開放（無填答時限）</span>
+                  </span>
+                }
+              </td>
+            </ng-container>
+
+            <!-- 狀態欄位 -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef class="th-status">狀態</th>
+              <td mat-cell *matCellDef="let item" class="col-status">
+                <span class="status-live-chip">
+                  <span class="live-dot-green"></span>
+                  <span>開放填答</span>
+                </span>
+              </td>
+            </ng-container>
+
+            <!-- 操作欄位 -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef class="th-actions">操作</th>
+              <td mat-cell *matCellDef="let item" class="col-actions">
+                <button
+                  type="button"
+                  class="btn-table-action"
+                  [attr.aria-label]="'進入填寫問卷：' + item.title"
+                  (click)="onSelectSurvey(item.id)"
+                >
+                  <span>進入填答</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="action-arrow-icon" aria-hidden="true">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="survey-mat-row"></tr>
+          </table>
+        </div>
+
+        <mat-paginator
+          [pageSizeOptions]="[5, 10, 20]"
+          [pageSize]="10"
+          showFirstLastButtons
+          aria-label="選擇問卷分頁"
+        >
+        </mat-paginator>
+      </div>
+    }
+
+  </div>
+</section>

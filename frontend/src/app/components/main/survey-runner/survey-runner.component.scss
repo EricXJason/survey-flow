@@ -1,0 +1,624 @@
+:host {
+  display: block;
+  min-height: calc(100vh - var(--header-h) - 15rem);
+  background: var(--c-surface);
+  transition: background-color 0.35s ease;
+
+  /* 根據 12 大問卷主題分類動態切換填答端背景底色 */
+  &:has([data-category='顧客滿意度']) { background: #f0f7ff; }
+  &:has([data-category='產品體驗研究']) { background: #f5f3ff; }
+  &:has([data-category='市場商業調研']) { background: #f0f9ff; }
+  &:has([data-category='品牌行銷與推廣']) { background: #f1f4ff; }
+  &:has([data-category='售後服務與支援']) { background: #f0fdff; }
+  &:has([data-category='員工與職場文化']) { background: #f0fdfa; }
+  &:has([data-category='活動與會後回饋']) { background: #fffbeb; }
+  &:has([data-category='教育與培訓評鑑']) { background: #ecfdf5; }
+  &:has([data-category='學術專題研究']) { background: #f8fafc; }
+  &:has([data-category='健康與生活型態']) { background: #fff1f2; }
+  &:has([data-category='公共政策與民意']) { background: #faf5ff; }
+  &:has([data-category='社群互動與綜合']) { background: #fff7ed; }
+}
+
+:host-context(.preview-runner-container) {
+  min-height: auto;
+  background: transparent !important;
+  padding: 0 !important;
+
+  .runner-shell {
+    padding: 0 !important;
+    background: transparent !important;
+  }
+}
+
+/* 填答端外層自適應外殼容器 */
+.runner-shell {
+  width: 100%;
+  min-height: 100%;
+  padding-block: clamp(var(--sp-6), 4vw, var(--sp-12));
+  padding-inline: clamp(2rem, 5.5vw, 3.6rem);
+  box-sizing: border-box;
+  transition: background-color 0.35s ease;
+
+  &[data-category='顧客滿意度'] {
+    background: #f0f7ff;
+    .runner-paper { border-top-color: #2563eb; }
+    .header-category-badge { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+  }
+  &[data-category='產品體驗研究'] {
+    background: #f5f3ff;
+    .runner-paper { border-top-color: #6366f1; }
+    .header-category-badge { color: #4f46e5; background: #eef2ff; border-color: #c7d2fe; }
+  }
+  &[data-category='市場商業調研'] {
+    background: #f0f9ff;
+    .runner-paper { border-top-color: #0284c7; }
+    .header-category-badge { color: #0369a1; background: #f0f9ff; border-color: #bae6fd; }
+  }
+  &[data-category='品牌行銷與推廣'] {
+    background: #f1f4ff;
+    .runner-paper { border-top-color: #4f46e5; }
+    .header-category-badge { color: #4338ca; background: #eef2ff; border-color: #c7d2fe; }
+  }
+  &[data-category='售後服務與支援'] {
+    background: #f0fdff;
+    .runner-paper { border-top-color: #0891b2; }
+    .header-category-badge { color: #0e7490; background: #ecfeff; border-color: #a5f3fc; }
+  }
+  &[data-category='員工與職場文化'] {
+    background: #f0fdfa;
+    .runner-paper { border-top-color: #0d9488; }
+    .header-category-badge { color: #0f766e; background: #f0fdfa; border-color: #99f6e4; }
+  }
+  &[data-category='活動與會後回饋'] {
+    background: #fffbeb;
+    .runner-paper { border-top-color: #d97706; }
+    .header-category-badge { color: #b45309; background: #fffbeb; border-color: #fde68a; }
+  }
+  &[data-category='教育與培訓評鑑'] {
+    background: #ecfdf5;
+    .runner-paper { border-top-color: #059669; }
+    .header-category-badge { color: #047857; background: #ecfdf5; border-color: #a7f3d0; }
+  }
+  &[data-category='學術專題研究'] {
+    background: #f8fafc;
+    .runner-paper { border-top-color: #475569; }
+    .header-category-badge { color: #334155; background: #f8fafc; border-color: #cbd5e1; }
+  }
+  &[data-category='健康與生活型態'] {
+    background: #fff1f2;
+    .runner-paper { border-top-color: #e11d48; }
+    .header-category-badge { color: #be123c; background: #fff1f2; border-color: #fecdd3; }
+  }
+  &[data-category='公共政策與民意'] {
+    background: #faf5ff;
+    .runner-paper { border-top-color: #7c3aed; }
+    .header-category-badge { color: #6d28d9; background: #faf5ff; border-color: #e9d5ff; }
+  }
+  &[data-category='社群互動與綜合'] {
+    background: #fff7ed;
+    .runner-paper { border-top-color: #ea580c; }
+    .header-category-badge { color: #c2410c; background: #fff7ed; border-color: #fed7aa; }
+  }
+}
+
+/* =====================================================
+   問卷填答主紙張卡片
+   ===================================================== */
+.runner-paper {
+  max-width: 88rem;
+  margin-inline: auto;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-top: 6px solid var(--c-primary-600);
+  border-radius: var(--r-xl);
+  padding: clamp(var(--sp-6), 5vw, var(--sp-12));
+  box-shadow: var(--shadow-card-elevated);
+  box-sizing: border-box;
+  width: 100%;
+
+  @media (max-width: 640px) {
+    padding: var(--sp-6) var(--sp-4);
+    border-radius: var(--r-lg);
+  }
+}
+
+/* 預覽模式警示橫幅 */
+.runner-preview-alert {
+  background: #eff6ff;
+  border: 1.5px solid #bfdbfe;
+  color: #1e40af;
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-6);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+
+  .preview-badge {
+    background: var(--c-primary-600);
+    color: #ffffff;
+    font-size: 1.15rem;
+    font-weight: 800;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--r-xs);
+    flex-shrink: 0;
+  }
+
+  .preview-text {
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #1e3a8a;
+  }
+}
+
+/* 問卷頁頭與說明資訊 */
+.runner-header {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.header-category-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-primary-700);
+  background: var(--c-primary-50);
+  border: 1px solid var(--c-primary-200);
+  padding: 0.25rem 0.85rem;
+  border-radius: var(--r-full);
+  width: fit-content;
+}
+
+.runner-title {
+  font-size: clamp(2.4rem, 3.6vw, 3.2rem);
+  font-weight: 800;
+  color: var(--c-neutral-900);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.time-limit-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--c-primary-800);
+  background: var(--c-primary-50);
+  border-left: 3px solid var(--c-primary-600);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+
+  .banner-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+
+    svg {
+      display: block;
+      width: 1.6rem;
+      height: 1.6rem;
+    }
+  }
+}
+
+.runner-desc-card {
+  background: var(--c-neutral-50);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-4) var(--sp-5);
+}
+
+.runner-description {
+  font-size: 1.5rem;
+  color: var(--c-neutral-700);
+  line-height: 1.7;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.runner-media-wrapper {
+  margin-top: var(--sp-2);
+
+  .runner-desc-image {
+    max-height: 32rem;
+    width: 100%;
+    object-fit: cover;
+    border-radius: var(--r-md);
+    border: 1.5px solid var(--c-border);
+  }
+}
+
+.runner-divider {
+  height: 1px;
+  background: var(--c-border);
+  margin-block: clamp(var(--sp-6), 4vw, var(--sp-8));
+}
+
+/* =====================================================
+   填答表單與基本資料區塊
+   ===================================================== */
+.runner-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  width: 100%;
+}
+
+.runner-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  width: 100%;
+}
+
+.section-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-bottom: var(--sp-2);
+  border-bottom: 2px solid var(--c-primary-600);
+}
+
+.section-title {
+  font-size: 1.95rem;
+  font-weight: 800;
+  color: var(--c-neutral-900);
+  margin: 0;
+}
+
+.section-subtitle {
+  font-size: 1.35rem;
+  color: var(--c-neutral-600);
+}
+
+/* 基本資料輸入網格 */
+.demographic-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-4);
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+
+  &.field-item-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.field-label {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--c-neutral-800);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.req-star {
+  color: var(--c-error);
+}
+
+.field-input,
+.field-select,
+.field-textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 1rem 1.4rem;
+  font-family: inherit;
+  font-size: 1.5rem;
+  color: var(--c-neutral-900);
+  background: #ffffff;
+  border: 1.5px solid var(--c-border-muted);
+  border-radius: var(--r-md);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-width: 0;
+
+  &:focus {
+    border-color: var(--c-primary-600);
+    box-shadow: 0 0 0 3px var(--c-primary-100);
+    outline: none;
+  }
+
+  &::placeholder {
+    color: var(--c-neutral-400);
+  }
+}
+
+.field-input-time,
+.field-input-date {
+  max-width: 28rem;
+}
+
+.field-error {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--c-error);
+  margin-top: 0.2rem;
+}
+
+/* =====================================================
+   問卷題目列表與卡片
+   ===================================================== */
+.runner-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+}
+
+.runner-question-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--r-xl);
+  padding: clamp(var(--sp-5), 4vw, var(--sp-6));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+
+  &:hover, &:focus-within {
+    border-color: var(--c-primary-400);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+.q-header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.q-num-chip {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: var(--c-primary-600);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.q-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  flex-grow: 1;
+}
+
+.q-desc-text {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--c-neutral-900);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.q-req-indicator {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--c-error);
+  flex-shrink: 0;
+}
+
+.q-image-container {
+  max-width: 100%;
+
+  .q-attached-image {
+    max-height: 24rem;
+    width: 100%;
+    object-fit: cover;
+    border-radius: var(--r-md);
+    border: 1px solid var(--c-border);
+  }
+}
+
+.q-input-area {
+  margin-top: var(--sp-1);
+}
+
+/* 是非題選項橫列 */
+.tf-options-row {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+
+  .option-pill-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.85rem 1.8rem;
+    background: #ffffff;
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-md);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--c-neutral-800);
+    cursor: pointer;
+    min-height: 4.4rem;
+    transition: all 0.15s ease;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+
+    &:hover {
+      background: var(--c-primary-50);
+      border-color: var(--c-primary-400);
+    }
+
+    &:has(input:checked) {
+      background: var(--c-primary-50);
+      border-color: var(--c-primary-600);
+      color: var(--c-primary-800);
+      box-shadow: 0 0 0 2px var(--c-primary-200);
+    }
+
+    input[type="radio"] {
+      width: 1.8rem;
+      height: 1.8rem;
+      accent-color: var(--c-primary-600);
+    }
+  }
+}
+
+/* 單選與複選選項清單 */
+.choice-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.choice-option-label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 1rem 1.4rem;
+  background: #ffffff;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  min-height: 4.4rem;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  width: 100%;
+
+  &:hover {
+    background: var(--c-primary-50);
+    border-color: var(--c-primary-400);
+  }
+
+  &:has(input:checked) {
+    background: var(--c-primary-50);
+    border-color: var(--c-primary-600);
+    box-shadow: 0 0 0 2px var(--c-primary-200);
+
+    .choice-text {
+      color: var(--c-primary-900);
+      font-weight: 600;
+    }
+  }
+
+  input[type="radio"],
+  input[type="checkbox"] {
+    width: 2rem;
+    height: 2rem;
+    accent-color: var(--c-primary-600);
+    flex-shrink: 0;
+  }
+
+  .choice-text {
+    font-size: 1.5rem;
+    color: var(--c-neutral-800);
+    line-height: 1.4;
+    word-break: break-word;
+  }
+}
+
+/* 李克特與評分量表選項群組 */
+.scale-options-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.scale-option-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1.5rem;
+  background: #ffffff;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  min-height: 4.4rem;
+  min-width: 4.4rem;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+
+  &:hover {
+    background: var(--c-primary-50);
+    border-color: var(--c-primary-400);
+  }
+
+  &:has(input:checked) {
+    background: var(--c-primary-600);
+    border-color: var(--c-primary-600);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(29, 78, 216, 0.3);
+
+    .scale-text {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    input[type="radio"] {
+      accent-color: #ffffff;
+    }
+  }
+
+  input[type="radio"] {
+    width: 1.8rem;
+    height: 1.8rem;
+    accent-color: var(--c-primary-600);
+  }
+
+  .scale-text {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--c-neutral-800);
+    line-height: 1.2;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+  }
+}
+
+/* =====================================================
+   問卷送出操作區
+   ===================================================== */
+.runner-footer-action {
+  margin-top: var(--sp-4);
+  display: flex;
+  justify-content: center;
+}
+
+.runner-submit-btn {
+  width: 100%;
+  max-width: 44rem;
+  padding: var(--sp-4) var(--sp-8);
+  font-size: 1.7rem;
+  font-weight: 800;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: var(--c-neutral-400);
+    border-color: var(--c-neutral-400);
+  }
+}
+
+.mt-2 { margin-top: var(--sp-2); }
