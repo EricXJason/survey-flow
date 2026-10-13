@@ -5,6 +5,17 @@
 
 ---
 
+## [2026-10-13 16:10] - 專案結構整頓與本地三層 Git 分支拓撲建置
+- **改動原因**: 依據使用者指示將 README 移出前端目錄回歸專案根目錄，並完成本地三層 Git 分支初始化，為後續 GitHub MCP 建庫與 Spring Boot 後端開發奠定基底。
+- **具體內容**:
+  - 移除 `frontend/README.md` 模板檔案
+  - 建立專案根目錄純繁體中文 `README.md`，納入架構設計、核心規格、Mermaid 流程圖、ERD、目錄拓撲與本機建置指南
+  - 執行本地 Git 初始化，建立 `master`、`development`、`feature` 三層分支拓撲
+  - 產出首次基準原子提交（`chore: initial baseline commit`）並切換至 `feature` 沙盒分支待命
+- **影響範圍**: `frontend/README.md`、`README.md`、`.git/` 分支環境
+
+---
+
 ## [2026-10-13 15:55] - 專案結構整理：前後端分離目錄淨化與統一版控配置
 - **改動原因**: 專案從純前端擴展為前後端分離架構（Angular + Spring Boot），整理目錄結構並建立統一版控配置，為上傳 GitHub 做準備。
 - **具體內容**:

@@ -12,6 +12,8 @@
 - [x] **本地離線註冊資料集**: 實作 `SURVEY_REGISTERED_USERS` 本地快取，支援註冊後即刻無縫登入驗證。
 - [x] **問卷與題型結構定義**: 完成 `surveys.json` 與 `users.json` 預設種子資料，定義題目 UID 與選項關聯模型。
 - [x] **MySQL 8.x 全端接軌 DDL 與統計查詢規格**: 於規格書完整定義問卷、題目、選項、填答主表、題型回答明細表結構、複合索引、外鍵約束及高效聚合 SQL。
+- [ ] **MySQL 8.x 實體資料表建立與 DDL 腳本 (`backend/src/main/resources/schema.sql`)**: 建立 8 張正規化資料表，包含級聯刪除、非對稱加密與索引優化。
+- [ ] **JPA 實體類別映射與審計支援 (`AuditingEntityListener`)**: 實作 `User`, `Survey`, `SurveyQuestion`, `SurveyOption`, `Submission` 等 Entity，並整合自動建立/更新時間戳。
 
 ---
 
@@ -24,6 +26,14 @@
 - [x] **通用工具服務**: 建立 `UtilityService` 提供平滑置頂 (scrollToTopSmooth)、路由自動捲動重設、嚴格正整數驗證與無空格字串檢核。
 - [x] **表單數據分析聚合服務 (`SurveyAnalyticsService`)**: 提供問卷統計計算、近 7 日每日回覆時間走勢、受訪者輪廓（性別、年齡層）、題型作答聚合分析（單選/多選比例、量表評分分佈、文字反饋抽樣），並內建管理員全域與會員所屬問卷之權限檢查守衛 (`canAccessAnalytics`)。
 - [x] **未來全端 Java Spring Boot API 規範對齊**: 於 API 規格書定義 `GET /api/surveys/{surveyId}/analytics` 端點與 Spring Security 權限防護（`@PreAuthorize` 管理員或擁有者），提供全端接軌 DTO。
+- [ ] **Spring Boot 3.4 基礎架構骨架 (Java 21 + Maven)**: 配置 `pom.xml`，整合 Spring Web, Spring Data JPA, Spring Security, MySQL Connector, Validation, Lombok。
+- [ ] **安全認證核心 (Argon2id + JWT 雙 Token 旋轉機制)**: 實作 `JwtAuthenticationFilter`, `Argon2PasswordEncoder`, `TokenProvider`。
+- [ ] **RESTful API 控制器與商務邏輯服務 (Controller & Service)**:
+  - [ ] 認證授權模組 (`AuthController`, `AuthService`)
+  - [ ] 問卷管理與設計模組 (`SurveyController`, `SurveyService`)
+  - [ ] 受訪者填答模組 (`SubmissionController`, `SubmissionService`)
+  - [ ] 統計數據分析聚合模組 (`AnalyticsController`, `AnalyticsService`)
+  - [ ] 全域異常攔截與標準 API 回應規格 (`GlobalExceptionHandler`, `ApiResponse<T>`)
 
 ---
 
