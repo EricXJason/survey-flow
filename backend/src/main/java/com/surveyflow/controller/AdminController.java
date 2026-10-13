@@ -16,6 +16,7 @@ package com.surveyflow.controller;
 import com.surveyflow.common.ApiResponse;
 import com.surveyflow.dto.analytics.SurveyAnalyticsResponse;
 import com.surveyflow.dto.survey.SurveySummaryResponse;
+import com.surveyflow.dto.user.UserProfileResponse;
 import com.surveyflow.entity.Survey;
 import com.surveyflow.entity.User;
 import com.surveyflow.repository.SubmissionRepository;
@@ -23,6 +24,7 @@ import com.surveyflow.repository.SurveyRepository;
 import com.surveyflow.repository.UserRepository;
 import com.surveyflow.service.AnalyticsService;
 import com.surveyflow.service.SurveyService;
+import com.surveyflow.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -52,16 +54,19 @@ public class AdminController {
     private final SurveyService surveyService;
     private final AnalyticsService analyticsService;
 
+    private final UserService userService;
+
     /**
      * 查詢全站會員分頁列表 (Admin 專屬)
      * @param pageable 分頁參數
      * @return 會員分頁資料
      */
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<Page<User>>> getAllUsers(
+    public ResponseEntity<ApiResponse<Page<UserProfileResponse>>> getAllUsers(
             @PageableDefault(size = 15, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<User> users = userRepository.findAllUsersForAdminNative(pageable);
-        return ResponseEntity.ok(ApiResponse.ok(users, "成功取得全站會員名冊"));
+        Page<UserProfileResponse> responsePage = users.map(userService::convertToProfileResponse);
+        return ResponseEntity.ok(ApiResponse.ok(responsePage, "成功取得全站會員名冊"));
     }
 
     /**
@@ -76,10 +81,26 @@ public class AdminController {
             @RequestParam String status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
-        user.setStatus(status);
+        user.setStatus(status.toUpperCase());
         userRepository.save(user);
         log.info("管理員更新會員狀態: userId={}, status={}", userId, status);
         return ResponseEntity.ok(ApiResponse.ok("會員狀態已成功更新"));
+    }
+
+    /**
+     * 管理員刪除或停權特定會員
+     * @param userId 會員識別碼
+     * @return 操作確認回應
+     */
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
+        user.setDeletedAt(LocalDateTime.now());
+        user.setStatus("DELETED");
+        userRepository.save(user);
+        log.info("管理員已將會員軟刪除: userId={}", userId);
+        return ResponseEntity.ok(ApiResponse.ok("會員帳號已成功移除"));
     }
 
     /**

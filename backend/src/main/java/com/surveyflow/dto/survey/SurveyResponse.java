@@ -34,6 +34,7 @@ public class SurveyResponse {
     private String title;
     private String description;
     private String category;
+    private Boolean isPublicToLobby;
     private SurveyStatus status;
     private LocalDateTime startDate;
     private LocalDateTime endDate;

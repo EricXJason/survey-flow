@@ -164,6 +164,8 @@ export interface SurveySummaryItem {
   startDate: string;
   endDate: string;
   isPublished?: boolean;
+  isPublicToLobby?: boolean;
+  status?: string;
 }
 
 /**

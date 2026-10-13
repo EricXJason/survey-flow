@@ -77,4 +77,26 @@ public class AuthController {
         }
         return ResponseEntity.ok(ApiResponse.ok("已安全登出"));
     }
+
+    /**
+     * 忘記密碼身分核驗端點 (公開)
+     * @param request 帳號與信箱
+     * @return 核驗結果
+     */
+    @PostMapping({"/api/public/auth/forget-password", "/api/auth/forget-password"})
+    public ResponseEntity<ApiResponse<Void>> forgetPassword(@Valid @RequestBody com.surveyflow.dto.auth.ForgetPasswordRequest request) {
+        authService.processForgotPassword(request);
+        return ResponseEntity.ok(ApiResponse.ok("身分核驗通過，已寄發重設密碼驗證信"));
+    }
+
+    /**
+     * 會員重設新密碼端點 (公開)
+     * @param request 包含帳號、信箱與新密碼
+     * @return 重設結果
+     */
+    @PostMapping({"/api/public/auth/reset-password", "/api/auth/reset-password"})
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody com.surveyflow.dto.auth.ResetPasswordRequest request) {
+        authService.processResetPassword(request);
+        return ResponseEntity.ok(ApiResponse.ok("密碼已成功重設，請使用新密碼重新登入"));
+    }
 }

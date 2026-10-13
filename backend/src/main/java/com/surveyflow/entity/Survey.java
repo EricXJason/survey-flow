@@ -51,6 +51,10 @@ public class Survey {
     @Builder.Default
     private String category = "綜合調查";
 
+    @Column(name = "is_public_to_lobby", nullable = false)
+    @Builder.Default
+    private Boolean isPublicToLobby = true;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

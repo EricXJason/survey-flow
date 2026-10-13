@@ -113,6 +113,14 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
   /** 問卷發布狀態篩選條件信號（'all' | 'published' | 'private'） */
   public readonly activeFilter = signal<'all' | 'published' | 'private'>('all');
 
+  /** 時限與雙狀態設定彈窗狀態信號 */
+  public readonly isSettingsModalOpen = signal<boolean>(false);
+  public readonly currentEditingSurvey = signal<SurveySummaryItem | null>(null);
+  public readonly settingsStartDate = signal<string>('');
+  public readonly settingsEndDate = signal<string>('');
+  public readonly settingsIsPublicToLobby = signal<boolean>(true);
+  public readonly settingsIsOpen = signal<boolean>(true);
+
   // ─────────────────────────────────────────────────────────────────────────
   // Material Table 配置
   // ─────────────────────────────────────────────────────────────────────────
@@ -505,5 +513,121 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
     if (score >= 7) return 'score-passive';
     if (score >= 5) return 'score-neutral';
     return 'score-detractor';
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 時限與發布雙狀態管理
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /**
+   * 開啟問卷時限與發布雙狀態設定彈窗
+   */
+  public onOpenSettings(survey: SurveySummaryItem): void {
+    this.currentEditingSurvey.set(survey);
+    this.settingsStartDate.set(survey.startDate || '');
+    this.settingsEndDate.set(survey.endDate || '');
+    this.settingsIsPublicToLobby.set(survey.isPublicToLobby ?? true);
+    this.settingsIsOpen.set(survey.isPublished ?? true);
+    this.isSettingsModalOpen.set(true);
+  }
+
+  /**
+   * 關閉問卷時限與狀態設定彈窗
+   */
+  public onCloseSettings(): void {
+    this.isSettingsModalOpen.set(false);
+    this.currentEditingSurvey.set(null);
+  }
+
+  /**
+   * 變更開始日期時間
+   */
+  public onStartDateChange(event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.settingsStartDate.set(val);
+  }
+
+  /**
+   * 變更結束日期時間
+   */
+  public onEndDateChange(event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.settingsEndDate.set(val);
+  }
+
+  /**
+   * 切換大廳公開狀態
+   */
+  public onTogglePublicToLobby(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.settingsIsPublicToLobby.set(checked);
+  }
+
+  /**
+   * 切換開放填寫狀態
+   */
+  public onToggleIsOpen(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.settingsIsOpen.set(checked);
+  }
+
+  /**
+   * 清除填答時限（設為常態開放）
+   */
+  public onClearTimeRange(): void {
+    this.settingsStartDate.set('');
+    this.settingsEndDate.set('');
+  }
+
+  /**
+   * 儲存時限與雙狀態設定至 MySQL 資料庫
+   */
+  public onSaveSettings(): void {
+    const survey = this.currentEditingSurvey();
+    if (!survey) return;
+
+    const start = this.settingsStartDate().trim();
+    const end = this.settingsEndDate().trim();
+
+    if (start && end && start > end) {
+      this._dialogService.showDialog({
+        title: '時程設定無效',
+        message: '開始時間不可晚於截止時間，請重新檢查設定。',
+        mode: 'errorMode',
+        errorText: '確定',
+      }).subscribe();
+      return;
+    }
+
+    const payload = {
+      startDate: start || undefined,
+      endDate: end || undefined,
+      isPublicToLobby: this.settingsIsPublicToLobby(),
+      isOpen: this.settingsIsOpen(),
+    };
+
+    this._userEmitter.emitUpdateSurveySettings(survey.id, payload, () => {
+      this.surveyList.update((list) =>
+        list.map((item) =>
+          item.id === survey.id
+            ? {
+                ...item,
+                startDate: start,
+                endDate: end,
+                isPublicToLobby: payload.isPublicToLobby,
+                isPublished: payload.isOpen,
+              }
+            : item
+        )
+      );
+      this.onCloseSettings();
+      this._dialogService.showDialog({
+        title: '時限與發布狀態已更新',
+        message: `問卷「${survey.title}」之可填寫時段與大廳公開狀態已成功儲存至資料庫！`,
+        mode: 'noticeMode',
+        confirmText: '確定',
+        autoCloseDuration: 2200,
+      }).subscribe();
+    });
   }
 }

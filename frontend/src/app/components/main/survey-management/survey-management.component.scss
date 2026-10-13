@@ -3075,3 +3075,225 @@
   }
 }
 
+/* ==========================================================================
+   問卷時限與雙狀態設定 Modal 樣式
+   ========================================================================== */
+.settings-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.6rem;
+}
+
+.settings-modal-dialog {
+  background: #0b0f19;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 1.2rem;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 240, 255, 0.15);
+  width: 100%;
+  max-width: 58rem;
+  overflow: hidden;
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.settings-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem 2.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  .header-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    .settings-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin: 0;
+    }
+
+    .settings-subtitle {
+      font-size: 1.2rem;
+      color: #00f0ff;
+    }
+  }
+
+  .btn-close-modal {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0.4rem;
+    line-height: 1;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: #f8fafc;
+    }
+  }
+}
+
+.settings-modal-body {
+  padding: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+
+  .setting-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+
+    .section-badge-title {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #e2e8f0;
+
+      .section-icon {
+        width: 1.8rem;
+        height: 1.8rem;
+        color: #00f0ff;
+      }
+    }
+
+    .section-hint {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+
+  .time-range-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.6rem;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+
+    .input-field-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+
+      .field-label {
+        font-size: 1.25rem;
+        color: #cbd5e1;
+        font-weight: 500;
+      }
+
+      .field-input {
+        background: #040711;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #f8fafc;
+        padding: 0.9rem 1.2rem;
+        border-radius: 0.6rem;
+        font-size: 1.35rem;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+        &:focus {
+          border-color: #00f0ff;
+          box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.2);
+        }
+      }
+    }
+  }
+
+  .time-quick-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .toggle-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.6rem;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+
+    .toggle-card {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.2rem;
+      padding: 1.6rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.active {
+        background: rgba(0, 240, 255, 0.04);
+        border-color: rgba(0, 240, 255, 0.4);
+      }
+
+      .toggle-card-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+
+        .toggle-title {
+          font-size: 1.35rem;
+          font-weight: 600;
+          color: #f8fafc;
+        }
+
+        .toggle-desc {
+          font-size: 1.15rem;
+          color: #94a3b8;
+          line-height: 1.4;
+        }
+      }
+
+      .toggle-checkbox {
+        width: 1.8rem;
+        height: 1.8rem;
+        accent-color: #00f0ff;
+        cursor: pointer;
+        flex-shrink: 0;
+        margin-top: 0.2rem;
+      }
+    }
+  }
+}
+
+.settings-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.2rem;
+  padding: 1.6rem 2.4rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+

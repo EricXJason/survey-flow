@@ -27,6 +27,7 @@ import { ValidationService } from '../../../@services/validation.service';
 import { UserStateService } from '../../../@services/user-state.service';
 import { UserEmitterService } from '../../../@services/user-emitter.service';
 import { DialogService, DialogData } from '../../../@services/dialog.service';
+import { ApiClientService } from '../../../@services/api-client.service';
 import { AccountModifyProfilePayload } from '../../../@interfaces/account-model';
 
 /**
@@ -43,6 +44,8 @@ import { AccountModifyProfilePayload } from '../../../@interfaces/account-model'
 export class UserProfileComponent implements OnInit {
   /** 路由導航服務 */
   private readonly _router = inject(Router);
+  /** API 客戶端服務 */
+  private readonly _apiClient = inject(ApiClientService);
   /** 響應式表單建構服務 */
   private readonly _formBuilder = inject(FormBuilder);
   /** 格式防呆檢核服務 */
@@ -197,6 +200,33 @@ export class UserProfileComponent implements OnInit {
    */
   private loadUserProfile(): void {
     const profile = this._userState.userProfile();
+    this.applyProfileToForm(profile);
+
+    // 向後端請求最新資料
+    this._apiClient.get<any>('/api/user/profile').subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          const remote = res.data;
+          const updatedProfile = {
+            ...profile,
+            name: remote.name || profile.name,
+            phone: remote.phone || profile.phone,
+            nationalId: remote.nationalId || profile.nationalId,
+            gender: remote.gender || profile.gender,
+            birthday: remote.birthday || profile.birthday,
+            role: remote.identity || profile.role,
+          };
+          this._userState.setIdentity(updatedProfile);
+          this.applyProfileToForm(updatedProfile);
+        }
+      },
+    });
+  }
+
+  /**
+   * 將個人檔案結構套用至表單
+   */
+  private applyProfileToForm(profile: any): void {
     let accountGender = profile.gender;
     if (accountGender === '男') {
       accountGender = 'male';
@@ -205,16 +235,10 @@ export class UserProfileComponent implements OnInit {
     } else if (accountGender === '其他') {
       accountGender = 'other';
     }
-
     if (!accountGender) {
       accountGender = 'male';
-      this._userState.setIdentity({
-        ...profile,
-        gender: 'male',
-      });
     }
 
-    // 身分職業值對應字典（確保相容中文稱謂與英文代碼）
     const roleMap: Record<string, string> = {
       student: 'student',
       teacher: 'teacher',
@@ -235,7 +259,7 @@ export class UserProfileComponent implements OnInit {
     let accountRole = profile.role ? roleMap[profile.role] || 'employee' : 'employee';
 
     this.formBuilderGroup.patchValue({
-      username: profile.userName,
+      username: profile.userName || profile.name,
       email: profile.email,
       name: profile.name,
       nationalId: profile.nationalId,

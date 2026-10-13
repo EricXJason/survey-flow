@@ -53,6 +53,22 @@
   - [x] **全型態問卷專屬填寫連結與作答支援**: 問卷管理後台支援不論公開或私人（DRAFT），一鍵複製專屬直達連結，後端放寬非公開問卷持連結可正常載入與提交作答（僅於 CLOSED 狀態阻斷）。
   - [x] **前後端 DTO Validation 與 Database Constraint 完全對齊**: 登入長度、問卷建立與填答回答明細之 `@Valid`、`@Size`、`@NotBlank` 與資料庫欄位 100% 對齊無衝突。
   - [x] **真實測試數據持久化**: 建立 4 筆 `testuser` 問卷（3 筆公開 + 1 筆私人）與 40 筆真實作答記錄（191 筆題型回答明細），支援數據分析儀表板真實查詢。
+  - [x] **問卷上傳不可溯及修改題目規範**: 上傳發布後鎖定問卷題目結構，避免修改既有題項導致既有回覆資料失真或關聯錯亂。
+  - [x] **問卷雙維度狀態與時程 API (`PATCH /api/user/surveys/{id}/settings`)**:
+    - [x] 維度一：是否公開至問卷大廳 (`is_public_to_lobby` / `isPublicToLobby`)。
+    - [x] 維度二：是否開放填寫 (`isOpen` / `PUBLISHED` vs `CLOSED`)。
+    - [x] 時效區間：支援動態設定開始時間 (`startDate`) 與截止時間 (`endDate`)，或設為常態開放。
+  - [x] **管理員會員名冊與狀態管理 API**:
+    - [x] `GET /api/admin/users`: 取得全站會員清單與統計數據。
+    - [x] `PATCH /api/admin/users/{userId}/status`: 即時切換會員啟用/凍結狀態。
+    - [x] `DELETE /api/admin/users/{userId}`: 管理員安全移除會員帳號（受系統管理員保護機制防護）。
+  - [x] **會員個人資料與密碼維護 API (一對一 SRP 分層架構)**:
+    - [x] `GET /api/user/profile`: 讀取當前會員真實個資。
+    - [x] `PUT /api/user/profile`: 更新會員真實姓名、身分證、電話、性別、生日與身分。
+    - [x] `PUT /api/user/password`: 驗證舊密碼並以 Argon2id 加密存儲新密碼。
+  - [x] **忘記密碼與重設密碼 API**:
+    - [x] `POST /api/public/auth/forget-password`: 驗證信箱並產出重設 Token。
+    - [x] `POST /api/public/auth/reset-password`: 驗證 Token 並安全置換密碼與撤銷舊 Token。
 
 ---
 

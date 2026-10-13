@@ -30,6 +30,7 @@ public class SurveySummaryResponse {
     private String title;
     private String description;
     private String category;
+    private Boolean isPublicToLobby;
     private SurveyStatus status;
     private String authorName;
     private LocalDateTime startDate;

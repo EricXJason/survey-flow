@@ -34,11 +34,11 @@ public interface SurveyRepository extends JpaRepository<Survey, Long> {
      * @param pageable 分頁參數
      * @return 符合條件之分頁列表
      */
-    @Query(value = "SELECT * FROM surveys s WHERE s.status = 'PUBLISHED' AND s.deleted_at IS NULL " +
+    @Query(value = "SELECT * FROM surveys s WHERE s.status = 'PUBLISHED' AND s.is_public_to_lobby = 1 AND s.deleted_at IS NULL " +
                    "AND (:category IS NULL OR :category = '' OR s.category = :category) " +
                    "AND (:keyword IS NULL OR :keyword = '' OR LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
                    "     OR LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%')))",
-           countQuery = "SELECT COUNT(*) FROM surveys s WHERE s.status = 'PUBLISHED' AND s.deleted_at IS NULL " +
+           countQuery = "SELECT COUNT(*) FROM surveys s WHERE s.status = 'PUBLISHED' AND s.is_public_to_lobby = 1 AND s.deleted_at IS NULL " +
                         "AND (:category IS NULL OR :category = '' OR s.category = :category) " +
                         "AND (:keyword IS NULL OR :keyword = '' OR LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
                         "     OR LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%')))",

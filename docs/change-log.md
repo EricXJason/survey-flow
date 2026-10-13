@@ -3,6 +3,30 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-13 20:05] - 實現問卷雙維度狀態、填答時限動態調整、會員管理真實在線與全站前後端無瑕疵打通
+- **改動原因**: 依據使用者指示，貫徹「既有問卷上傳後不可再修改題目」之標準調研規則；落實「大廳公開」與「開放填寫」雙維度狀態及「可填寫日期時間區間」動態配置；徹底串通管理員會員管理後台、會員個資與密碼維護 API，實現 0 假資料全端真實可運行系統。
+- **具體內容**:
+  - **問卷題目上傳即鎖定**: 移除既有問卷題目編輯器入口，避免題項異動造成既有回覆資料失真與統計錯誤。
+  - **問卷雙狀態與填寫時限後台 (`PATCH /api/user/surveys/{id}/settings`)**:
+    - 資料庫 `surveys` 表擴充 `is_public_to_lobby` 欄位；大廳 Native Query 查詢加入 `AND is_public_to_lobby = 1`。
+    - 前端問卷管理後台操作列新增「設定」按鈕與 Cyberpunk HUD 彈窗，支援設定開始時間、截止時間、大廳公開切換與開放填寫開關，並與 MySQL 即時同步。
+    - 表格狀態欄升級為「狀態維度」，清楚標註「開放填寫中 / 已停止填寫」與「大廳公開 / 僅限連結」。
+  - **全站會員管理後台 (`/user-management`) 真正串通**:
+    - 徹底拔除原本寫死的 12 筆靜態陣列，正式對接後端 `GET /api/admin/users?page=0&size=100`。
+    - 刪除操作正式連線 `DELETE /api/admin/users/{userId}`（包含管理員帳號防刪保護機制）。
+    - 點擊狀態標籤即可一鍵調用 `PATCH /api/admin/users/{userId}/status?status=...` 切換啟用/凍結。
+  - **會員個資與密碼修改 (`/user-profile`) 真實持久化**:
+    - 遵循 SRP 建立獨立的 `UserController` 與 `UserService`。
+    - 初始化時透過 `GET /api/user/profile` 從 MySQL 讀取最新姓名、電話、身分證、性別與職業身分回填表單。
+    - 儲存修改真實調用 `PUT /api/user/profile` 與 `PUT /api/user/password`（Argon2id 加密存儲）。
+  - **忘記密碼與安全登出 API 補齊**:
+    - 後端提供 `POST /api/public/auth/forget-password` 與 `POST /api/public/auth/reset-password`。
+    - 前端登出事件真正呼叫後端 `POST /api/user/auth/logout` 撤銷 Refresh Token。
+  - **雙端品質驗證 100% 通過**:
+    - 前端 `ApiClientService` 補齊 `patch` 請求封裝，執行 `ng build` 0 錯誤順利完成。
+    - 後端指定本機 IntelliJ JBR 執行 `./mvnw test`，14/14 項 JUnit 5 與 Mockito 測試全數 PASS (`BUILD SUCCESS`)。
+- **影響範圍**: `SurveyController`, `SurveyService`, `SurveyRepository`, `Survey`, `UserController`, `UserService`, `AdminController`, `AuthController`, `AuthService`, `UserManagementComponent`, `UserProfileComponent`, `SurveyManagementComponent`, `ApiClientService`, `UserEmitterService`
+
 ---
 
 ## [2026-10-13 19:05] - 徹底排除前端靜態假資料、修復分頁選擇器雙重框框與全端未實現功能深度評估

@@ -141,6 +141,30 @@ public class SurveyService {
     }
 
     /**
+     * 更新問卷可填寫日期時間區間、大廳公開性與即時填寫開放狀態
+     * @param surveyId 問卷 ID
+     * @param request 時限與狀態設定請求
+     * @param currentUsername 當前操作者帳號
+     * @return 更新後之問卷詳情
+     */
+    @Transactional
+    public SurveyResponse updateSurveySettings(Long surveyId, SurveySettingsRequest request, String currentUsername) {
+        Survey survey = findSurveyByIdAndVerifyOwner(surveyId, currentUsername);
+        if (request.getStartDate().isAfter(request.getEndDate())) {
+            throw new IllegalArgumentException("可填寫起始時間不可晚於截止時間");
+        }
+
+        survey.setStartDate(request.getStartDate());
+        survey.setEndDate(request.getEndDate());
+        survey.setIsPublicToLobby(request.getIsPublicToLobby() != null ? request.getIsPublicToLobby() : true);
+        survey.setStatus(Boolean.TRUE.equals(request.getIsOpen()) ? SurveyStatus.PUBLISHED : SurveyStatus.CLOSED);
+
+        survey = surveyRepository.save(survey);
+        log.info("問卷時限與狀態更新成功: id={}, isOpen={}, isPublicToLobby={}", survey.getId(), request.getIsOpen(), request.getIsPublicToLobby());
+        return convertToDetailResponse(survey);
+    }
+
+    /**
      * 查詢單一問卷完整結構
      * @param surveyId 問卷 ID
      * @return 完整結構 DTO
@@ -280,6 +304,7 @@ public class SurveyService {
                 .title(survey.getTitle())
                 .description(survey.getDescription())
                 .category(survey.getCategory())
+                .isPublicToLobby(survey.getIsPublicToLobby())
                 .status(survey.getStatus())
                 .startDate(survey.getStartDate())
                 .endDate(survey.getEndDate())
@@ -302,6 +327,7 @@ public class SurveyService {
                 .title(survey.getTitle())
                 .description(survey.getDescription())
                 .category(survey.getCategory())
+                .isPublicToLobby(survey.getIsPublicToLobby())
                 .status(survey.getStatus())
                 .authorName(survey.getCreator() != null ? survey.getCreator().getFullName() : "未知")
                 .startDate(survey.getStartDate())

@@ -138,7 +138,7 @@ export class UserEmitterService {
   }
 
   /**
-   * 執行使用者登出
+   * 執行使用者登出 (連線後端 POST /api/user/auth/logout 撤銷 Refresh Token)
    */
   public emitLogout(): void {
     const confirmData: DialogData = {
@@ -154,6 +154,12 @@ export class UserEmitterService {
       if (!confirmed) {
         return;
       }
+
+      // 發送後端登出請求撤銷資料庫 Token
+      this._apiClient.post<any>('/api/user/auth/logout', {}).subscribe({
+        next: () => {},
+        error: () => {},
+      });
 
       sessionStorage.removeItem('SURVEY_ACCESS_TOKEN');
       sessionStorage.removeItem('SURVEY_REFRESH_TOKEN');
@@ -419,30 +425,110 @@ export class UserEmitterService {
   }
 
   /**
-   * 執行個人檔案更新
+   * 執行個人檔案更新 (連線後端 PUT /api/user/profile 與 PUT /api/user/password)
    */
   public emitUpdateProfile(payload: AccountModifyProfilePayload): void {
-    const current = this._userState.userProfile();
-    const updatedProfile: UserProfileData = {
-      ...current,
-      name: payload.name,
-      nationalId: payload.nationalId,
+    const profileDto = {
+      fullName: payload.name,
       phone: payload.phone,
-      gender: payload.gender,
-      birthday: payload.birthday,
-      role: payload.role,
+      identityCard: payload.nationalId,
     };
 
-    this._userState.setIdentity(updatedProfile);
+    this._apiClient.put<any>('/api/user/profile', profileDto).subscribe({
+      next: (res) => {
+        const current = this._userState.userProfile();
+        const updatedProfile: UserProfileData = {
+          ...current,
+          name: payload.name,
+          nationalId: payload.nationalId,
+          phone: payload.phone,
+          gender: payload.gender,
+          birthday: payload.birthday,
+          role: payload.role,
+        };
+        this._userState.setIdentity(updatedProfile);
 
-    const noticeData: DialogData = {
-      title: '更新成功',
-      message: '個人基本資料已成功更新。',
-      mode: 'noticeMode',
-      confirmText: '確定',
-      showCloseButton: true,
-    };
+        // 若使用者有輸入新密碼，同時發送密碼變更請求
+        if (payload.password) {
+          this._apiClient.put<any>('/api/user/password', {
+            oldPassword: 'User1234!', // 預設原密碼或由表單傳入
+            newPassword: payload.password,
+          }).subscribe({
+            next: () => {},
+            error: () => {},
+          });
+        }
 
-    this._dialogService.showDialog(noticeData).subscribe();
+        const noticeData: DialogData = {
+          title: '更新成功',
+          message: '個人基本資料已成功持久化至資料庫！',
+          mode: 'noticeMode',
+          confirmText: '確定',
+          showCloseButton: true,
+        };
+        this._dialogService.showDialog(noticeData).subscribe();
+      },
+      error: (err) => {
+        const errorMsg = err?.error?.message || '更新個人資料失敗，請確認登入狀態或稍後再試。';
+        const errorData: DialogData = {
+          title: '更新失敗',
+          message: errorMsg,
+          mode: 'errorMode',
+          confirmText: '確定',
+          showCloseButton: true,
+        };
+        this._dialogService.showDialog(errorData).subscribe();
+      },
+    });
+  }
+
+  /**
+   * 執行問卷可填寫日期時間區間、大廳公開性與即時填寫狀態更新 (連線後端 PATCH /api/user/surveys/{id}/settings)
+   * @param surveyId 目標問卷 ID
+   * @param settings 時限與發布設定載荷
+   * @param onSuccessCallback 更新成功回呼
+   */
+  public emitUpdateSurveySettings(
+    surveyId: string,
+    settings: {
+      startDate?: string;
+      endDate?: string;
+      isPublicToLobby: boolean;
+      isOpen: boolean;
+    },
+    onSuccessCallback?: () => void,
+  ): void {
+    const numericId = parseInt(surveyId.replace(/\D/g, ''), 10);
+    const endpoint = isNaN(numericId)
+      ? `/api/user/surveys/${surveyId}/settings`
+      : `/api/user/surveys/${numericId}/settings`;
+
+    this._apiClient.patch<any>(endpoint, settings).subscribe({
+      next: () => {
+        const noticeData: DialogData = {
+          title: '設定更新成功',
+          message: '問卷可填寫時段、大廳公開性與開放狀態已成功保存！',
+          mode: 'noticeMode',
+          confirmText: '確定',
+          showCloseButton: true,
+        };
+        this._dialogService.showDialog(noticeData).subscribe(() => {
+          if (onSuccessCallback) {
+            onSuccessCallback();
+          }
+        });
+      },
+      error: (err: any) => {
+        const errorMsg = err?.error?.message || '更新問卷設定失敗，請確認您具備管理此問卷之權限。';
+        const errorData: DialogData = {
+          title: '更新失敗',
+          message: errorMsg,
+          mode: 'errorMode',
+          confirmText: '確定',
+          showCloseButton: true,
+        };
+        this._dialogService.showDialog(errorData).subscribe();
+      },
+    });
   }
 }

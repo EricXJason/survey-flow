@@ -130,6 +130,40 @@ public class AuthService {
     }
 
     /**
+     * 處理忘記密碼身分核驗
+     * @param request 包含帳號與信箱之請求
+     */
+    @Transactional(readOnly = true)
+    public void processForgotPassword(com.surveyflow.dto.auth.ForgetPasswordRequest request) {
+        User user = userRepository.findByUsernameNative(request.getUsername().trim())
+                .orElseThrow(() -> new IllegalArgumentException("查無此會員帳號，請確認輸入是否正確"));
+
+        if (!user.getEmail().equalsIgnoreCase(request.getEmail().trim())) {
+            throw new IllegalArgumentException("輸入之電子信箱與該帳號綁定之信箱不相符");
+        }
+        log.info("忘記密碼核驗成功: username={}, email={}", user.getUsername(), user.getEmail());
+    }
+
+    /**
+     * 處理重設新密碼並撤銷歷史 Token
+     * @param request 包含帳號、信箱與新密碼之請求
+     */
+    @Transactional
+    public void processResetPassword(com.surveyflow.dto.auth.ResetPasswordRequest request) {
+        User user = userRepository.findByUsernameNative(request.getUsername().trim())
+                .orElseThrow(() -> new IllegalArgumentException("查無此會員帳號"));
+
+        if (!user.getEmail().equalsIgnoreCase(request.getEmail().trim())) {
+            throw new IllegalArgumentException("電子信箱核對失敗，無法重設密碼");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        refreshTokenRepository.revokeAllByUserId(user.getId());
+        log.info("會員密碼已成功重設並撤銷所有歷史權杖: username={}", user.getUsername());
+    }
+
+    /**
      * 內部簽發雙 Token 並封裝回傳物件
      */
     private AuthResponse createAuthResponse(User user) {

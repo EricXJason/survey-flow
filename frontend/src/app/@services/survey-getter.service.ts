@@ -61,6 +61,8 @@ export class SurveyGetterService {
             startDate: item.startDate ?? '',
             endDate: item.endDate ?? '',
             isPublished: item.status === 'PUBLISHED',
+            isPublicToLobby: item.isPublicToLobby ?? true,
+            status: item.status,
           }));
         }
         return [];
@@ -84,6 +86,8 @@ export class SurveyGetterService {
             startDate: item.startDate ?? '',
             endDate: item.endDate ?? '',
             isPublished: item.status === 'PUBLISHED',
+            isPublicToLobby: item.isPublicToLobby ?? true,
+            status: item.status,
           }));
         }
         return [];

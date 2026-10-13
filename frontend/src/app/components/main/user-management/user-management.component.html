@@ -263,7 +263,7 @@
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>帳號狀態</th>
                 <td mat-cell *matCellDef="let user">
-                  <div class="status-cell">
+                  <div class="status-cell" (click)="toggleUserStatus(user)" [title]="user.role === 'admin' ? '系統管理員不可停用' : '點擊快速切換啟用/凍結狀態'" [style.cursor]="user.role === 'admin' ? 'default' : 'pointer'">
                     @if (user.status === 'active') {
                       <span class="status-badge status-active">
                         <span class="dot"></span>
