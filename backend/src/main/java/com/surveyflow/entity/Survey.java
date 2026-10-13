@@ -60,7 +60,7 @@ public class Survey {
     @Builder.Default
     private SurveyStatus status = SurveyStatus.PUBLISHED;
 
-    @Column(name = "cover_image_url", length = 500)
+    @Column(name = "cover_image_url", columnDefinition = "LONGTEXT")
     private String coverImageUrl;
 
     @Column(name = "start_date", nullable = false)

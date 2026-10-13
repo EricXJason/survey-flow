@@ -207,16 +207,17 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * 新增一筆空白問題至問卷題目陣列中
-   * 預設包含唯一 UID、收合旗標、題型、必填、說明文字及預設 3 個空白選項。
+   * 建立單一問題之標準 FormGroup 結構
+   * 包含唯一 UID、收合旗標、題型、必填、說明文字及預設 3 個空白選項。
+   * @returns 初始化的題目表單群組
    */
-  protected addQuestion(): void {
-    const questionGroup = this._formBuilder.group({
+  private buildQuestionFormGroup(): FormGroup {
+    return this._formBuilder.group({
       uid: [this.generateUid()],
       isCollapsed: [false],
       type: ['', Validators.required],
       isRequired: [false, Validators.required],
-      hasImage: [false, Validators.required],
+      hasImage: [false],
       imageBase64: [''],
       description: ['', [Validators.required, Validators.minLength(1)]],
 
@@ -238,7 +239,22 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
         this.createOptionGroup(''),
       ]),
     });
-    this.questionArray.push(questionGroup);
+  }
+
+  /**
+   * 新增一筆空白問題至問卷題目陣列末尾
+   */
+  protected addQuestion(): void {
+    this.questionArray.push(this.buildQuestionFormGroup());
+  }
+
+  /**
+   * 於指定索引位置插入一筆新問題（支援題目下方與題目之間直接插入）
+   * @param targetIndex 插入目標之索引位置
+   */
+  protected insertQuestionAt(targetIndex: number): void {
+    const newGroup = this.buildQuestionFormGroup();
+    this.questionArray.insert(targetIndex, newGroup);
   }
 
   /**
@@ -272,7 +288,7 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
 
   /**
    * 處理問卷前言說明圖片上傳變更
-   * 讀取本機圖檔並轉換為 Base64 字串寫入表單。
+   * 讀取本機圖檔並轉換為 Base64 字串寫入表單，自動同步勾選狀態。
    * @param event 檔案選取事件
    */
   protected onDescriptionImageChange(event: Event): void {
@@ -282,6 +298,7 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
       const reader = new FileReader();
       reader.onload = () => {
         this.formBuilderGroup.patchValue({
+          hasDescriptionImage: true,
           descriptionImageBase64: reader.result as string,
         });
       };
@@ -291,17 +308,20 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
 
   /**
    * 移除問卷前言說明所上傳的圖片
-   * @param fileInput 原生 file input 元素，用於清空檔案選取值
+   * 清空檔案選取值並將圖片字串與開關重設。
+   * @param fileInput 原生 file input 元素
    */
   protected removeDescriptionImage(fileInput: HTMLInputElement): void {
     fileInput.value = '';
     this.formBuilderGroup.patchValue({
+      hasDescriptionImage: false,
       descriptionImageBase64: '',
     });
   }
 
   /**
    * 處理題目說明圖片上傳變更
+   * 讀取本機圖檔並轉換為 Base64 字串寫入該題目表單群組，自動同步啟用圖片。
    * @param event 檔案選取事件
    * @param questionIndex 目標題目索引
    */
@@ -312,6 +332,7 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
       const reader = new FileReader();
       reader.onload = () => {
         this.questionArray.at(questionIndex).patchValue({
+          hasImage: true,
           imageBase64: reader.result as string,
         });
       };
@@ -321,6 +342,7 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
 
   /**
    * 移除題目說明所上傳的圖片
+   * 清空檔案選取值並將該題圖片 Base64 與開關重設。
    * @param questionIndex 目標題目索引
    * @param fileInput 原生 file input 元素
    */
@@ -330,6 +352,7 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
   ): void {
     fileInput.value = '';
     this.questionArray.at(questionIndex).patchValue({
+      hasImage: false,
       imageBase64: '',
     });
   }
@@ -503,11 +526,10 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
       if (!this.formBuilderGroup.get('description')?.value) {
         errors.push('• 階段 01：問卷前言／填答說明內容不可為空');
       }
-    }
-
-    if (this.formBuilderGroup.get('hasDescriptionImage')?.value) {
-      if (!this.formBuilderGroup.get('descriptionImageBase64')?.value) {
-        errors.push('• 階段 01：已勾選附加說明圖片，但尚未上傳圖片');
+      if (this.formBuilderGroup.get('hasDescriptionImage')?.value) {
+        if (!this.formBuilderGroup.get('descriptionImageBase64')?.value) {
+          errors.push('• 階段 01：已勾選附加說明圖片，但尚未上傳圖片');
+        }
       }
     }
 
@@ -541,6 +563,10 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
 
         if (questionControl.get('description')?.invalid) {
           errors.push(`• 階段 03 問題 ${qNum}：題目內容尚未填寫`);
+        }
+
+        if (questionControl.get('hasImage')?.value && !questionControl.get('imageBase64')?.value) {
+          errors.push(`• 階段 03 問題 ${qNum}：已勾選附加示意圖片，但尚未上傳圖片`);
         }
 
         if (type === 'radio' || type === 'multiRadio') {

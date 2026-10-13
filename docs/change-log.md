@@ -3,6 +3,26 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-14 00:40] - 問卷設計題目下方與題間自由插入題目 (UI/UX 體驗大升級)、修復圖片上傳/驗證/持久化全鏈路、application.properties 條列式純淨註解重構、AGENTS.md 寫入專案註解嚴格屬實底線
+- **改動原因**: 依據使用者最新指令與操作截圖反饋：(1) 問卷設計 (`survey-design`) 新增題目必須能在「各題目下方」以及「各題目與題目之間」自由插入，符合現代頂級直覺之 UI/UX；(2) 根治圖片上傳驗證誤阻斷（「階段 01：已勾選附加說明圖片，但尚未上傳圖片」）與後端持久化丟失問題，確保前言封面與題目圖片本機上傳轉 Base64、即時預覽、一鍵移除與資料庫保存 100% 順暢；(3) 精簡 `application.properties`，移除不必要的 `admin.fullname` / `test-user.fullname`，改為頂部條列式清單集中說明所有關鍵設定；(4) 於 `AGENTS.md` 補充「專案註解確認」之「註解與程式碼嚴格 100% 屬實」工程防護底線。
+- **具體內容**:
+  - **問卷設計題目下方與題間插入功能 (Modern UI/UX)**:
+    - **表單邏輯升級**: `SurveyDesignComponent` 抽出 `buildQuestionFormGroup()`，新增 `insertQuestionAt(targetIndex: number)` 方法，精確在指定索引位置插入新問題，自動產生唯一 UID 與預設選項，不影響題目條件跳題與重排關聯。
+    - **題目卡片下方快捷插入**: 於每道題目的必填設定旁新增 `.btn-insert-below` 按鈕（「在下方插入問題」），點擊立即在當前題目正下方插入題目。
+    - **題間微動態插入條 (Question Divider)**: 在相鄰兩題之間渲染現代化分割條 `.question-insert-divider`，平常具備淡雅虛線與居中膠囊按鈕，hover 時流暢展開與發光高亮，點擊即可無縫在兩題之間插題。
+    - **題目列表底部大按鈕**: 於所有題目列表底部新增大尺寸卡片按鈕 `.btn-add-question-bottom`（「+ 新增問題至問卷末尾」），提供最方便的接續編輯體驗。
+  - **圖片上傳與驗證全鏈路打通**:
+    - **驗證誤阻斷根治**: 修正 `validateBeforeSubmit` 邏輯，將 `hasDescriptionImage` 檢核移入 `hasDescription` 條件區塊內部，徹底解決未啟用前言說明卻被圖片錯誤驗證阻斷的缺陷；新增階段 03 題目附加圖片專屬檢核。
+    - **狀態聯動優化**: 選取圖片後自動標記 `hasDescriptionImage` / `hasImage` 為 true；點擊「移除圖片」時自動清空 Base64 並重設開關。
+    - **傳輸與持久化管線**: `user-emitter.service.ts` 的 `emitDesignSurvey` 正確將 `payload.descriptionImageBase64` 作為 `coverImageUrl`，題目 `q.imageBase64` 作為 `imageUrl` 送至後端。
+    - **資料庫欄位擴容**: `Survey.java` 與 `SurveyQuestion.java` 將 `cover_image_url` 與 `image_url` 映射調整為 `columnDefinition = "LONGTEXT"`，並於 `01_schema.sql` 同步擴充，完美容納 Base64 與長網址。
+  - **application.properties 精簡與註解格式重構**:
+    - 徹底移除不必要的 `app.security.admin.fullname` 與 `app.security.test-user.fullname`，`UserCredentialSynchronizer.java` 改直接使用預設中文姓名。
+    - 將每個組態大區塊改為「頂部條列式清單」逐項說明參數工程目的，嚴禁單行註解與設定值散落混雜。
+  - **AGENTS.md 專案註解確認規範強化**:
+    - 明訂「專案註解確認」必須嚴格檢核註解是否真的與實體代碼內容 100% 嚴格屬實，杜絕過時與名不副實。
+- **影響範圍**: `AGENTS.md`, `application.properties`, `UserCredentialSynchronizer.java`, `Survey.java`, `SurveyQuestion.java`, `01_schema.sql`, `survey-design.component.html`, `survey-design.component.scss`, `survey-design.component.ts`, `user-emitter.service.ts`
+
 ## [2026-10-14 00:30] - 根治 MySQL CLI 匯入雙重編碼亂碼 (強制 SET NAMES utf8mb4)、清理舊資料庫過渡檔案、AGENTS-GIT.md 寫入 Commit Message 強制純英文規範
 - **改動原因**: 依據使用者截圖指引，排查問卷數據分析頁與個人中心姓名嚴重出現 Mojibake/雙重編碼亂碼之現象；確認成因為 MySQL Client 在無 `--default-character-set=utf8mb4` 下以預設 Latin1 讀取 UTF-8 檔案寫入；於所有 SQL 檔案頭部注入 `SET NAMES utf8mb4` 並更新 JDBC 連線校對；徹底清理 `db/` 目錄中過渡檔案；並依使用者要求將「Git Commit 訊息強制 100% 純英文」寫入 `AGENTS-GIT.md`。
 - **具體內容**:

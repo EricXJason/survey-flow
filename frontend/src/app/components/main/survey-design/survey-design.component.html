@@ -840,17 +840,61 @@
                   }
                 }
 
-                <!-- 題目必填設定 -->
+                <!-- 題目必填設定與下方插入問題按鈕 -->
                 <div class="q-footer-settings">
                   <label class="checkbox-row">
                     <input type="checkbox" formControlName="isRequired" />
                     <strong>將此題設為必填（未填答無法送出問卷）</strong>
                   </label>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm btn-insert-below"
+                    (click)="insertQuestionAt(qIndex + 1)"
+                    title="在第 {{ qIndex + 1 }} 題下方插入新問題"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>在下方插入問題</span>
+                  </button>
                 </div>
               </div>
             }
           </div>
+
+          <!-- 題目與題目之間的快捷插入條 (僅於非最後一題時呈現) -->
+          @if (qIndex < questionArray.length - 1) {
+            <div class="question-insert-divider">
+              <div class="divider-line"></div>
+              <button
+                type="button"
+                class="btn-insert-between"
+                (click)="insertQuestionAt(qIndex + 1)"
+                title="在第 {{ qIndex + 1 }} 題與第 {{ qIndex + 2 }} 題之間插入新問題"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>在此處插入問題</span>
+              </button>
+              <div class="divider-line"></div>
+            </div>
+          }
         }
+
+        <!-- 題目清單底部大按鈕 -->
+        <div class="questions-bottom-actions">
+          <button type="button" class="btn-add-question-bottom" (click)="addQuestion()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <span>+ 新增問題至問卷末尾</span>
+          </button>
+        </div>
       </div>
     </section>
 
