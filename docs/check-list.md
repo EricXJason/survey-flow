@@ -83,22 +83,8 @@
 
 ---
 
-## UI/UX 設計與文字規格
+## 前端樣式與互動規格
 
-- [x] **Figma 設計系統與跨端 RWD 規範 (`07-ui-ux-design.md` & `AGENTS-UIUX.md`)**:
-  - [x] **去 AI 化頂級設計美學**: 對標 supahero.io 等業界標竿，秉持精確呼吸感、4px/8px 格線階層與實質人體工學體驗。
-  - [x] **一、Wireframe & UX 說明 (Figma 官方原生 Remote MCP)**:
-    - [x] 使用者任務流程圖（涵蓋 Happy Path 暢行體驗與 Edge Cases 異常分流）。
-    - [x] 01. 訪客問卷大廳低保真線框圖 (Survey Lobby Wireframe · 1440x900 · Page: `01-Wireframe & Flow`)。
-    - [x] 02. 問卷作答器低保真線框圖 (Survey Runner Wireframe · 1440x900 · Page: `01-Wireframe & Flow`)。
-    - [x] 03. 提交完成感謝頁低保真線框圖 (Submission Success Wireframe · 1440x900 · Page: `01-Wireframe & Flow`)。
-    - [x] 04. 問卷管理控制台低保真線框圖 (Management Dashboard Wireframe · 1440x900 · Page: `01-Wireframe & Flow`)。
-    - [x] 05. 數據分析儀表板低保真線框圖 (Analytics Dashboard Wireframe · 1440x900 · Page: `01-Wireframe & Flow`)。
-    - [x] 3 大關鍵 UX 決策便利貼註解（動態漸進揭露、一級全頁分析視圖、Excel/SPSS 物理分流）。
-    - [x] 全面落地 Antigravity Universal Figma MCP 伺服器與常駐天線外掛，達成 100% 全自動雙向畫布讀寫閉環。
-  - [x] **二、Component Design**: 語意化 Design Tokens（Color, Typography, Spacing）、Button 5 種互動狀態（Default, Hover, Active, Disabled, Loading）、Input 4 種狀態與系統反饋元件（Modal, Toast, Skeleton, Empty State）。
-  - [x] **三、Prototype Design**: 高保真雙端 RWD（Desktop 1440px / Mobile 375px）、可點擊原型流暢微互動（200ms Ease-in-out）與前後端對齊之 DTO / API 觸發交付標記。
-  - [x] **雙向同步閉環**: 確立「以 Figma 為唯一真實設計源頭 (SSOT)」，支援指令 `正向UIUX開發`、`逆向UIUX開發` 與 `UIUX逆向更新`。
 - [x] **現代品牌設計系統純原生 SCSS 樣式 (嚴格禁用 Bootstrap)**:
   - [x] 全面採用純原生 SCSS 變數、Flexbox、CSS Grid 與現代科技藍白設計系統（以 `#2563eb` 品牌藍、純白卡片底色、精緻 Slate 灰色調與柔和圓角陰影深度適配全站視覺）。
   - [x] 徹底排除任何 Bootstrap CSS/JS 依賴，體積輕盈且維持 100% 視覺統一度與高質感微互動體驗。

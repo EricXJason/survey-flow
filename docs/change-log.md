@@ -5,6 +5,16 @@
 
 ---
 
+## [2026-10-13 18:02] - application.properties 每行註解淨化、移除 AWS 與全面移除 UI/UX Figma 文檔
+- **改動原因**: 依據使用者指示，將 application.properties 每一行皆補充詳細臺灣繁體中文註解、剔除未使用的 AWS/Actuator 設定，並徹底清除 docs 中的 UI/UX 與 Figma 相關規範與文檔。
+- **具體內容**:
+  - **屬性檔淨化**: `backend/src/main/resources/application.properties` 每一行配置上方均附帶業務說明與格式規範，並清楚標示填寫 MySQL 密碼之欄位位置；自 `backend/pom.xml` 與 properties 移除 `spring-boot-starter-actuator`
+  - **文檔精簡**: 永久刪除 `docs/system-design/07-ui-ux-design.md`，並自 `docs/check-list.md` 移除所有 Figma 設計系統、Wireframe 與 Prototype 相關條目，回歸純軟體工程與前端樣式規格
+  - **驗證確認**: 執行 `./mvnw test` 14 項單元與整合測試全數 100% 通過
+- **影響範圍**: `application.properties`, `backend/pom.xml`, `docs/check-list.md`, `docs/system-design/`
+
+---
+
 ## [2026-10-13 17:55] - application.properties 轉換、Native Query 重構、Admin/Public 分流與 JUnit 5 測試套件落地
 - **改動原因**: 依據使用者具體要求，將設定檔格式改為 properties、查詢全面採用純 MySQL 8.x 原生 SQL (Native Query)、重構 API 路由為 Public/Admin/User 嚴格分流、編寫 JUnit 5 + Mockito 測試套件並完成前端全端對接。
 - **具體內容**:

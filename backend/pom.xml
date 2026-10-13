@@ -95,12 +95,6 @@
             <version>${bouncycastle.version}</version>
         </dependency>
 
-        <!-- Spring Boot Actuator (健康檢查與監控，方便 AWS 部署) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
         <!-- Spring Boot Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
