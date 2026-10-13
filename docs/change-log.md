@@ -3,6 +3,21 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-14 00:30] - 根治 MySQL CLI 匯入雙重編碼亂碼 (強制 SET NAMES utf8mb4)、清理舊資料庫過渡檔案、AGENTS-GIT.md 寫入 Commit Message 強制純英文規範
+- **改動原因**: 依據使用者截圖指引，排查問卷數據分析頁與個人中心姓名嚴重出現 Mojibake/雙重編碼亂碼之現象；確認成因為 MySQL Client 在無 `--default-character-set=utf8mb4` 下以預設 Latin1 讀取 UTF-8 檔案寫入；於所有 SQL 檔案頭部注入 `SET NAMES utf8mb4` 並更新 JDBC 連線校對；徹底清理 `db/` 目錄中過渡檔案；並依使用者要求將「Git Commit 訊息強制 100% 純英文」寫入 `AGENTS-GIT.md`。
+- **具體內容**:
+  - **AGENTS-GIT.md 規範更新**:
+    - 第 2.1 節明訂所有 `git commit -m "..."` 提交訊息一律強制 100% 僅能使用純英文撰寫（嚴格遵守 Conventional Commits 格式），嚴禁任何中文字元。
+  - **徹底根治 MySQL Mojibake 雙重編碼亂碼**:
+    - **成因排查**: macOS 終端透過重導向 `<` 執行 SQL 腳本時，若未加 `--default-character-set=utf8mb4` 且腳本未宣告 `SET NAMES utf8mb4`，MySQL CLI Client 會預設採用 Latin1 編碼讀取字節並向 Server 宣告為 Latin1 字符，Server 將其二次轉碼存入 utf8mb4，造成嚴重雙重編碼亂碼。
+    - **根本防禦**:
+      - 於 `01_schema.sql`、`02_seed_data.sql` 與 `reset_database.sql` 頂部第一行強制注入 `SET NAMES utf8mb4; SET CHARACTER SET utf8mb4;`。
+      - `application.properties` 連線字串明確指定 `characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci`。
+      - 重新以 `utf8mb4` 導入 MySQL，驗證 `users`、`surveys`、`questions`、`options` 所有繁體中文 100% 正常清晰顯示。
+  - **資料庫目錄結構淨化**:
+    - 移除過渡檔案 `seed_10q_database.sql`、`seed_10q_generator.py`、`seed_all_types.sql`，保持 `backend/src/main/resources/db/` 僅保留乾淨的 `01_schema.sql`、`02_seed_data.sql`、`reset_database.sql` 與 `build_complete_database.py`。
+- **影響範圍**: `AGENTS-GIT.md`, `application.properties`, `db/01_schema.sql`, `db/02_seed_data.sql`, `db/reset_database.sql`, `db/build_complete_database.py`
+
 ## [2026-10-14 00:20] - 新增訪客角色 ROLE_GUEST、狀態對齊大廳公開性 (PUBLISHED/UNPUBLISHED)、開源高畫質圖片整合、填答防呆防溢出、未登入路由攔截與單一資料庫快速重置 SQL 模組化
 - **改動原因**: 依據使用者最新業務指令與截圖反饋，擴展身分角色至包含未登入訪客 (`ROLE_GUEST`)；簡化問卷狀態生命週期，徹底移除 DRAFT，僅保留 `PUBLISHED` 與 `UNPUBLISHED` 決定是否公開至問卷大廳，並將填答權限完全回歸有效時程判定；全端整合 Unsplash 高品質開源圖片（問卷主視覺封面與關鍵題目附圖）；全面為受訪者基本資料輸入欄位補齊 `maxlength` 與數值邊界防呆；實作未登入訪客路由守衛，嚴格限制僅登入會員可發起或設計問卷；優化 Admin 會員名冊展示真實 `username`、姓名與電話並徹底隱藏保護管理員帳號；重構 `application.properties` 為整潔大區塊集中註解；並將全部資料庫 DDL 與 40 筆預設數據歸檔至 `db/` 目錄並產出 `reset_database.sql` 單一檔案一鍵重置腳本。
 - **具體內容**:

@@ -14,6 +14,9 @@ CREATE DATABASE IF NOT EXISTS `survey_flow`
 
 USE `survey_flow`;
 
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `submission_answers`;
 DROP TABLE IF EXISTS `submission_basic_infos`;
@@ -209,6 +212,9 @@ seed_sql_header = """-- ========================================================
 -- ============================================================================
 
 USE `survey_flow`;
+
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE `submission_answers`;
@@ -558,8 +564,15 @@ reset_sql = f"""-- =============================================================
 with open(os.path.join(db_dir, "reset_database.sql"), "w", encoding="utf-8") as f:
     f.write(reset_sql)
 
-# 4. 同時將 backend/src/main/resources/schema.sql 保持同步鏡像
-with open("/Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/schema.sql", "w", encoding="utf-8") as f:
-    f.write(schema_sql)
+# 5. 清理舊有模糊與過時的過渡腳本檔案
+old_files_to_remove = [
+    os.path.join(db_dir, "seed_10q_database.sql"),
+    os.path.join(db_dir, "seed_10q_generator.py"),
+    os.path.join(db_dir, "seed_all_types.sql")
+]
+for old_path in old_files_to_remove:
+    if os.path.exists(old_path):
+        os.remove(old_path)
+        print(f"Removed legacy file: {os.path.basename(old_path)}")
 
 print("Database SQL files generated successfully in db/ directory!")

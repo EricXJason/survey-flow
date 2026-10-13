@@ -6,6 +6,9 @@
 
 USE `survey_flow`;
 
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE `submission_answers`;
 TRUNCATE TABLE `submission_basic_infos`;

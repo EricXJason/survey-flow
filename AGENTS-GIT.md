@@ -70,8 +70,12 @@
   - **絕對執行時機**: 專案已完成 Git 初始化且當前處於 `feature` 分支時，**Agent 每次完成任何程式碼生成、修改、文檔任務後，在向人類輸出最終回覆文字前，強制必須自動於背景執行 CLI 原子提交**：
     ```bash
     git add .
-    git commit -m "<type>(<scope>): <short imperative description>"
+    git commit -m "<type>(<scope>): <short imperative description in pure English>"
     ```
+  - **Commit 訊息語言強制純英文規範 (Pure English Only)**:
+    - **所有 `git commit -m "..."` 的提交訊息，一律強制 100% 僅能使用英文撰寫**。
+    - 嚴格遵守業界 Conventional Commits 標準格式（例如 `feat: ...`, `fix: ...`, `refactor: ...`, `docs: ...`, `chore: ...`）。
+    - **嚴禁在 Git Commit 訊息中出現任何中文字元**，維持國際化乾淨版控歷程。
   - **工作區零殘留底線**: 嚴禁在結束對話或回報時遺留未提交變更（Uncommitted changes）於本地工作區交差；工作區必須永遠維持乾淨已提交狀態，進度 100% 入庫。
 
 ---

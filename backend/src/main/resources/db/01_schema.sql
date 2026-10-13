@@ -12,6 +12,9 @@ CREATE DATABASE IF NOT EXISTS `survey_flow`
 
 USE `survey_flow`;
 
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `submission_answers`;
 DROP TABLE IF EXISTS `submission_basic_infos`;
