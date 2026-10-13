@@ -26,6 +26,7 @@ public class OptionDto {
     private Long id;
 
     @NotBlank(message = "選項文字不得為空")
+    @jakarta.validation.constraints.Size(min = 1, max = 255, message = "選項文字長度不得超過 255 字元")
     private String optionText;
 
     @Builder.Default

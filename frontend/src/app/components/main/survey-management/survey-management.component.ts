@@ -368,6 +368,45 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * 複製專屬填答連結至剪貼簿
+   * 不論公開或私人未發布問卷，均可取得填答專屬網址分享給他人作答
+   * @param survey 目標問卷資料
+   */
+  public onCopyShareLink(survey: SurveySummaryItem): void {
+    const shareUrl = `${window.location.origin}/survey-runner?surveyId=${survey.id}`;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        const data: DialogData = {
+          title: '作答連結已複製',
+          message: `問卷「${survey.title}」之專屬填答連結已成功複製至剪貼簿！\n\n🔗 連結網址：\n${shareUrl}\n\n此專屬連結支援公開與私人問卷，轉發給受訪者即可直接進入填答。`,
+          mode: 'noticeMode',
+          confirmText: '確定',
+          showCloseButton: true,
+        };
+        this._dialogService.showDialog(data).subscribe();
+      }).catch(() => {
+        this._fallbackCopyShareLink(survey, shareUrl);
+      });
+    } else {
+      this._fallbackCopyShareLink(survey, shareUrl);
+    }
+  }
+
+  /**
+   * 剪貼簿 API 不支援時之回退對話框
+   */
+  private _fallbackCopyShareLink(survey: SurveySummaryItem, shareUrl: string): void {
+    const data: DialogData = {
+      title: '專屬填答連結',
+      message: `問卷「${survey.title}」之專屬填答連結如下，請選取複製：\n\n${shareUrl}`,
+      mode: 'noticeMode',
+      confirmText: '確定',
+      showCloseButton: true,
+    };
+    this._dialogService.showDialog(data).subscribe();
+  }
+
   // ─────────────────────────────────────────────────────────────────────────
   // 匯出功能方法群
   // ─────────────────────────────────────────────────────────────────────────

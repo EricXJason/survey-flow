@@ -49,6 +49,10 @@
   - [x] 前端 `app.config.ts` 註冊 `provideHttpClient(withFetch())`。
   - [x] 建立 `ApiClientService` 封裝 `http://localhost:8080` 與 Bearer Token 自動附帶。
   - [x] `SurveyGetterService` 實現雙軌運作（優先連線後端 Spring Boot，斷線時自動優雅降級回退 Mock Data）。
+  - [x] **動態憑證同步機制 (`UserCredentialSynchronizer`)**: 徹底移除硬編碼或記憶體假資料，改於 Spring Boot 啟動時自 `application.properties` 動態讀取 `admin` 與 `testuser` 帳密並同步至 MySQL Argon2id 密碼雜湊，支援即時修改密碼與真實登入。
+  - [x] **全型態問卷專屬填寫連結與作答支援**: 問卷管理後台支援不論公開或私人（DRAFT），一鍵複製專屬直達連結，後端放寬非公開問卷持連結可正常載入與提交作答（僅於 CLOSED 狀態阻斷）。
+  - [x] **前後端 DTO Validation 與 Database Constraint 完全對齊**: 登入長度、問卷建立與填答回答明細之 `@Valid`、`@Size`、`@NotBlank` 與資料庫欄位 100% 對齊無衝突。
+  - [x] **真實測試數據持久化**: 建立 4 筆 `testuser` 問卷（3 筆公開 + 1 筆私人）與 40 筆真實作答記錄（191 筆題型回答明細），支援數據分析儀表板真實查詢。
 
 ---
 

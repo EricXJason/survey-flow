@@ -12,6 +12,7 @@
  */
 
 import { Component, inject, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
   AbstractControl,
@@ -22,6 +23,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { SurveyStateService } from '../../../@services/survey-state.service';
+import { SurveyGetterService } from '../../../@services/survey-getter.service';
 import { DialogService, DialogData } from '../../../@services/dialog.service';
 import { ValidationService } from '../../../@services/validation.service';
 import { UserEmitterService } from '../../../@services/user-emitter.service';
@@ -59,6 +61,10 @@ interface BasicInfoFieldMeta {
   imports: [ReactiveFormsModule],
 })
 export class SurveyRunnerComponent implements OnInit {
+  /** 路由參數服務 */
+  private readonly _route = inject(ActivatedRoute);
+  /** 問卷查詢服務 */
+  private readonly _surveyGetter = inject(SurveyGetterService);
   /** 響應式表單建構器 */
   private readonly _formBuilder = inject(FormBuilder);
   /** 系統對話框管理服務 */
@@ -77,9 +83,25 @@ export class SurveyRunnerComponent implements OnInit {
 
   /**
    * Angular 生命週期鉤子 (ngOnInit)
-   * 依據問卷定義動態初始化受訪者欄位與題目 controls；若當前為預覽模式則自動禁用全部表單控制項。
+   * 檢查網址是否有指定問卷 ID 參數 (?surveyId=... 或 ?id=...)，支援專屬連結直達載入；若為預覽模式則自動禁用全部表單控制項。
    */
   public ngOnInit(): void {
+    const queryId =
+      this._route.snapshot.queryParams['surveyId'] ||
+      this._route.snapshot.queryParams['id'];
+
+    if (queryId) {
+      this._surveyGetter.getSurveyById(String(queryId)).subscribe((loadedSurvey) => {
+        if (loadedSurvey) {
+          this.surveyStateService.setForRunMode(loadedSurvey);
+          this.runnerFormGroup = this.formBuilderGroupInit();
+        } else {
+          this.runnerFormGroup = this.formBuilderGroupInit();
+        }
+      });
+      return;
+    }
+
     this.runnerFormGroup = this.formBuilderGroupInit();
     if (this.isPreview) {
       this.runnerFormGroup.disable();
@@ -566,7 +588,9 @@ export class SurveyRunnerComponent implements OnInit {
       }
     }
 
+    const rawId = (this.survey as any).id || (this.survey as any).uid || 1;
     const payload: SurveySubmissionPayload = {
+      surveyId: rawId,
       surveyTitle: this.survey.title,
       surveyCategory: this.survey.category,
       submittedAt: new Date().toISOString(),

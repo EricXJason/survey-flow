@@ -13,8 +13,10 @@
 package com.surveyflow.dto.survey;
 
 import com.surveyflow.common.enums.SurveyStatus;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,11 +33,14 @@ import java.util.List;
 public class SurveyCreateRequest {
 
     @NotBlank(message = "問卷標題不得為空")
+    @Size(min = 1, max = 150, message = "問卷標題長度需介於 1 至 150 字元")
     private String title;
 
+    @Size(max = 5000, message = "問卷前言描述長度不得超過 5000 字元")
     private String description;
 
     @Builder.Default
+    @Size(max = 50, message = "問卷分類長度不得超過 50 字元")
     private String category = "綜合調查";
 
     @Builder.Default
@@ -47,8 +52,9 @@ public class SurveyCreateRequest {
     @NotNull(message = "問卷結束時間不得為空")
     private LocalDateTime endDate;
 
+    @Valid
     private BasicInfoConfigDto basicInfoConfig;
 
     @Builder.Default
-    private List<QuestionDto> questions = new ArrayList<>();
+    private List<@Valid QuestionDto> questions = new ArrayList<>();
 }

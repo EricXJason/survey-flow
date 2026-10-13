@@ -145,6 +145,7 @@ export interface SurveyBasicInfoAnswers {
  * 受訪者送出問卷完整作答酬載
  */
 export interface SurveySubmissionPayload {
+  surveyId?: string | number;
   surveyTitle: string;
   surveyCategory: string;
   submittedAt: string;

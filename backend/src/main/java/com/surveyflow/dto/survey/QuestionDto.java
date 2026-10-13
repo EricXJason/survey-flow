@@ -13,8 +13,10 @@
 package com.surveyflow.dto.survey;
 
 import com.surveyflow.common.enums.QuestionType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,12 +31,15 @@ import java.util.List;
 @AllArgsConstructor
 public class QuestionDto {
     private Long id;
+
+    @Size(max = 50, message = "題目代碼長度不得超過 50 字元")
     private String questionCode;
 
     @NotNull(message = "題型不得為空")
     private QuestionType type;
 
     @NotBlank(message = "題目文字不得為空")
+    @Size(min = 1, max = 500, message = "題目文字長度需介於 1 至 500 字元")
     private String questionText;
 
     @Builder.Default
@@ -50,5 +55,5 @@ public class QuestionDto {
     private Integer maxRating = 5;
 
     @Builder.Default
-    private List<OptionDto> options = new ArrayList<>();
+    private List<@Valid OptionDto> options = new ArrayList<>();
 }

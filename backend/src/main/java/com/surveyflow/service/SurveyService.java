@@ -162,8 +162,8 @@ public class SurveyService {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("問卷不存在或已下架"));
 
-        if (survey.getStatus() != SurveyStatus.PUBLISHED) {
-            throw new IllegalArgumentException("此問卷尚未公開發布或已截止收件");
+        if (survey.getStatus() == SurveyStatus.CLOSED) {
+            throw new IllegalArgumentException("此問卷已截止結束收件，無法再進行填答");
         }
 
         // 累加瀏覽次數

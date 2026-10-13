@@ -46,8 +46,8 @@ public class SubmissionService {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(request.getSurveyId())
                 .orElseThrow(() -> new IllegalArgumentException("填答之問卷不存在或已刪除"));
 
-        if (survey.getStatus() != SurveyStatus.PUBLISHED) {
-            throw new IllegalArgumentException("此問卷目前非公開徵集狀態，無法送出回答");
+        if (survey.getStatus() == SurveyStatus.CLOSED) {
+            throw new IllegalArgumentException("此問卷目前已截止關閉，無法再提交回答");
         }
 
         LocalDateTime now = LocalDateTime.now();

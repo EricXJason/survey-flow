@@ -5,6 +5,18 @@
 
 ---
 
+## [2026-10-13 18:45] - 動態憑證同步、前後端驗證對齊、問卷分享連結與 4 筆真實問卷及 40 筆作答持久化
+- **改動原因**: 依據使用者指示，徹底移除假資料生成器 `DataInitializer`，改自 `application.properties` 動態同步管理員與測試會員帳密；前後端 Validation 與 Database Constraint 完全對齊；前端問卷列表新增公開與私人專屬填寫連結複製按鈕及真實刪除功能；為 `testuser` 注入 4 筆問卷（3 公開 + 1 私人）與 40 筆真實填答記錄，供後台數據分析儀表板即時調閱。
+- **具體內容**:
+  - **動態憑證同步**: 實作 `UserCredentialSynchronizer`，在 Spring Boot 啟動時自動讀取 `application.properties` 設定的 `app.security.admin.*` 與 `app.security.test-user.*`，自動對齊並同步 MySQL 中的 Argon2id 密碼雜湊，支援隨改隨登入。
+  - **前後端 Validation 完全對齊**: 登入表單僅校驗必要長度，解除自訂簡單密碼被註冊檢核阻擋之問題；問卷題目、選項與作答明細之 DTO 補齊 `@Valid`、`@Size`、`@NotBlank` 註解並對齊 MySQL schema 限制。
+  - **問卷專屬填寫連結與作答**: 前端問卷管理後台新增「複製連結」按鈕，產生 `${origin}/survey-runner?surveyId=${id}`，支援一鍵複製；後端放寬非公開問卷（DRAFT）持專屬連結直達載入與提交作答。
+  - **前端真實 API 全面對接**: `UserEmitterService` 與 `SurveyAnalyticsService` 正式串接 Spring Boot 登入、註冊、問卷設計新增、問卷刪除與各題型統計查詢端點。
+  - **真實測試數據持久化**: 持久化 4 筆真實問卷與 40 筆作答記錄至 MySQL，包含單選、多選、文字反饋與量表評分明細。
+- **影響範圍**: `UserCredentialSynchronizer.java`, `application.properties`, `SurveyService.java`, `SubmissionService.java`, `user-emitter.service.ts`, `survey-management.component.*`, `survey-runner.component.ts`, `log-in.component.ts`, `backend/src/main/resources/db/seed.sql`
+
+---
+
 ## [2026-10-13 18:16] - 本地 MySQL 9 表完整建置、種子資料初始化與前後端完整運行打通
 - **改動原因**: 依據使用者指示，由 AI 直接執行 MySQL DDL 建置資料庫與資料表，注入種子測試帳號與範例問卷，實現本地前後端開箱即用完整運行。
 - **具體內容**:
