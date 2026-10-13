@@ -192,7 +192,7 @@ public class AnalyticsService {
                     .questionText(q.getQuestionText())
                     .type(q.getType());
 
-            if (q.getType() == QuestionType.SINGLE || q.getType() == QuestionType.MULTI) {
+            if (q.getType() == QuestionType.SINGLE || q.getType() == QuestionType.MULTI || q.getType() == QuestionType.BOOLEAN) {
                 Map<String, Long> counts = new HashMap<>();
                 Map<String, Double> percentages = new HashMap<>();
 
@@ -234,7 +234,7 @@ public class AnalyticsService {
                 builder.totalAnswers(count != null ? count : 0L)
                         .averageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
 
-            } else if (q.getType() == QuestionType.TEXT) {
+            } else if (q.getType() == QuestionType.TEXT || q.getType() == QuestionType.TIME || q.getType() == QuestionType.DATE) {
                 List<String> feedbacks = answerRepository.findTextAnswersByQuestionNative(q.getId());
                 builder.totalAnswers((long) feedbacks.size())
                         .textFeedbacks(feedbacks.stream().limit(20).collect(Collectors.toList()));

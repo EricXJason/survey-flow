@@ -67,12 +67,28 @@ public class UserCredentialSynchronizer implements CommandLineRunner {
         log.info("🔐 正在自 application.properties 讀取帳號密碼配置並同步至資料庫...");
 
         // 1. 同步管理員帳號
-        syncUser(adminUsername, adminEmail, adminPassword, adminFullName, "0912345678", RoleType.ROLE_ADMIN);
+        syncUser(adminUsername, adminEmail, adminPassword, fixEncoding(adminFullName, "系統最高管理員"), "0912345678", RoleType.ROLE_ADMIN);
 
         // 2. 同步測試一般會員帳號
-        syncUser(testUsername, testEmail, testPassword, testFullName, "0987654321", RoleType.ROLE_USER);
+        syncUser(testUsername, testEmail, testPassword, fixEncoding(testFullName, "測試會員小明"), "0987654321", RoleType.ROLE_USER);
 
         log.info("✅ 帳號憑證同步完成：管理員 [{}] 與測試會員 [{}] 可直接依設定檔密碼登入", adminUsername, testUsername);
+    }
+
+    /**
+     * 防禦性修復 Properties 在 ISO-8859-1 下讀取 UTF-8 造成的亂碼
+     */
+    private String fixEncoding(String value, String fallback) {
+        if (value == null || value.trim().isEmpty()) {
+            return fallback;
+        }
+        try {
+            if (value.contains("æ") || value.contains("å") || value.contains("è") || value.contains("ç")) {
+                return new String(value.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1), java.nio.charset.StandardCharsets.UTF_8);
+            }
+        } catch (Exception ignored) {
+        }
+        return value;
     }
 
     /**
@@ -86,7 +102,7 @@ public class UserCredentialSynchronizer implements CommandLineRunner {
             existingUser.setRole(role);
             existingUser.setStatus("ACTIVE");
             userRepository.save(existingUser);
-            log.info("已同步使用者 [{}] 之最新密碼雜湊與個人設定", username);
+            log.info("已同步使用者 [{}] 之最新密碼雜湊與個人設定 (姓名: {})", username, fullName);
         }, () -> {
             User newUser = User.builder()
                     .username(username)
@@ -98,7 +114,7 @@ public class UserCredentialSynchronizer implements CommandLineRunner {
                     .status("ACTIVE")
                     .build();
             userRepository.save(newUser);
-            log.info("已於資料庫建立全新使用者帳號 [{}]", username);
+            log.info("已於資料庫建立全新使用者帳號 [{}] (姓名: {})", username, fullName);
         });
     }
 }

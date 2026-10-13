@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `survey_questions` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '題目唯一識別碼',
     `survey_id` BIGINT NOT NULL COMMENT '所屬問卷 ID',
     `question_code` VARCHAR(50) DEFAULT NULL COMMENT '前端題目 UID (例如 Q1, Q2, 供跳題邏輯對應)',
-    `type` VARCHAR(20) NOT NULL COMMENT '題型代碼: SINGLE, MULTI, TEXT, RATING',
+    `type` VARCHAR(20) NOT NULL COMMENT '題型代碼: BOOLEAN, SINGLE, MULTI, TEXT, RATING, TIME, DATE',
     `question_text` VARCHAR(500) NOT NULL COMMENT '題目標題文字',
     `is_required` BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否為必答題',
     `sort_order` INT NOT NULL DEFAULT 1 COMMENT '題目顯示排序 (由小到大)',

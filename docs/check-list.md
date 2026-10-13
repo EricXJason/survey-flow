@@ -58,6 +58,13 @@
     - [x] 維度一：是否公開至問卷大廳 (`is_public_to_lobby` / `isPublicToLobby`)。
     - [x] 維度二：是否開放填寫 (`isOpen` / `PUBLISHED` vs `CLOSED`)。
     - [x] 時效區間：支援動態設定開始時間 (`startDate`) 與截止時間 (`endDate`)，或設為常態開放。
+  - [x] **問卷題目 7 大型態全端完整支援 (是非、單選、複選、評分量表、簡答、時間、日期)**:
+    - [x] 後端 `QuestionType` 擴展 `BOOLEAN`, `TIME`, `DATE`，達成完整 7 大題型定義。
+    - [x] 前端 `SurveyGetterService` 與 `UserEmitterService` 完成 7 種題型雙向完整映射。
+    - [x] `AnalyticsService` 支援 `BOOLEAN` 百分比統計與 `TIME`/`DATE` 答案彙整。
+  - [x] **全域編碼防禦機制 (Unicode Escaping + fixEncoding)**:
+    - [x] `application.properties` 中文值轉為標準 Unicode 轉義字符，防止 Properties 讀取時因 ISO-8859-1 解碼產生 latin1 亂碼。
+    - [x] `UserCredentialSynchronizer` 實作字元集校正防禦，確保使用者全名於資料庫與前端 Header 100% 正確顯示為臺灣繁體中文。
   - [x] **管理員會員名冊與狀態管理 API**:
     - [x] `GET /api/admin/users`: 取得全站會員清單與統計數據。
     - [x] `PATCH /api/admin/users/{userId}/status`: 即時切換會員啟用/凍結狀態。

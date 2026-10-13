@@ -276,12 +276,21 @@ export class UserEmitterService {
         },
         questions: (payload.questions || []).map((q, idx) => {
           let qType = 'TEXT';
-          if (q.type === 'radio') {
+          const t = (q.type || '').toLowerCase();
+          if (t === 't/f' || t === 'boolean') {
+            qType = 'BOOLEAN';
+          } else if (t === 'radio' || t === 'single') {
             qType = 'SINGLE';
-          } else if (q.type && q.type.toLowerCase().includes('multi')) {
+          } else if (t.includes('multi')) {
             qType = 'MULTI';
-          } else if (q.type === 'scale') {
+          } else if (t === 'scale' || t === 'rating') {
             qType = 'RATING';
+          } else if (t === 'time') {
+            qType = 'TIME';
+          } else if (t === 'date') {
+            qType = 'DATE';
+          } else {
+            qType = 'TEXT';
           }
 
           return {
