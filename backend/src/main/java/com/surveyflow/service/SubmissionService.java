@@ -43,7 +43,7 @@ public class SubmissionService {
      */
     @Transactional
     public SubmissionResponse submitSurvey(SubmissionRequest request, String clientIp) {
-        Survey survey = surveyRepository.findByIdAndDeletedAtIsNull(request.getSurveyId())
+        Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(request.getSurveyId())
                 .orElseThrow(() -> new IllegalArgumentException("填答之問卷不存在或已刪除"));
 
         if (survey.getStatus() != SurveyStatus.PUBLISHED) {

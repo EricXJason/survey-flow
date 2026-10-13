@@ -147,7 +147,7 @@ public class SurveyService {
      */
     @Transactional(readOnly = true)
     public SurveyResponse getSurveyDetail(Long surveyId) {
-        Survey survey = surveyRepository.findByIdAndDeletedAtIsNull(surveyId)
+        Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此問卷專案"));
         return convertToDetailResponse(survey);
     }
@@ -159,7 +159,7 @@ public class SurveyService {
      */
     @Transactional
     public SurveyResponse getPublicSurvey(Long surveyId) {
-        Survey survey = surveyRepository.findByIdAndDeletedAtIsNull(surveyId)
+        Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("問卷不存在或已下架"));
 
         if (survey.getStatus() != SurveyStatus.PUBLISHED) {
@@ -182,7 +182,7 @@ public class SurveyService {
      */
     @Transactional(readOnly = true)
     public Page<SurveySummaryResponse> searchLobbySurveys(String category, String keyword, Pageable pageable) {
-        Page<Survey> page = surveyRepository.searchPublishedSurveys(category, keyword, pageable);
+        Page<Survey> page = surveyRepository.searchPublishedSurveysNative(category, keyword, pageable);
         return page.map(this::convertToSummaryResponse);
     }
 
@@ -196,7 +196,7 @@ public class SurveyService {
     public Page<SurveySummaryResponse> getUserSurveys(String currentUsername, Pageable pageable) {
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("查無此使用者"));
-        Page<Survey> page = surveyRepository.findByCreatorAndDeletedAtIsNull(user, pageable);
+        Page<Survey> page = surveyRepository.findByUserIdAndDeletedAtIsNullNative(user.getId(), pageable);
         return page.map(this::convertToSummaryResponse);
     }
 
@@ -217,7 +217,7 @@ public class SurveyService {
      * 內部核對問卷擁有者權限 (建立者本人或管理員)
      */
     private Survey findSurveyByIdAndVerifyOwner(Long surveyId, String currentUsername) {
-        Survey survey = surveyRepository.findByIdAndDeletedAtIsNull(surveyId)
+        Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此問卷專案"));
 
         User currentUser = userRepository.findByUsername(currentUsername)
@@ -237,7 +237,7 @@ public class SurveyService {
      * 轉換為詳情 Response
      */
     private SurveyResponse convertToDetailResponse(Survey survey) {
-        long submissionCount = submissionRepository.countBySurvey(survey);
+        long submissionCount = submissionRepository.countBySurveyIdNative(survey.getId());
 
         BasicInfoConfigDto configDto = null;
         if (survey.getBasicInfoConfig() != null) {
@@ -296,7 +296,7 @@ public class SurveyService {
      * 轉換為概要 Response
      */
     private SurveySummaryResponse convertToSummaryResponse(Survey survey) {
-        long submissionCount = submissionRepository.countBySurvey(survey);
+        long submissionCount = submissionRepository.countBySurveyIdNative(survey.getId());
         return SurveySummaryResponse.builder()
                 .id(survey.getId())
                 .title(survey.getTitle())

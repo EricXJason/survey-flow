@@ -124,7 +124,7 @@ public class AuthService {
     @Transactional
     public void logout(String username) {
         userRepository.findByUsername(username).ifPresent(user -> {
-            refreshTokenRepository.revokeAllByUser(user);
+            refreshTokenRepository.revokeAllByUserId(user.getId());
             log.info("會員已成功登出並撤銷權杖: username={}", username);
         });
     }

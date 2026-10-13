@@ -1,8 +1,8 @@
 /**
  * ============================================================================
  * 檔案名稱: SubmissionController.java
- * 所屬模組: Controller 控制器層 - 填答送出
- * 責任描述: 提供受訪者提交問卷作答之公開 RESTful API 端點
+ * 所屬模組: Controller 控制器層 - 填答送出 (Public)
+ * 責任描述: 提供受訪者提交問卷作答之公開 (Public) RESTful API 端點
  * 架構分層: Presentation / Controller Layer
  * 聯動關係:
  *   - 上游依賴: SubmissionService
@@ -23,23 +23,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/submissions")
 @RequiredArgsConstructor
 public class SubmissionController {
 
     private final SubmissionService submissionService;
 
     /**
-     * 受訪者提交填答結果端點 (免認證)
+     * 受訪者提交填答結果端點 (公開端點)
      * @param request 填答內容
      * @param httpRequest HTTP 請求物件 (用於提取客戶端 IP)
      * @return 提交成功確認
      */
-    @PostMapping
+    @PostMapping({"/api/public/submissions", "/api/submissions"})
     public ResponseEntity<ApiResponse<SubmissionResponse>> submitSurvey(
             @Valid @RequestBody SubmissionRequest request,
             HttpServletRequest httpRequest) {

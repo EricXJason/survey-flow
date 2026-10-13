@@ -27,13 +27,28 @@
 - [x] **表單數據分析聚合服務 (`SurveyAnalyticsService`)**: 提供問卷統計計算、近 7 日每日回覆時間走勢、受訪者輪廓（性別、年齡層）、題型作答聚合分析（單選/多選比例、量表評分分佈、文字反饋抽樣），並內建管理員全域與會員所屬問卷之權限檢查守衛 (`canAccessAnalytics`)。
 - [x] **未來全端 Java Spring Boot API 規範對齊**: 於 API 規格書定義 `GET /api/surveys/{surveyId}/analytics` 端點與 Spring Security 權限防護（`@PreAuthorize` 管理員或擁有者），提供全端接軌 DTO。
 - [x] **Spring Boot 4.1.1 基礎架構骨架 (Java 21 + Maven)**: 配置 `pom.xml`，整合 Spring Web, Spring Data JPA, Spring Security, MySQL Connector, Validation, Lombok，並通過編譯測試。
+- [x] **設定檔格式標準化**: 將設定檔完全轉換為標準 `application.properties`，支援 MySQL HikariCP 連線池、SQL DDL 初始化模式與 JWT 參數。
 - [x] **安全認證核心 (Argon2id + JWT 雙 Token 旋轉機制)**: 實作 `JwtAuthenticationFilter`, `Argon2PasswordEncoder`, `TokenProvider`。
-- [x] **RESTful API 控制器與商務邏輯服務 (Controller & Service)**:
-  - [x] 認證授權模組 (`AuthController`, `AuthService`)
-  - [x] 問卷管理與設計模組 (`SurveyController`, `SurveyService`)
-  - [x] 受訪者填答模組 (`SubmissionController`, `SubmissionService`)
-  - [x] 統計數據分析聚合模組 (`AnalyticsController`, `AnalyticsService`)
-  - [x] 全域異常攔截與標準 API 回應規格 (`GlobalExceptionHandler`, `ApiResponse<T>`)
+- [x] **API 路由階層分流架構 (Admin / Public / Member)**:
+  - [x] **公開端點 (`/api/public/**`)**: 註冊、登入、Token 換發、大廳公開分頁檢索 (`/api/public/surveys/lobby`)、公開問卷填答取得與受訪者填答提交 (`/api/public/submissions`)。
+  - [x] **管理員專用端點 (`/api/admin/**`)**: 嚴格受 `@PreAuthorize("hasRole('ADMIN')")` 防護，提供全站會員名冊、狀態變更、強制下架問卷與全站營運 KPI (`/api/admin/analytics/overview`)。
+  - [x] **會員專用端點 (`/api/user/**`)**: 問卷建立、修改、軟刪除、自有問卷清單與個人數據報表調閱。
+- [x] **全原生 SQL 查詢規範 (Native Query 100% 落地)**:
+  - [x] `RefreshTokenRepository`: 原生 SQL 批量撤銷權杖與有效性檢查。
+  - [x] `SurveyRepository`: 原生 SQL 大廳模糊搜尋、使用者問卷檢索與 Admin 總覽。
+  - [x] `SubmissionRepository`: 原生 SQL 回收數統計、平均時長計算與全站總填答次數。
+  - [x] `SubmissionAnswerRepository`: 原生 SQL 題型選項勾選統計、評分量表平均分與開放式文字提取。
+  - [x] `UserRepository`: 原生 SQL 帳號/信箱唯一性檢查與 Admin 會員分頁。
+- [x] **JUnit 5 與 Mockito 完整自動化測試套件 (14/14 全數 PASS)**:
+  - [x] `AuthServiceTest`: 註冊、重複帳號阻斷、登入驗證、密碼錯誤阻斷、登出撤銷。
+  - [x] `SurveyServiceTest`: 問卷建立、公開瀏覽累加 viewCount、非擁有者刪除權限阻斷。
+  - [x] `AnalyticsServiceTest`: KPI 與 NPS 聚合運算、非擁有者無權調閱阻斷。
+  - [x] `PublicControllerTest`: MockMvc 測試大廳分頁、參數校驗 400、填答提交 200。
+  - [x] `AdminControllerTest`: MockMvc 測試管理員總覽指標 200。
+- [x] **前後端全端即時無縫對接**:
+  - [x] 前端 `app.config.ts` 註冊 `provideHttpClient(withFetch())`。
+  - [x] 建立 `ApiClientService` 封裝 `http://localhost:8080` 與 Bearer Token 自動附帶。
+  - [x] `SurveyGetterService` 實現雙軌運作（優先連線後端 Spring Boot，斷線時自動優雅降級回退 Mock Data）。
 
 ---
 

@@ -5,6 +5,21 @@
 
 ---
 
+## [2026-10-13 17:55] - application.properties 轉換、Native Query 重構、Admin/Public 分流與 JUnit 5 測試套件落地
+- **改動原因**: 依據使用者具體要求，將設定檔格式改為 properties、查詢全面採用純 MySQL 8.x 原生 SQL (Native Query)、重構 API 路由為 Public/Admin/User 嚴格分流、編寫 JUnit 5 + Mockito 測試套件並完成前端全端對接。
+- **具體內容**:
+  - **設定檔格式化**: 移除 `application.yml`，改以 `backend/src/main/resources/application.properties` 配置資料來源、HikariCP、JPA 與 JWT
+  - **Native Query 全量重構**: 重構 `UserRepository`, `SurveyRepository`, `SubmissionRepository`, `SubmissionAnswerRepository`, `RefreshTokenRepository` 之所有 `@Query` 為 `nativeQuery = true`
+  - **API 路由三層分流**:
+    - 公開端點 `/api/public/**`（註冊、登入、換發權杖、問卷大廳檢索、公開問卷作答內容、受訪者填答提交）
+    - 管理員端點 `/api/admin/**`（全站會員名冊、狀態啟閉、強制刪除問卷、全站總體營運指標，受 `@PreAuthorize("hasRole('ADMIN')")` 防護）
+    - 會員端點 `/api/user/**`（自有問卷增刪改查與分析）
+  - **自動化測試套件**: 實作 `AuthServiceTest`, `SurveyServiceTest`, `AnalyticsServiceTest`, `PublicControllerTest`, `AdminControllerTest`，共 14 項測試全數綠燈 PASS
+  - **前後端全端對接**: 前端註冊 `provideHttpClient(withFetch())`，實作 `ApiClientService`，`SurveyGetterService` 具備優先調用 Spring Boot 並於離線時自動降級回退機制
+- **影響範圍**: `backend/` 設定檔、Repository、Controller、Test、`frontend/` 通訊層、`docs/check-list.md`
+
+---
+
 ## [2026-10-13 17:35] - Spring Boot 4.1.1 企業級全端後端架構全量落地與編譯驗收
 - **改動原因**: 依據使用者指定之「Spring Boot 4.1.1」與作品集高標準要求，建立完整無殘留之 Java 21 後端全分層架構、MySQL 8.x DDL 腳本、Argon2id + JWT 雙 Token 安全認證機制與全套 RESTful API。
 - **具體內容**:

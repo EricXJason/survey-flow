@@ -60,16 +60,17 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 1. 會員認證與公開註冊
+                        // 1. 公開端點 (免認證)：公開認證、問卷大廳、公開填答與提交
+                        .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        // 2. 問卷大廳公開檢索與單一問卷填答結構
                         .requestMatchers("/api/surveys/lobby/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/surveys/*/public").permitAll()
-                        // 3. 受訪者填答提交
                         .requestMatchers(HttpMethod.POST, "/api/submissions/**").permitAll()
-                        // 4. Actuator 監控與健康檢查 (AWS 部署健康檢查)
+                        // 2. 系統管理員專屬端點 (需 ROLE_ADMIN)
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // 3. Actuator 監控與健康檢查 (AWS 部署健康檢查)
                         .requestMatchers("/actuator/**").permitAll()
-                        // 5. 其他問卷管理、統計報表與會員個資端點皆需驗證 JWT
+                        // 4. 其他會員端點皆需 Bearer JWT 認證
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

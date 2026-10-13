@@ -50,7 +50,7 @@ public class AnalyticsService {
      */
     @Transactional(readOnly = true)
     public SurveyAnalyticsResponse getSurveyAnalytics(Long surveyId, String currentUsername) {
-        Survey survey = surveyRepository.findByIdAndDeletedAtIsNull(surveyId)
+        Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此問卷專案"));
 
         User user = userRepository.findByUsername(currentUsername)
@@ -63,7 +63,7 @@ public class AnalyticsService {
             throw new AccessDeniedException("您無權限查閱此問卷之統計數據報表");
         }
 
-        List<Submission> submissions = submissionRepository.findBySurvey(survey);
+        List<Submission> submissions = submissionRepository.findBySurveyIdNative(survey.getId());
         long totalResponses = submissions.size();
 
         // 1. KPI 計算
@@ -92,7 +92,7 @@ public class AnalyticsService {
      * 計算 5 大核心 KPI 指標
      */
     private KpiDto calculateKpi(Survey survey, List<Submission> submissions, long totalResponses) {
-        Double avgDuration = submissionRepository.getAverageDurationSeconds(survey.getId());
+        Double avgDuration = submissionRepository.getAverageDurationSecondsNative(survey.getId());
         int averageSeconds = avgDuration != null ? avgDuration.intValue() : 0;
 
         LocalDate today = LocalDate.now();
@@ -201,7 +201,7 @@ public class AnalyticsService {
                     counts.put(o.getOptionText(), 0L);
                 }
 
-                List<Map<String, Object>> rawCounts = answerRepository.countSelectionsByQuestion(q.getId());
+                List<Map<String, Object>> rawCounts = answerRepository.countSelectionsByQuestionNative(q.getId());
                 long sumSelections = 0;
                 for (Map<String, Object> row : rawCounts) {
                     Long optId = (Long) row.get("optionId");
@@ -225,7 +225,7 @@ public class AnalyticsService {
                         .optionPercentages(percentages);
 
             } else if (q.getType() == QuestionType.RATING) {
-                Map<String, Object> ratingStats = answerRepository.calculateRatingStats(q.getId());
+                Map<String, Object> ratingStats = answerRepository.calculateRatingStatsNative(q.getId());
                 Double avg = (Double) ratingStats.get("avgRating");
                 Long count = (Long) ratingStats.get("totalCount");
 
@@ -233,7 +233,7 @@ public class AnalyticsService {
                         .averageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
 
             } else if (q.getType() == QuestionType.TEXT) {
-                List<String> feedbacks = answerRepository.findTextAnswersByQuestion(q.getId());
+                List<String> feedbacks = answerRepository.findTextAnswersByQuestionNative(q.getId());
                 builder.totalAnswers((long) feedbacks.size())
                         .textFeedbacks(feedbacks.stream().limit(20).collect(Collectors.toList()));
             }
@@ -254,7 +254,7 @@ public class AnalyticsService {
 
         if (ratingQ.isEmpty()) return 50; // 預設滿意基準值
 
-        Map<String, Object> stats = answerRepository.calculateRatingStats(ratingQ.get().getId());
+        Map<String, Object> stats = answerRepository.calculateRatingStatsNative(ratingQ.get().getId());
         Double avg = (Double) stats.get("avgRating");
         if (avg == null) return 50;
 

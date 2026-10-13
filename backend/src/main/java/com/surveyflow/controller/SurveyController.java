@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * 檔案名稱: SurveyController.java
- * 所屬模組: Controller 控制器層 - 問卷管理
+ * 所屬模組: Controller 控制器層 - 問卷管理 (Public 與 Member 端點)
  * 責任描述: 提供問卷大廳公開搜尋、問卷設計草稿存取、發布與專案維護之 RESTful API
  * 架構分層: Presentation / Controller Layer
  * 聯動關係:
@@ -27,34 +27,33 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/surveys")
 @RequiredArgsConstructor
 public class SurveyController {
 
     private final SurveyService surveyService;
 
     /**
-     * 問卷大廳公開問卷分頁檢索端點 (免認證)
+     * 問卷大廳公開問卷分頁檢索端點 (公開端點)
      * @param category 分類篩選
      * @param keyword 關鍵字模糊查詢
      * @param pageable 分頁參數 (預設依建立時間倒序)
      * @return 問卷概要分頁結果
      */
-    @GetMapping("/lobby")
+    @GetMapping({"/api/public/surveys/lobby", "/api/surveys/lobby"})
     public ResponseEntity<ApiResponse<Page<SurveySummaryResponse>>> getLobbySurveys(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String keyword,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<SurveySummaryResponse> result = surveyService.searchLobbySurveys(category, keyword, pageable);
         return ResponseEntity.ok(ApiResponse.ok(result, "成功獲取問卷大廳清單"));
     }
 
     /**
-     * 受訪者進入填答頁獲取公開問卷結構端點 (免認證，自動累加瀏覽次數)
+     * 受訪者進入填答頁獲取公開問卷結構端點 (公開端點，自動累加瀏覽次數)
      * @param id 問卷 ID
      * @return 完整題目與選項結構
      */
-    @GetMapping("/{id}/public")
+    @GetMapping({"/api/public/surveys/{id}", "/api/surveys/{id}/public"})
     public ResponseEntity<ApiResponse<SurveyResponse>> getPublicSurvey(@PathVariable Long id) {
         SurveyResponse response = surveyService.getPublicSurvey(id);
         return ResponseEntity.ok(ApiResponse.ok(response, "成功獲取問卷作答內容"));
@@ -66,10 +65,10 @@ public class SurveyController {
      * @param pageable 分頁參數
      * @return 該會員發布之問卷分頁列表
      */
-    @GetMapping("/my")
+    @GetMapping({"/api/user/surveys", "/api/surveys/my"})
     public ResponseEntity<ApiResponse<Page<SurveySummaryResponse>>> getMySurveys(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<SurveySummaryResponse> result = surveyService.getUserSurveys(userDetails.getUsername(), pageable);
         return ResponseEntity.ok(ApiResponse.ok(result, "成功獲取我的問卷專案列表"));
     }
@@ -79,7 +78,7 @@ public class SurveyController {
      * @param id 問卷 ID
      * @return 問卷詳細資料
      */
-    @GetMapping("/{id}")
+    @GetMapping({"/api/user/surveys/{id}", "/api/surveys/{id}"})
     public ResponseEntity<ApiResponse<SurveyResponse>> getSurveyDetail(@PathVariable Long id) {
         SurveyResponse response = surveyService.getSurveyDetail(id);
         return ResponseEntity.ok(ApiResponse.ok(response, "成功獲取問卷詳情"));
@@ -91,7 +90,7 @@ public class SurveyController {
      * @param userDetails 當前登入會員
      * @return 建立成功後之問卷詳情
      */
-    @PostMapping
+    @PostMapping({"/api/user/surveys", "/api/surveys"})
     public ResponseEntity<ApiResponse<SurveyResponse>> createSurvey(
             @Valid @RequestBody SurveyCreateRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -106,7 +105,7 @@ public class SurveyController {
      * @param userDetails 當前操作者
      * @return 更新後之問卷詳情
      */
-    @PutMapping("/{id}")
+    @PutMapping({"/api/user/surveys/{id}", "/api/surveys/{id}"})
     public ResponseEntity<ApiResponse<SurveyResponse>> updateSurvey(
             @PathVariable Long id,
             @RequestBody SurveyUpdateRequest request,
@@ -121,7 +120,7 @@ public class SurveyController {
      * @param userDetails 當前操作者
      * @return 刪除成功回應
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping({"/api/user/surveys/{id}", "/api/surveys/{id}"})
     public ResponseEntity<ApiResponse<Void>> deleteSurvey(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails) {

@@ -12,6 +12,7 @@
  */
 
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 
@@ -54,6 +55,7 @@ export function getTaiwanPaginatorIntl(): MatPaginatorIntl {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
+    provideHttpClient(withFetch()),
     provideRouter(
       routes,
       withInMemoryScrolling({

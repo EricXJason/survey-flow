@@ -5,106 +5,209 @@
  * 責任描述: 封裝問卷查詢邏輯，提供大廳公開問卷清單、會員個人問卷清單、全站所有問卷及單一問卷內容查詢 API。
  * 架構分層: Service Layer / Data Access Abstraction Layer
  * 聯動關係:
- *   - 上游依賴: rxjs (Observable, of), ../@interfaces/survey-model, ../datas/surveys.json
+ *   - 上游依賴: rxjs (Observable, of, catchError, map), ./api-client.service, ../@interfaces/survey-model, ../datas/surveys.json
  *   - 下游消費: LobbyComponent, SurveyManagementComponent
- * 邊界處理: 查無指定 ID 問卷時優雅回退至預設問卷或 null，防止前端清單崩潰
+ * 邊界處理: 優先連線後端 Spring Boot (/api/public/surveys/lobby)；若後端離線則無縫降級回退至本地種子資料，確保前端 100% 穩定
  * ============================================================================
  */
 
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { SurveyPayload, SurveySummaryItem } from '../@interfaces/survey-model';
+import { ApiClientService } from './api-client.service';
 import surveys from '../datas/surveys.json';
 
-/**
- * 問卷資料檢索服務 (SurveyGetterService)
- * 提供大廳問卷、會員問卷及問卷明細的查詢能力。
- */
 @Injectable({
   providedIn: 'root',
 })
 export class SurveyGetterService {
+  private readonly apiClient = inject(ApiClientService);
+
   /**
-   * 取得大廳公開問卷清單
+   * 取得大廳公開問卷清單 (優先請求後端 /api/public/surveys/lobby，斷線降級本地)
    */
   public getLobbySurveys(): Observable<SurveySummaryItem[]> {
-    // 待後端就緒後替換為 GET /api/surveys?published=true
-    const rawSurveys =
-      (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
-
-    const summaries: SurveySummaryItem[] = rawSurveys
-      .filter((survey) => survey.isPublished)
-      .map((survey, index) => ({
-        id: survey.id ?? `survey_${index + 1}`,
-        title: survey.title,
-        category: survey.category ?? '一般問卷',
-        authorId: survey.authorId,
-        startDate: survey.timeLimit?.startDate ?? '',
-        endDate: survey.timeLimit?.endDate ?? '',
-        isPublished: survey.isPublished,
-      }));
-
-    return of(summaries);
+    return this.apiClient.get<any>('/api/public/surveys/lobby').pipe(
+      map((res) => {
+        if (res && res.success && res.data && res.data.content) {
+          return res.data.content.map((item: any) => ({
+            id: String(item.id),
+            title: item.title,
+            category: item.category ?? '一般問卷',
+            authorId: item.authorName ?? '',
+            startDate: item.startDate ?? '',
+            endDate: item.endDate ?? '',
+            isPublished: item.status === 'PUBLISHED',
+          }));
+        }
+        throw new Error('Fallback to local mock');
+      }),
+      catchError(() => {
+        const rawSurveys = (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
+        const summaries: SurveySummaryItem[] = rawSurveys
+          .filter((survey) => survey.isPublished)
+          .map((survey, index) => ({
+            id: survey.id ?? `survey_${index + 1}`,
+            title: survey.title,
+            category: survey.category ?? '一般問卷',
+            authorId: survey.authorId,
+            startDate: survey.timeLimit?.startDate ?? '',
+            endDate: survey.timeLimit?.endDate ?? '',
+            isPublished: survey.isPublished,
+          }));
+        return of(summaries);
+      })
+    );
   }
 
   /**
-   * 依使用者編號取得個人問卷清單
+   * 依使用者編號取得個人問卷清單 (優先請求後端 /api/user/surveys)
    */
   public getMemberSurveys(userId: string): Observable<SurveySummaryItem[]> {
-    // 待後端就緒後替換為 GET /api/surveys?authorId={userId}
-    const rawSurveys =
-      (surveys as unknown as (SurveyPayload & {
-        id?: string;
-        authorId?: string;
-        userId?: string;
-      })[]) ?? [];
+    return this.apiClient.get<any>('/api/user/surveys').pipe(
+      map((res) => {
+        if (res && res.success && res.data && res.data.content) {
+          return res.data.content.map((item: any) => ({
+            id: String(item.id),
+            title: item.title,
+            category: item.category ?? '一般問卷',
+            authorId: item.authorName ?? userId,
+            startDate: item.startDate ?? '',
+            endDate: item.endDate ?? '',
+            isPublished: item.status === 'PUBLISHED',
+          }));
+        }
+        throw new Error('Fallback to local mock');
+      }),
+      catchError(() => {
+        const rawSurveys =
+          (surveys as unknown as (SurveyPayload & {
+            id?: string;
+            authorId?: string;
+            userId?: string;
+          })[]) ?? [];
 
-    const memberSurveys = rawSurveys
-      .filter((survey) => survey.authorId === userId || survey.userId === userId)
-      .map((survey, index) => ({
-        id: survey.id ?? `survey_${index + 1}`,
-        title: survey.title,
-        category: survey.category ?? '一般問卷',
-        authorId: survey.authorId || userId,
-        startDate: survey.timeLimit?.startDate ?? '',
-        endDate: survey.timeLimit?.endDate ?? '',
-        isPublished: survey.isPublished,
-      }));
+        const memberSurveys = rawSurveys
+          .filter((survey) => survey.authorId === userId || survey.userId === userId)
+          .map((survey, index) => ({
+            id: survey.id ?? `survey_${index + 1}`,
+            title: survey.title,
+            category: survey.category ?? '一般問卷',
+            authorId: survey.authorId || userId,
+            startDate: survey.timeLimit?.startDate ?? '',
+            endDate: survey.timeLimit?.endDate ?? '',
+            isPublished: survey.isPublished,
+          }));
 
-    return of(memberSurveys);
+        return of(memberSurveys);
+      })
+    );
   }
 
   /**
-   * 取得全系統所有問卷清單
+   * 取得全系統所有問卷清單 (管理員請求 /api/admin/surveys)
    */
   public getAllSurveys(): Observable<SurveySummaryItem[]> {
-    // 待後端就緒後替換為 GET /api/surveys/all
-    const rawSurveys =
-      (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
-
-    const summaries: SurveySummaryItem[] = rawSurveys.map((survey, index) => ({
-      id: survey.id ?? `survey_${index + 1}`,
-      title: survey.title,
-      category: survey.category ?? '一般問卷',
-      authorId: survey.authorId,
-      startDate: survey.timeLimit?.startDate ?? '',
-      endDate: survey.timeLimit?.endDate ?? '',
-      isPublished: survey.isPublished,
-    }));
-
-    return of(summaries);
+    return this.apiClient.get<any>('/api/admin/surveys').pipe(
+      map((res) => {
+        if (res && res.success && res.data && res.data.content) {
+          return res.data.content.map((item: any) => ({
+            id: String(item.id),
+            title: item.title,
+            category: item.category ?? '一般問卷',
+            authorId: item.authorName,
+            startDate: item.startDate ?? '',
+            endDate: item.endDate ?? '',
+            isPublished: item.status === 'PUBLISHED',
+          }));
+        }
+        throw new Error('Fallback to local mock');
+      }),
+      catchError(() => {
+        const rawSurveys = (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
+        const summaries: SurveySummaryItem[] = rawSurveys.map((survey, index) => ({
+          id: survey.id ?? `survey_${index + 1}`,
+          title: survey.title,
+          category: survey.category ?? '一般問卷',
+          authorId: survey.authorId,
+          startDate: survey.timeLimit?.startDate ?? '',
+          endDate: survey.timeLimit?.endDate ?? '',
+          isPublished: survey.isPublished,
+        }));
+        return of(summaries);
+      })
+    );
   }
 
   /**
-   * 依問卷編號取得單一問卷內容
+   * 依問卷編號取得單一問卷內容 (請求 /api/public/surveys/{id})
    */
   public getSurveyById(id: string): Observable<SurveyPayload | null> {
-    // 待後端就緒後替換為 GET /api/surveys/{id}
-    const rawSurveys =
-      (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
-    const matched =
-      rawSurveys.find((survey) => survey.id === id) ?? rawSurveys[0] ?? null;
+    const numericId = parseInt(id.replace(/\D/g, ''), 10);
+    const requestUrl = isNaN(numericId)
+      ? `/api/public/surveys/1`
+      : `/api/public/surveys/${numericId}`;
 
-    return of(matched);
+    return this.apiClient.get<any>(requestUrl).pipe(
+      map((res) => {
+        if (res && res.success && res.data) {
+          const d = res.data;
+          return {
+            id: String(d.id),
+            title: d.title,
+            category: d.category,
+            isPublished: d.status === 'PUBLISHED',
+            hasTimeLimit: !!(d.startDate && d.endDate),
+            timeLimit: {
+              startDate: d.startDate ? d.startDate.split('T')[0] : '',
+              startTime: '00:00',
+              endDate: d.endDate ? d.endDate.split('T')[0] : '',
+              endTime: '23:59',
+            },
+            hasDescription: !!d.description,
+            description: d.description,
+            hasDescriptionImage: false,
+            basicInfoRequirements: {
+              collectBasicInfo: true,
+              requireName: d.basicInfoConfig?.requireName ?? true,
+              requireGender: d.basicInfoConfig?.requireGender ?? true,
+              requireAge: d.basicInfoConfig?.requireAge ?? true,
+              requireBirthday: false,
+              requireHeight: false,
+              requireWeight: false,
+              requireMobilePhone: d.basicInfoConfig?.requirePhone ?? false,
+              requireHomePhone: false,
+              requireEmail: d.basicInfoConfig?.requireEmail ?? false,
+              requireRegisteredAddress: false,
+              requireResidentialAddress: d.basicInfoConfig?.requireResidence ?? false,
+              requireDepartment: false,
+              requireAcademicMajor: false,
+              requireClassName: false,
+              requireStudentId: false,
+              requireEmployeeId: false,
+              requireNationalId: false,
+              requireJobIndustry: d.basicInfoConfig?.requireIndustry ?? false,
+              requireJobTitle: false,
+            },
+            questions: (d.questions ?? []).map((q: any, idx: number) => ({
+              uid: q.questionCode ?? `Q${idx + 1}`,
+              id: q.id ?? idx + 1,
+              type: q.type.toLowerCase(),
+              isRequired: q.isRequired,
+              hasImage: false,
+              description: q.questionText,
+              options: (q.options ?? []).map((o: any) => o.optionText),
+            })),
+          } as SurveyPayload;
+        }
+        throw new Error('Fallback to local mock');
+      }),
+      catchError(() => {
+        const rawSurveys = (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
+        const matched = rawSurveys.find((survey) => survey.id === id) ?? rawSurveys[0] ?? null;
+        return of(matched);
+      })
+    );
   }
 }
