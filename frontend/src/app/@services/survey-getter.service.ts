@@ -72,7 +72,7 @@ export class SurveyGetterService {
             id: String(item.id),
             title: item.title,
             category: item.category ?? '一般問卷',
-            authorId: item.authorName ?? userId,
+            authorId: String(item.userId ?? userId),
             startDate: item.startDate ?? '',
             endDate: item.endDate ?? '',
             isPublished: item.status === 'PUBLISHED',

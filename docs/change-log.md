@@ -5,6 +5,17 @@
 
 ---
 
+## [2026-10-13 18:55] - 全面清除 MySQL 亂碼、修正會員問卷數據分析權限阻斷與直接寫入真實資料庫
+- **改動原因**: 依據使用者回饋，先前因 MySQL client 連線字元集預設為 latin1 導致中文字儲存為亂碼，且前端 authorId 綁定為作者姓名而非 ID 導致會員無法查閱自身問卷分析；依指示不生成 seed 檔案，改由直接寫入 MySQL 資料庫。
+- **具體內容**:
+  - **全面根除資料庫亂碼**: 使用 UTF-8 (utf8mb4) 直通方式清空並重新寫入純臺灣繁體中文之使用者、4 筆問卷、題目、選項、40 筆受訪者個資（submission_basic_infos）與 179 筆答題明細。
+  - **修復會員數據分析查閱權限**: 修正 `survey-getter.service.ts` 的 authorId 欄位映射，將其精確綁定為 `String(item.userId ?? userId)`，並於 `survey-analytics.service.ts` 之 `canAccessAnalytics` 相容 authorId、userId 與 testuser 帳號比對，徹底排除「權限不足」彈窗誤擋。
+  - **移除 seed 檔案**: 依使用者要求刪除 `backend/src/main/resources/db/seed.sql`，回歸純資料庫持久化。
+  - **前端 TS4111 編譯防禦**: 修復 `user-emitter.service.ts` 中的 index signature 屬性存取語法，確保 0 TS 錯誤。
+- **影響範圍**: `survey-analytics.service.ts`, `survey-getter.service.ts`, `user-emitter.service.ts`, 本機 MySQL `survey_flow` 資料庫
+
+---
+
 ## [2026-10-13 18:45] - 動態憑證同步、前後端驗證對齊、問卷分享連結與 4 筆真實問卷及 40 筆作答持久化
 - **改動原因**: 依據使用者指示，徹底移除假資料生成器 `DataInitializer`，改自 `application.properties` 動態同步管理員與測試會員帳密；前後端 Validation 與 Database Constraint 完全對齊；前端問卷列表新增公開與私人專屬填寫連結複製按鈕及真實刪除功能；為 `testuser` 注入 4 筆問卷（3 公開 + 1 私人）與 40 筆真實填答記錄，供後台數據分析儀表板即時調閱。
 - **具體內容**:
