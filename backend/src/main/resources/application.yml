@@ -1,0 +1,65 @@
+# ============================================================================
+# 檔案名稱: application.yml
+# 所屬模組: SurveyFlow 後端服務設定
+# 責任描述: Spring Boot 4.1.1 核心設定檔，涵蓋伺服器端口、MySQL 資料庫連線、JPA 與 JWT
+# 架構分層: Configuration Layer
+# ============================================================================
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: survey-flow-backend
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/survey_flow?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Taipei&allowPublicKeyRetrieval=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+
+# JWT 安全認證配置
+jwt:
+  # 支援環境變數注入，預設使用安全 256 位元密鑰
+  secret: ${JWT_SECRET:SurveyFlowSecretKeyForJwtAuthenticationMustBeAtLeast256BitsLong2026!}
+  access-token-expiration-ms: 900000 # 15 分鐘 (毫秒)
+  refresh-token-expiration-ms: 604800000 # 7 天 (毫秒)
+
+# Actuator 監控配置 (AWS 部署健康檢查使用)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# 日誌級別
+logging:
+  level:
+    com.surveyflow: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG

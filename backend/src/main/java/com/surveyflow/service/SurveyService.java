@@ -1,0 +1,315 @@
+/**
+ * ============================================================================
+ * 檔案名稱: SurveyService.java
+ * 所屬模組: Service 業務邏輯層 - 問卷核心模組
+ * 責任描述: 負責問卷專案之建立、修改、軟刪除、樹狀結構組裝與大廳公開檢索
+ * 架構分層: Business Logic / Service Layer
+ * 聯動關係:
+ *   - 上游依賴: SurveyRepository, UserRepository, SubmissionRepository
+ *   - 下游消費: SurveyController
+ * 邊界處理: 嚴格核對問卷發布者權限，非建立者或管理員嚴禁修改或刪除
+ * ============================================================================
+ */
+
+package com.surveyflow.service;
+
+import com.surveyflow.common.enums.RoleType;
+import com.surveyflow.common.enums.SurveyStatus;
+import com.surveyflow.dto.survey.*;
+import com.surveyflow.entity.*;
+import com.surveyflow.repository.SubmissionRepository;
+import com.surveyflow.repository.SurveyRepository;
+import com.surveyflow.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class SurveyService {
+
+    private final SurveyRepository surveyRepository;
+    private final UserRepository userRepository;
+    private final SubmissionRepository submissionRepository;
+
+    /**
+     * 建立新問卷 (支援草稿或直接發布)
+     * @param request 建立參數
+     * @param currentUsername 當前登入會員帳號
+     * @return 建立完成後之問卷詳情
+     */
+    @Transactional
+    public SurveyResponse createSurvey(SurveyCreateRequest request, String currentUsername) {
+        User creator = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new IllegalArgumentException("查無此建立者帳號"));
+
+        Survey survey = Survey.builder()
+                .creator(creator)
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .category(request.getCategory() != null ? request.getCategory() : "綜合調查")
+                .status(request.getStatus() != null ? request.getStatus() : SurveyStatus.DRAFT)
+                .startDate(request.getStartDate())
+                .endDate(request.getEndDate())
+                .viewCount(0)
+                .build();
+
+        // 綁定基本資料收集設定
+        BasicInfoConfigDto configDto = request.getBasicInfoConfig();
+        if (configDto != null) {
+            SurveyBasicInfoConfig config = SurveyBasicInfoConfig.builder()
+                    .survey(survey)
+                    .requireName(configDto.getRequireName() != null ? configDto.getRequireName() : true)
+                    .requireGender(configDto.getRequireGender() != null ? configDto.getRequireGender() : true)
+                    .requireAge(configDto.getRequireAge() != null ? configDto.getRequireAge() : true)
+                    .requirePhone(configDto.getRequirePhone() != null ? configDto.getRequirePhone() : false)
+                    .requireEmail(configDto.getRequireEmail() != null ? configDto.getRequireEmail() : false)
+                    .requireIndustry(configDto.getRequireIndustry() != null ? configDto.getRequireIndustry() : false)
+                    .requireResidence(configDto.getRequireResidence() != null ? configDto.getRequireResidence() : false)
+                    .build();
+            survey.setBasicInfoConfig(config);
+        }
+
+        // 綁定題目與選項
+        if (request.getQuestions() != null && !request.getQuestions().isEmpty()) {
+            List<SurveyQuestion> questions = new ArrayList<>();
+            for (QuestionDto qDto : request.getQuestions()) {
+                SurveyQuestion question = SurveyQuestion.builder()
+                        .survey(survey)
+                        .questionCode(qDto.getQuestionCode())
+                        .type(qDto.getType())
+                        .questionText(qDto.getQuestionText())
+                        .isRequired(qDto.getIsRequired() != null ? qDto.getIsRequired() : true)
+                        .sortOrder(qDto.getSortOrder() != null ? qDto.getSortOrder() : 1)
+                        .minRating(qDto.getMinRating())
+                        .maxRating(qDto.getMaxRating())
+                        .build();
+
+                if (qDto.getOptions() != null && !qDto.getOptions().isEmpty()) {
+                    List<SurveyOption> options = new ArrayList<>();
+                    for (OptionDto oDto : qDto.getOptions()) {
+                        SurveyOption option = SurveyOption.builder()
+                                .question(question)
+                                .optionText(oDto.getOptionText())
+                                .sortOrder(oDto.getSortOrder() != null ? oDto.getSortOrder() : 1)
+                                .build();
+                        options.add(option);
+                    }
+                    question.setOptions(options);
+                }
+                questions.add(question);
+            }
+            survey.setQuestions(questions);
+        }
+
+        survey = surveyRepository.save(survey);
+        log.info("問卷專案建立成功: id={}, title={}, creator={}", survey.getId(), survey.getTitle(), currentUsername);
+        return convertToDetailResponse(survey);
+    }
+
+    /**
+     * 更新問卷專案內容
+     * @param surveyId 問卷 ID
+     * @param request 更新請求
+     * @param currentUsername 當前操作者帳號
+     * @return 更新後之問卷詳情
+     */
+    @Transactional
+    public SurveyResponse updateSurvey(Long surveyId, SurveyUpdateRequest request, String currentUsername) {
+        Survey survey = findSurveyByIdAndVerifyOwner(surveyId, currentUsername);
+
+        if (request.getTitle() != null) survey.setTitle(request.getTitle());
+        if (request.getDescription() != null) survey.setDescription(request.getDescription());
+        if (request.getCategory() != null) survey.setCategory(request.getCategory());
+        if (request.getStatus() != null) survey.setStatus(request.getStatus());
+        if (request.getStartDate() != null) survey.setStartDate(request.getStartDate());
+        if (request.getEndDate() != null) survey.setEndDate(request.getEndDate());
+
+        survey = surveyRepository.save(survey);
+        log.info("問卷專案更新成功: id={}", survey.getId());
+        return convertToDetailResponse(survey);
+    }
+
+    /**
+     * 查詢單一問卷完整結構
+     * @param surveyId 問卷 ID
+     * @return 完整結構 DTO
+     */
+    @Transactional(readOnly = true)
+    public SurveyResponse getSurveyDetail(Long surveyId) {
+        Survey survey = surveyRepository.findByIdAndDeletedAtIsNull(surveyId)
+                .orElseThrow(() -> new IllegalArgumentException("查無此問卷專案"));
+        return convertToDetailResponse(survey);
+    }
+
+    /**
+     * 受訪者進入填答前公開獲取問卷 (自動累加瀏覽次數)
+     * @param surveyId 問卷 ID
+     * @return 完整填答結構
+     */
+    @Transactional
+    public SurveyResponse getPublicSurvey(Long surveyId) {
+        Survey survey = surveyRepository.findByIdAndDeletedAtIsNull(surveyId)
+                .orElseThrow(() -> new IllegalArgumentException("問卷不存在或已下架"));
+
+        if (survey.getStatus() != SurveyStatus.PUBLISHED) {
+            throw new IllegalArgumentException("此問卷尚未公開發布或已截止收件");
+        }
+
+        // 累加瀏覽次數
+        survey.setViewCount(survey.getViewCount() + 1);
+        surveyRepository.save(survey);
+
+        return convertToDetailResponse(survey);
+    }
+
+    /**
+     * 問卷大廳公開多條件搜尋
+     * @param category 分類
+     * @param keyword 關鍵字
+     * @param pageable 分頁設定
+     * @return 概要清單分頁結果
+     */
+    @Transactional(readOnly = true)
+    public Page<SurveySummaryResponse> searchLobbySurveys(String category, String keyword, Pageable pageable) {
+        Page<Survey> page = surveyRepository.searchPublishedSurveys(category, keyword, pageable);
+        return page.map(this::convertToSummaryResponse);
+    }
+
+    /**
+     * 查詢會員自己建立之問卷清單 (管理專區)
+     * @param currentUsername 當前登入會員
+     * @param pageable 分頁參數
+     * @return 該會員之問卷分頁結果
+     */
+    @Transactional(readOnly = true)
+    public Page<SurveySummaryResponse> getUserSurveys(String currentUsername, Pageable pageable) {
+        User user = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new IllegalArgumentException("查無此使用者"));
+        Page<Survey> page = surveyRepository.findByCreatorAndDeletedAtIsNull(user, pageable);
+        return page.map(this::convertToSummaryResponse);
+    }
+
+    /**
+     * 軟刪除問卷專案
+     * @param surveyId 問卷 ID
+     * @param currentUsername 當前操作者帳號
+     */
+    @Transactional
+    public void deleteSurvey(Long surveyId, String currentUsername) {
+        Survey survey = findSurveyByIdAndVerifyOwner(surveyId, currentUsername);
+        survey.setDeletedAt(LocalDateTime.now());
+        surveyRepository.save(survey);
+        log.info("問卷已被標記軟刪除: id={}", surveyId);
+    }
+
+    /**
+     * 內部核對問卷擁有者權限 (建立者本人或管理員)
+     */
+    private Survey findSurveyByIdAndVerifyOwner(Long surveyId, String currentUsername) {
+        Survey survey = surveyRepository.findByIdAndDeletedAtIsNull(surveyId)
+                .orElseThrow(() -> new IllegalArgumentException("查無此問卷專案"));
+
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new IllegalArgumentException("查無當前操作者"));
+
+        boolean isOwner = survey.getCreator().getId().equals(currentUser.getId());
+        boolean isAdmin = currentUser.getRole() == RoleType.ROLE_ADMIN;
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedException("您無權限修改或刪除此問卷專案");
+        }
+
+        return survey;
+    }
+
+    /**
+     * 轉換為詳情 Response
+     */
+    private SurveyResponse convertToDetailResponse(Survey survey) {
+        long submissionCount = submissionRepository.countBySurvey(survey);
+
+        BasicInfoConfigDto configDto = null;
+        if (survey.getBasicInfoConfig() != null) {
+            SurveyBasicInfoConfig c = survey.getBasicInfoConfig();
+            configDto = BasicInfoConfigDto.builder()
+                    .requireName(c.getRequireName())
+                    .requireGender(c.getRequireGender())
+                    .requireAge(c.getRequireAge())
+                    .requirePhone(c.getRequirePhone())
+                    .requireEmail(c.getRequireEmail())
+                    .requireIndustry(c.getRequireIndustry())
+                    .requireResidence(c.getRequireResidence())
+                    .build();
+        }
+
+        List<QuestionDto> questionDtos = survey.getQuestions().stream().map(q -> {
+            List<OptionDto> optionDtos = q.getOptions().stream().map(o -> OptionDto.builder()
+                    .id(o.getId())
+                    .optionText(o.getOptionText())
+                    .sortOrder(o.getSortOrder())
+                    .build()).collect(Collectors.toList());
+
+            return QuestionDto.builder()
+                    .id(q.getId())
+                    .questionCode(q.getQuestionCode())
+                    .type(q.getType())
+                    .questionText(q.getQuestionText())
+                    .isRequired(q.getIsRequired())
+                    .sortOrder(q.getSortOrder())
+                    .minRating(q.getMinRating())
+                    .maxRating(q.getMaxRating())
+                    .options(optionDtos)
+                    .build();
+        }).collect(Collectors.toList());
+
+        return SurveyResponse.builder()
+                .id(survey.getId())
+                .userId(survey.getCreator() != null ? survey.getCreator().getId() : null)
+                .authorName(survey.getCreator() != null ? survey.getCreator().getFullName() : "未知")
+                .title(survey.getTitle())
+                .description(survey.getDescription())
+                .category(survey.getCategory())
+                .status(survey.getStatus())
+                .startDate(survey.getStartDate())
+                .endDate(survey.getEndDate())
+                .viewCount(survey.getViewCount())
+                .submissionCount(submissionCount)
+                .basicInfoConfig(configDto)
+                .questions(questionDtos)
+                .createdAt(survey.getCreatedAt())
+                .updatedAt(survey.getUpdatedAt())
+                .build();
+    }
+
+    /**
+     * 轉換為概要 Response
+     */
+    private SurveySummaryResponse convertToSummaryResponse(Survey survey) {
+        long submissionCount = submissionRepository.countBySurvey(survey);
+        return SurveySummaryResponse.builder()
+                .id(survey.getId())
+                .title(survey.getTitle())
+                .description(survey.getDescription())
+                .category(survey.getCategory())
+                .status(survey.getStatus())
+                .authorName(survey.getCreator() != null ? survey.getCreator().getFullName() : "未知")
+                .startDate(survey.getStartDate())
+                .endDate(survey.getEndDate())
+                .viewCount(survey.getViewCount())
+                .submissionCount(submissionCount)
+                .questionCount(survey.getQuestions() != null ? survey.getQuestions().size() : 0)
+                .createdAt(survey.getCreatedAt())
+                .build();
+    }
+}

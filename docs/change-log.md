@@ -5,6 +5,18 @@
 
 ---
 
+## [2026-10-13 17:35] - Spring Boot 4.1.1 企業級全端後端架構全量落地與編譯驗收
+- **改動原因**: 依據使用者指定之「Spring Boot 4.1.1」與作品集高標準要求，建立完整無殘留之 Java 21 後端全分層架構、MySQL 8.x DDL 腳本、Argon2id + JWT 雙 Token 安全認證機制與全套 RESTful API。
+- **具體內容**:
+  - **建置工具與環境**: 配置 `backend/pom.xml` (Spring Boot 4.1.1 + Java 21) 與專案獨立之 Maven 3.9.9 Wrapper (`mvnw`, `mvnw.cmd`)
+  - **資料持久化與 DDL**: 建立 `backend/src/main/resources/schema.sql`，正規化定義 8 張關聯資料表，包含級聯約束、中文註解與效能索引；實作 8 大 JPA Entity 實體與 Auditing 自動審計時間戳
+  - **安全與身分驗證**: 導入 Argon2id 密碼雜湊編碼器 (`PasswordEncoderConfig`)、JWT 雙 Token 簽發與旋轉更新 (`TokenProvider`)、無狀態安全過濾鏈 (`SecurityConfig`, `JwtAuthenticationFilter`) 與 CORS 全域配置
+  - **資料存取與商務邏輯**: 實作 5 大 Repository、4 大 Service (`AuthService`, `SurveyService`, `SubmissionService`, `AnalyticsService`)，涵蓋問卷樹狀結構組裝、受訪者填答防護與 5 大 KPI、趨勢、人口輪廓、題型深度聚合運算
+  - **RESTful 控制器與通用封裝**: 實作 4 大 Controller、標準 `ApiResponse<T>`、全域異常攔截 `GlobalExceptionHandler`，全 53 支 Java 腳本均通過 `./mvnw compile` 0 錯誤編譯驗收
+- **影響範圍**: `backend/` 目錄全模組、`docs/check-list.md`
+
+---
+
 ## [2026-10-13 16:10] - 專案結構整頓與本地三層 Git 分支拓撲建置
 - **改動原因**: 依據使用者指示將 README 移出前端目錄回歸專案根目錄，並完成本地三層 Git 分支初始化，為後續 GitHub MCP 建庫與 Spring Boot 後端開發奠定基底。
 - **具體內容**:
