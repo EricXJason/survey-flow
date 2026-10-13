@@ -64,7 +64,7 @@
   - [x] **高畫質開源圖片整合 (Unsplash)**: 資料庫支援 `cover_image_url` 與 `image_url`，前後端完整映射並於問卷封面與題目中渲染真實商業/學術情境視覺。
   - [x] **受訪者基本資料防呆防溢出**: 姓名、手機（10碼）、信箱、現居地址與產業全面加上 `maxlength` 與數值上下限防護。
   - [x] **Admin 會員列表資訊完整化與管理員防護**: 會員名冊展示真實 `username`、姓名、ID 與電話，角色正確顯示「一般會員」，並徹底排除與保護 admin 帳號。
-  - [x] **資料庫模組化歸檔與單一重置 SQL (`backend/src/main/resources/db/reset_database.sql`)**: 建立 `db/` 目錄並產出單一完整重置檔案，可一鍵 100% 重建資料庫與 40 筆真實數據。
+  - [x] **資料庫檔案命名標準化與單一複製即執行之整合腳本 (`backend/src/main/resources/db/init.sql`)**: 徹底移除所有數字編號，保留純淨之 `schema.sql`、`data.sql` 與單一整合版 `init.sql`，支援使用者直接全選複製貼入 MySQL Workbench/終端執行，一鍵 100% 重建資料庫與 40 筆真實數據。
   - [x] **問卷題目 7 大型態全端完整支援 (是非、單選、複選、評分量表、簡答、時間、日期)**:
     - [x] 後端 `QuestionType` 擴展 `BOOLEAN`, `TIME`, `DATE`，達成完整 7 大題型定義。
     - [x] 前端 `SurveyGetterService` 與 `UserEmitterService` 完成 7 種題型雙向完整映射。

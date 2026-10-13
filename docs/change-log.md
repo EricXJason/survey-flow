@@ -3,6 +3,21 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-14 00:45] - 資料庫檔案命名標準合理化 (移除所有數字編號)、刪除多餘 Python 自動化產生器腳本、提供單一全選複製即執行之 init.sql
+- **改動原因**: 依據使用者最新指示與 IDE 截圖反饋：(1) 徹底移除 `01_schema.sql`、`02_seed_data.sql` 的數字編號前綴，將資料庫腳本命名合理化為業界標準；(2) 刪除讓使用者困惑的 `build_complete_database.py` 自動化腳本，不再需要任何繁瑣外部工具；(3) 提供單一整合腳本 `init.sql`，讓使用者直接「全選複製」貼入 MySQL Workbench、DBeaver、Navicat 或終端機即可「一次性 100% 完整執行建庫、建表與 40 筆預設資料注入」；(4) 清理 `resources/` 根目錄下殘留的舊 `schema.sql`，保持目錄結構乾淨一致。
+- **具體內容**:
+  - **資料庫腳本命名標準化**:
+    - `backend/src/main/resources/db/schema.sql`: 移除 `01_` 前綴，純粹之 DDL 資料表結構定義腳本。
+    - `backend/src/main/resources/db/data.sql`: 移除 `02_` 前綴，純粹之 DML 預設問卷與 40 筆填答資料。
+    - `backend/src/main/resources/db/init.sql`: 單一完整整合腳本（Schema + Data），內建 `SET NAMES utf8mb4`、安全外鍵開關與繁中指引，直接整份全選複製至 MySQL 執行即可一次重置成功。
+  - **目錄淨化與廢棄檔案清理**:
+    - 刪除 `backend/src/main/resources/schema.sql`（移除根目錄重複遺留檔）。
+    - 刪除 `backend/src/main/resources/db/build_complete_database.py`（移除無須使用的 python 產生腳本）。
+    - 刪除舊命名的 `01_schema.sql`、`02_seed_data.sql`、`reset_database.sql`。
+  - **設定檔路徑同步**:
+    - `application.properties` 同步更新為 `spring.sql.init.schema-locations=classpath:db/schema.sql`。
+- **影響範圍**: `backend/src/main/resources/db/schema.sql`, `backend/src/main/resources/db/data.sql`, `backend/src/main/resources/db/init.sql`, `application.properties`, `docs/check-list.md`
+
 ## [2026-10-14 00:40] - 問卷設計題目下方與題間自由插入題目 (UI/UX 體驗大升級)、修復圖片上傳/驗證/持久化全鏈路、application.properties 條列式純淨註解重構、AGENTS.md 寫入專案註解嚴格屬實底線
 - **改動原因**: 依據使用者最新指令與操作截圖反饋：(1) 問卷設計 (`survey-design`) 新增題目必須能在「各題目下方」以及「各題目與題目之間」自由插入，符合現代頂級直覺之 UI/UX；(2) 根治圖片上傳驗證誤阻斷（「階段 01：已勾選附加說明圖片，但尚未上傳圖片」）與後端持久化丟失問題，確保前言封面與題目圖片本機上傳轉 Base64、即時預覽、一鍵移除與資料庫保存 100% 順暢；(3) 精簡 `application.properties`，移除不必要的 `admin.fullname` / `test-user.fullname`，改為頂部條列式清單集中說明所有關鍵設定；(4) 於 `AGENTS.md` 補充「專案註解確認」之「註解與程式碼嚴格 100% 屬實」工程防護底線。
 - **具體內容**:
