@@ -109,6 +109,62 @@ export class SurveyGetterService {
       map((res) => {
         if (res && res.success && res.data) {
           const d = res.data;
+          const rawQuestions = (d.questions ?? []).map((q: any, idx: number) => {
+            const rawType = (q.type || '').toUpperCase();
+            let frontendType = 'text';
+            if (rawType === 'BOOLEAN') {
+              frontendType = 't/f';
+            } else if (rawType === 'SINGLE') {
+              frontendType = 'radio';
+            } else if (rawType === 'MULTI') {
+              frontendType = 'multiRadio';
+            } else if (rawType === 'RATING') {
+              frontendType = 'scale';
+            } else if (rawType === 'TIME') {
+              frontendType = 'time';
+            } else if (rawType === 'DATE') {
+              frontendType = 'date';
+            } else {
+              frontendType = 'text';
+            }
+
+            const optionsConfig = (q.options ?? []).map((o: any) => ({
+              text: o.optionText,
+              enableUnlockQuestion: !!o.triggerQuestionUid,
+              unlockTargetUid: o.triggerQuestionUid || '',
+            }));
+
+            return {
+              uid: q.questionCode ?? `Q${idx + 1}`,
+              id: q.id ?? idx + 1,
+              type: frontendType,
+              isRequired: q.isRequired ?? true,
+              hasImage: false,
+              description: q.questionText,
+              scaleType: 'nps',
+              options: (q.options ?? []).map((o: any) => o.optionText),
+              optionsConfig,
+              isLockedByOther: false,
+            };
+          });
+
+          // 條件跳題關聯掃描：被上游題目選項指向者標記為受鎖定
+          const lockedUids = new Set<string>();
+          for (const q of rawQuestions) {
+            if (q.optionsConfig) {
+              for (const opt of q.optionsConfig) {
+                if (opt.enableUnlockQuestion && opt.unlockTargetUid) {
+                  lockedUids.add(opt.unlockTargetUid);
+                }
+              }
+            }
+          }
+          for (const q of rawQuestions) {
+            if (lockedUids.has(q.uid)) {
+              q.isLockedByOther = true;
+            }
+          }
+
           return {
             id: String(d.id),
             title: d.title,
@@ -146,36 +202,7 @@ export class SurveyGetterService {
               requireJobIndustry: d.basicInfoConfig?.requireIndustry ?? false,
               requireJobTitle: false,
             },
-            questions: (d.questions ?? []).map((q: any, idx: number) => {
-              const rawType = (q.type || '').toUpperCase();
-              let frontendType = 'text';
-              if (rawType === 'BOOLEAN') {
-                frontendType = 't/f';
-              } else if (rawType === 'SINGLE') {
-                frontendType = 'radio';
-              } else if (rawType === 'MULTI') {
-                frontendType = 'multiRadio';
-              } else if (rawType === 'RATING') {
-                frontendType = 'scale';
-              } else if (rawType === 'TIME') {
-                frontendType = 'time';
-              } else if (rawType === 'DATE') {
-                frontendType = 'date';
-              } else {
-                frontendType = 'text';
-              }
-
-              return {
-                uid: q.questionCode ?? `Q${idx + 1}`,
-                id: q.id ?? idx + 1,
-                type: frontendType,
-                isRequired: q.isRequired ?? true,
-                hasImage: false,
-                description: q.questionText,
-                scaleType: 'nps',
-                options: (q.options ?? []).map((o: any) => o.optionText),
-              };
-            }),
+            questions: rawQuestions,
           } as SurveyPayload;
         }
         return null;

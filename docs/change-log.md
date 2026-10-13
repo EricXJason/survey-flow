@@ -3,6 +3,33 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-14 00:05] - 重構登入與數據分析 SaaS 介面、身分證號嚴格唯讀綁定、全端實現 10 題條件跳題問卷與 40 筆真實作答數據還原
+- **改動原因**: 依據使用者指示與截圖指引，全面修正登入介面懸空排版與殘留之第三方登入按鈕；嚴格將會員個人身分證字號設定為系統實名不可竄改之綁定欄位；根除數據分析報表頁面中殘留的深黑 Cyber HUD 破版樣式，完全還原現代清新白色 SaaS 風格並優化簡答題空反饋提示；擴展後端與資料庫 schema 支援題目選項之條件跳題解鎖關聯 (`trigger_question_uid`)；徹底清理測試雜訊並重置 MySQL 資料庫至僅有 `admin` 與 `testuser`，為其注入 4 份每份 10 題（含單選條件解鎖關聯題）、各 10 筆（共 40 筆）真實人口輪廓與非同步深度建議之問卷數據。
+- **具體內容**:
+  - **登入頁面 UI/UX 排版現代化重構 (對齊截圖 1)**:
+    - 將「登入密碼」標籤與「忘記密碼？」合併為同一水平標籤列（採 Flexbox `justify-content: space-between`），徹底根除忘記密碼懸浮錯位問題。
+    - 徹底移除尚未實裝的「或使用快速登入」、「Google 帳號登入」、「Facebook 登入」按鈕，消除使用者混淆。
+    - 修復 Chrome 瀏覽器自動填入 (Autofill) 背景變色瑕疵，並優化密碼欄高度為 `4.4rem` 與輸入框 Focus 光環動效。
+  - **身分證字號嚴格唯讀與資料庫綁定**:
+    - **前端**: `user-profile.component.html` 移除身分證號的編輯與驗證狀態，改為 `readonly` 配合鎖定圖示與「已綁定不可修改」繁體中文標籤，並設計灰階質感背景防止使用者誤以為可編輯。
+    - **後端**: `UserService.java` 內的 `updateProfile` 方法中徹底移除對 `identityCard` 的更新賦值，確保無論前端傳入任何值，後端資料庫的身分證字號一律不可更動。
+  - **數據分析頁面 UI/UX 風格還原與優化 (對齊截圖 2、截圖 3)**:
+    - 清除 `survey-management.component.scss` 後半段過時的深黑 Cyber HUD 樣式覆蓋，全面回歸現代清新白色 SaaS 風格，確保與問卷大廳、個人中心之視覺體系完全一致。
+    - 將時程與填答設定彈窗 (`settings-modal`) 重構為柔和高雅的現代純白卡片介面。
+    - 優化簡答題文字反饋渲染卡片：加入 `@if (resp.content && resp.content.trim().length > 0)` 條件判斷，針對未填寫之受訪者優雅顯示「（受訪者未填寫文字反饋）」淺灰斜體標籤，消除突兀空引號 `""`。
+  - **全端支援「選擇題限制開啟其他題目」之條件跳題架構**:
+    - **資料庫**: 執行 `ALTER TABLE survey_options ADD COLUMN trigger_question_uid VARCHAR(50) DEFAULT NULL;`，儲存觸發解鎖之目標題目 UID。
+    - **後端**: 實體 `SurveyOption`、`OptionDto` 與 `SurveyService` 建立 `triggerQuestionUid` 存取與對映管線。
+    - **前端**: `SurveyGetterService` 於解析問卷題目與選項時，自動讀取 `triggerQuestionUid` 並為目標題目打上 `isLockedByOther: true` 標籤，使 `SurveyRunnerComponent` 的動態顯示隱藏條件計算管線能無縫生效。
+  - **資料庫數據完整還原與乾淨重置**:
+    - 清除所有無關的髒資料與測試受訪者，`users` 表重置為僅保留 `admin` 與 `testuser`（密碼分別為 `Admin123!` 與 `User1234!`，使用 Argon2id 安全加密）。
+    - 建立 `seed_10q_generator.py`，為 `testuser` 注入 4 筆完整問卷（3 筆公開於大廳、1 筆私密封測），每份問卷皆精確包含 10 題（覆蓋 BOOLEAN、SINGLE、MULTI、RATING、TIME、DATE、TEXT 等 7 大題型，且 Q2 選項均設定觸發解鎖 Q3 條件跳題）。
+    - 每份問卷注入 10 筆真實受訪者填答紀錄（共 40 筆），包含真實人口統計輪廓（姓名、性別、年齡層、電話、Email、產業與居住地），簡答題 Q10 前 6 人包含高質量深度實質繁中回饋、後 4 人為未回答 (NULL)。
+  - **前後端自動化測試全面 100% 驗證**:
+    - 前端執行 `npm run build`，0 警告 0 錯誤順利打包輸出。
+    - 後端執行 `./mvnw test`，14/14 個單元與整合測試全部通過 (`BUILD SUCCESS`)。
+- **影響範圍**: `log-in.component.html`, `log-in.component.scss`, `user-profile.component.html`, `user-profile.component.scss`, `UserService.java`, `survey-management.component.scss`, `survey-management.component.html`, `schema.sql`, `SurveyOption.java`, `OptionDto.java`, `SurveyService.java`, `survey-getter.service.ts`, `seed_10q_generator.py`, `seed_10q_database.sql`
+
 ## [2026-10-13 20:50] - 修復問卷說明重複紅字、固定登入版面寬度防止撐破、移除測試快速登入與大廳分類改為下拉式選單
 - **改動原因**: 依據使用者反饋與截圖指引，消除問卷前言說明處重複顯示之兩行錯誤紅字；修復登入頁面因長密碼校驗紅字而導致容器寬度被彈性撐開變形之 CSS Grid 缺陷；徹底移除前端登入頁面之「測試快速登入」面板；並將問卷大廳擁擠的藥丸標籤列重構為現代精緻下拉式選單。
 - **具體內容**:

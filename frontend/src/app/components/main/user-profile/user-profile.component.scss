@@ -101,6 +101,39 @@
   }
 }
 
+.readonly-badge {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--c-neutral-500);
+  background: var(--c-neutral-100);
+  border: 1px solid var(--c-neutral-200);
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--r-full);
+  margin-left: 0.6rem;
+}
+
+.input-with-lock {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input.field-readonly {
+    background: #f8fafc !important;
+    color: #64748b !important;
+    border-color: #e2e8f0 !important;
+    cursor: not-allowed;
+    padding-right: 3.6rem !important;
+    font-weight: 500;
+  }
+
+  .lock-svg {
+    position: absolute;
+    right: 1.2rem;
+    color: #94a3b8;
+    pointer-events: none;
+  }
+}
+
 .readonly-input-wrap {
   position: relative;
   display: flex;

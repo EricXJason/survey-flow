@@ -102,6 +102,7 @@ public class SurveyService {
                                 .question(question)
                                 .optionText(oDto.getOptionText())
                                 .sortOrder(oDto.getSortOrder() != null ? oDto.getSortOrder() : 1)
+                                .triggerQuestionUid(oDto.getTriggerQuestionUid())
                                 .build();
                         options.add(option);
                     }
@@ -282,6 +283,7 @@ public class SurveyService {
                     .id(o.getId())
                     .optionText(o.getOptionText())
                     .sortOrder(o.getSortOrder())
+                    .triggerQuestionUid(o.getTriggerQuestionUid())
                     .build()).collect(Collectors.toList());
 
             return QuestionDto.builder()

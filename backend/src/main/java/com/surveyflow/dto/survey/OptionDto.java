@@ -31,4 +31,7 @@ public class OptionDto {
 
     @Builder.Default
     private Integer sortOrder = 1;
+
+    /** 勾選此選項時觸發解鎖顯示之題目代碼 (條件跳題邏輯) */
+    private String triggerQuestionUid;
 }

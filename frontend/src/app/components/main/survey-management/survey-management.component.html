@@ -1015,7 +1015,11 @@
                               <span class="text-time">{{ resp.submittedAt }}</span>
                             </div>
                           </div>
-                          <p class="text-content">"{{ resp.content }}"</p>
+                          @if (resp.content && resp.content.trim().length > 0) {
+                            <p class="text-content">"{{ resp.content }}"</p>
+                          } @else {
+                            <p class="text-content text-empty">（受訪者未填寫文字反饋）</p>
+                          }
                         </div>
                       }
                     </div>

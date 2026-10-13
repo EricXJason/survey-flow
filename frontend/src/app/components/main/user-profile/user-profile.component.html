@@ -156,24 +156,23 @@
         </div>
 
         <div class="form-group">
-          <label for="prof-national-id">身分證字號 <span class="required-star">*</span></label>
-          <input
-            id="prof-national-id"
-            type="text"
-            formControlName="nationalId"
-            maxlength="10"
-            placeholder="例如：A123456789"
-            [attr.aria-invalid]="formBuilderGroup.get('nationalId')?.invalid && formBuilderGroup.get('nationalId')?.touched"
-            aria-describedby="prof-natid-err"
-          />
-          @if (
-            formBuilderGroup.get("nationalId")?.invalid &&
-            formBuilderGroup.get("nationalId")?.touched
-          ) {
-            <span id="prof-natid-err" class="field-error" role="alert">
-              請輸入格式正確的中華民國身分證字號
-            </span>
-          }
+          <label for="prof-national-id">身分證字號 <span class="readonly-badge">已綁定不可修改</span></label>
+          <div class="input-with-lock">
+            <input
+              id="prof-national-id"
+              type="text"
+              formControlName="nationalId"
+              maxlength="10"
+              readonly
+              class="field-readonly"
+              placeholder="例如：A123456789"
+              aria-readonly="true"
+            />
+            <svg class="lock-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
         </div>
       </div>
 

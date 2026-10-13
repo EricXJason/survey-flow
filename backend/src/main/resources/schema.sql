@@ -125,6 +125,7 @@ CREATE TABLE IF NOT EXISTS `survey_options` (
     `question_id` BIGINT NOT NULL COMMENT '所屬題目 ID',
     `option_text` VARCHAR(255) NOT NULL COMMENT '選項文字描述',
     `sort_order` INT NOT NULL DEFAULT 1 COMMENT '選項排序順序',
+    `trigger_question_uid` VARCHAR(50) DEFAULT NULL COMMENT '勾選此選項時觸發解鎖顯示之題目代碼 (跳題邏輯)',
     PRIMARY KEY (`id`),
     KEY `idx_options_question_order` (`question_id`, `sort_order`),
     CONSTRAINT `fk_options_question` FOREIGN KEY (`question_id`) REFERENCES `survey_questions` (`id`) ON DELETE CASCADE

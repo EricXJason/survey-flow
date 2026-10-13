@@ -58,9 +58,7 @@ public class UserService {
         if (request.getPhone() != null) {
             user.setPhone(request.getPhone().trim());
         }
-        if (request.getIdentityCard() != null) {
-            user.setIdentityCard(request.getIdentityCard().trim());
-        }
+        // 身分證字號於系統中為法定實名綁定資料，註冊後永久鎖定，嚴禁後續變更
 
         user = userRepository.save(user);
         log.info("會員個人檔案更新成功: username={}, fullName={}", username, user.getFullName());

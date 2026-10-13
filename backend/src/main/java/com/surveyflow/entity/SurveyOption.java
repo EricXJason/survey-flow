@@ -38,4 +38,7 @@ public class SurveyOption {
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
     private Integer sortOrder = 1;
+
+    @Column(name = "trigger_question_uid", length = 50)
+    private String triggerQuestionUid;
 }

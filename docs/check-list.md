@@ -58,6 +58,9 @@
     - [x] 維度一：是否公開至問卷大廳 (`is_public_to_lobby` / `isPublicToLobby`)。
     - [x] 維度二：是否開放填寫 (`isOpen` / `PUBLISHED` vs `CLOSED`)。
     - [x] 時效區間：支援動態設定開始時間 (`startDate`) 與截止時間 (`endDate`)，或設為常態開放。
+  - [x] **會員身分證字號不可竄改性 (`identityCard` 唯讀鎖定)**: 前端個人檔案頁面將身分證號鎖定為唯讀狀態，後端 `UserService.updateProfile` 徹底移除身分證號更新賦值，確保實名綁定無漏洞。
+  - [x] **單選題條件跳題解鎖關聯 (`trigger_question_uid`)**: 資料庫 `survey_options` 與後端 `SurveyOption` 實體擴展支援觸發題號，前端於載入時自動將受觸發題預設鎖定為隱藏，勾選指定選項時動態解鎖。
+  - [x] **數據分析儀表板全端 SaaS 純白風格重構**: 根除殘留的深黑 HUD 破版樣式，還原現代清新純白 SaaS 卡片風格，時程設定彈窗與簡答題無內容優雅提示皆一併升級。
   - [x] **問卷題目 7 大型態全端完整支援 (是非、單選、複選、評分量表、簡答、時間、日期)**:
     - [x] 後端 `QuestionType` 擴展 `BOOLEAN`, `TIME`, `DATE`，達成完整 7 大題型定義。
     - [x] 前端 `SurveyGetterService` 與 `UserEmitterService` 完成 7 種題型雙向完整映射。
