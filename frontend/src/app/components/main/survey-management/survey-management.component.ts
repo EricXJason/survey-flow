@@ -630,4 +630,19 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
       }).subscribe();
     });
   }
+
+  /**
+   * 格式化 ISO 日期時間字串為簡潔精確的顯示格式 (YYYY/MM/DD HH:mm)
+   * 去除不必要的 T 與秒數，方便垂直緊湊呈現，徹底防止表格橫向溢出
+   * @param dtStr ISO 格式日期時間字串
+   * @returns 簡潔格式化之日期時間
+   */
+  protected formatDateTimeShort(dtStr?: string | null): string {
+    if (!dtStr) return '-';
+    const clean = dtStr.replace('T', ' ');
+    if (clean.length >= 16) {
+      return clean.substring(0, 16).replace(/-/g, '/');
+    }
+    return clean.replace(/-/g, '/');
+  }
 }

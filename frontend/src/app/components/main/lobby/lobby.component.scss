@@ -594,8 +594,7 @@
 }
 
 .table-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
   width: 100%;
 }
 
@@ -603,14 +602,59 @@
   min-width: 0;
   width: 100%;
   border-collapse: collapse;
+  table-layout: auto;
 }
 
-.th-id, .col-id { width: 7rem; min-width: 5rem; padding-left: var(--sp-5) !important; white-space: nowrap; }
-.th-title, .col-title { min-width: 18rem; width: auto; }
-.th-category, .col-category { width: 15rem; min-width: 12rem; white-space: nowrap; }
-.th-time, .col-time { width: 21rem; min-width: 17rem; white-space: nowrap; }
-.th-status, .col-status { width: 12rem; min-width: 10rem; white-space: nowrap; }
-.th-actions, .col-actions { width: 14rem; min-width: 12rem; text-align: right; padding-right: var(--sp-5) !important; white-space: nowrap; }
+.th-id, .col-id { width: 5.2rem; min-width: 4.5rem; padding-left: var(--sp-4) !important; white-space: nowrap; }
+.th-title, .col-title { min-width: 13rem; width: auto; word-break: break-word; }
+.th-category, .col-category { width: 11rem; min-width: 8.5rem; white-space: nowrap; }
+.th-time, .col-time { width: 14rem; min-width: 11.5rem; }
+.th-status, .col-status { width: 9.5rem; min-width: 8rem; white-space: nowrap; }
+.th-actions, .col-actions { width: 12rem; min-width: 10rem; text-align: right; padding-right: var(--sp-4) !important; white-space: nowrap; }
+
+.time-range-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-family: ui-monospace, monospace;
+  font-size: 1.2rem;
+  line-height: 1.35;
+
+  .time-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+
+    .time-tag {
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 0.1rem 0.45rem;
+      border-radius: var(--r-xs);
+      background: var(--c-neutral-100);
+      color: var(--c-neutral-600);
+      border: 1px solid var(--c-neutral-200);
+    }
+
+    &.start .time-tag {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    &.end .time-tag {
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    .time-val {
+      color: var(--c-neutral-700);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+  }
+}
 
 .id-mono-chip {
   font-size: 1.25rem;
@@ -824,7 +868,7 @@
    檢視模式二：行動版自適應卡片流
    消除水平捲動，提供觸控友善卡片體驗
    ===================================================== */
-@media (max-width: 880px) {
+@media (max-width: 960px) {
   .lobby-table-card {
     background: transparent !important;
     border: none !important;

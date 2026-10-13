@@ -3,6 +3,27 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-14 01:00] - 簡答題作答報表完整呈現與防呆、問卷雙狀態維度精確拆分、設定開關更名為開放私人連結填寫、全站 Table 徹底杜絕橫向拖動與時間區間垂直緊湊化
+- **改動原因**: 依據使用者最新反饋與三張問題截圖進行全域深度優化：(1) 修復「各題作答分佈詳細報表」中簡答題卡片空白與「有效 筆」數字缺失問題，打通後端 `textFeedbacks` 聚合與前端文字卡片展示；(2) 將問卷設定彈窗中的「開放受訪者填寫」精準更名為「開放私人連結填寫」；(3) 每一張問卷明確定義並呈現「兩個狀態維度」（維度一：大廳公開狀態 / 維度二：填答開放狀態）；(4) 全站所有資料表格（問卷管理、問卷大廳、會員管理）全面根治橫向拖動問題，設為 `overflow-x: hidden`、優化欄寬與內距；(5) 填答有效區間由原本過長單行字串改為垂直雙行起訖緊湊排列。
+- **具體內容**:
+  - **簡答題（TEXT 題型）作答報表修復與完善**:
+    - 在 `survey-analytics.service.ts` 中將後端回傳之 `textFeedbacks` 逐筆轉換為包含 `id`、`content`、`respondentName`、`submittedAt`、`sentiment` 之 `TextResponseItem[]`，並計算總回覆數與平均字數。
+    - 修正題型映射 `typeMap`，支援 `checkbox`、`text`、`scale`、`radio`、`DATE` 與 `TIME`。
+    - 補齊卡片上方有效人次防禦性顯示 `q.totalAnswerCount ?? q.totalResponses ?? 0`，杜絕數字空白情況；增加簡答題空狀態友善提示。
+  - **問卷設定彈窗文案與狀態維度調整**:
+    - 設定彈窗（`survey-management.component.html`）開關二文案精準修改為「開放私人連結填寫」，說明文字更新為「開啟後受訪者可透過專屬直達連結進入填答；關閉後問卷即時鎖定，任何存取連結均提示已截止」。
+    - 問卷管理表格將狀態欄位升級為「雙狀態維度」膠囊組：
+      - 維度一（大廳展示）：`🌐 大廳公開` / `🔒 私人專案`。
+      - 維度二（填答權限）：`🟢 開放填寫中` / `⚪ 已停止填寫`。
+  - **全站表格徹底消除橫向拖動 (No Horizontal Drag / Scroll)**:
+    - `survey-management`、`lobby`、`user-management` 表格包裝容器統一宣告 `overflow-x: hidden`，徹底移除桌面端橫向捲動條。
+    - 精細化壓縮欄位寬度（編號、分類、狀態、操作按鈕）與單元格內距，操作按鈕微調為緊湊膠囊；在螢幕寬度 $\le 960\text{px}$ 時自動流暢轉為自適應直立卡片流，跨裝置零拖動。
+  - **填答有效區間垂直緊湊化**:
+    - 移除原本包含 `T` 與秒數的 43 字元長單行字串，封裝 `formatDateTimeShort()` 格式化為 `YYYY/MM/DD HH:mm`。
+    - 以 `.time-range-compact` 呈現垂直雙行（起 / 訖），搭配淡雅色彩標籤，緊湊清晰且不佔橫向版面。
+- **影響範圍**: `frontend/src/app/@services/survey-analytics.service.ts`, `frontend/src/app/@interfaces/survey-analytics-model.ts`, `frontend/src/app/components/main/survey-management/*`, `frontend/src/app/components/main/lobby/*`, `frontend/src/app/components/main/user-management/*`, `docs/change-log.md`, `docs/check-list.md`
+
+
 ## [2026-10-14 00:45] - 資料庫檔案命名標準合理化 (移除所有數字編號)、刪除多餘 Python 自動化產生器腳本、提供單一全選複製即執行之 init.sql
 - **改動原因**: 依據使用者最新指示與 IDE 截圖反饋：(1) 徹底移除 `01_schema.sql`、`02_seed_data.sql` 的數字編號前綴，將資料庫腳本命名合理化為業界標準；(2) 刪除讓使用者困惑的 `build_complete_database.py` 自動化腳本，不再需要任何繁瑣外部工具；(3) 提供單一整合腳本 `init.sql`，讓使用者直接「全選複製」貼入 MySQL Workbench、DBeaver、Navicat 或終端機即可「一次性 100% 完整執行建庫、建表與 40 筆預設資料注入」；(4) 清理 `resources/` 根目錄下殘留的舊 `schema.sql`，保持目錄結構乾淨一致。
 - **具體內容**:

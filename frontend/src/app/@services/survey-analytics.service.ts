@@ -24,6 +24,7 @@ import {
   TimelineSubmissionItem,
   ScaleStats,
   OptionStatItem,
+  TextResponseItem,
   ExportFormat,
 } from '../@interfaces/survey-analytics-model';
 import { SurveyPayload, SurveySummaryItem } from '../@interfaces/survey-model';
@@ -110,11 +111,14 @@ export class SurveyAnalyticsService {
           });
 
           const questionsAnalytics: QuestionAnalyticsItem[] = (d.questionStats || []).map((qs: any, idx: number) => {
-            const typeMap: Record<string, 'radio' | 'multiRadio' | 'scale' | 'text'> = {
+            const typeMap: Record<string, string> = {
               SINGLE: 'radio',
-              MULTI: 'multiRadio',
+              MULTI: 'checkbox',
               RATING: 'scale',
               TEXT: 'text',
+              BOOLEAN: 'radio',
+              DATE: 'text',
+              TIME: 'text',
             };
             const frontendType = typeMap[qs.type] || 'text';
 
@@ -143,15 +147,44 @@ export class SurveyAnalyticsService {
               };
             }
 
+            // 結構化文字填答摘錄清單
+            const rawFeedbacks: any[] = qs.textFeedbacks || [];
+            const textResponses: TextResponseItem[] = rawFeedbacks.map((item: any, fIdx: number) => {
+              const content = typeof item === 'string' ? item : (item?.content || '');
+              return {
+                id: `TR-${qs.questionId || idx + 1}-${fIdx + 1}`,
+                content: content,
+                respondentName: typeof item === 'object' && item.respondentName ? item.respondentName : `填答者 #${fIdx + 1}`,
+                submittedAt: typeof item === 'object' && item.submittedAt ? item.submittedAt : '近期填答',
+                sentiment: 'neutral',
+              };
+            });
+
+            const textStats = {
+              totalCount: textResponses.length,
+              averageLength: textResponses.length > 0
+                ? Math.round(textResponses.reduce((acc, r) => acc + (r.content ? r.content.length : 0), 0) / textResponses.length)
+                : 0,
+            };
+
+            const totalCount = qs.totalAnswers !== undefined && qs.totalAnswers !== null
+              ? qs.totalAnswers
+              : (frontendType === 'text' ? textResponses.length : (kpi.totalResponses || 0));
+
             return {
               questionUid: qs.questionCode || `Q${idx + 1}`,
-              questionText: qs.questionText || '',
+              questionId: idx + 1,
+              description: qs.questionText || `題目 ${idx + 1}`,
+              questionText: qs.questionText || `題目 ${idx + 1}`,
               type: frontendType,
-              totalResponses: qs.totalAnswers || 0,
+              isRequired: true,
+              totalAnswerCount: totalCount,
+              totalResponses: totalCount,
               responseRate: 100,
               optionsStats: optionStats.length > 0 ? optionStats : undefined,
               scaleStats,
-              textResponses: qs.textFeedbacks,
+              textResponses: textResponses.length > 0 ? textResponses : undefined,
+              textStats: frontendType === 'text' ? textStats : undefined,
             };
           });
 

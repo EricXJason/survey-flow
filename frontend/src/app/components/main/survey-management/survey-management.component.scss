@@ -351,8 +351,7 @@
 }
 
 .table-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
   width: 100%;
 }
 
@@ -362,13 +361,14 @@
   border-collapse: separate;
   border-spacing: 0;
   text-align: left;
+  table-layout: auto;
 
   th {
     background: #f8fafc;
     color: var(--c-neutral-600);
     font-weight: 700;
     font-size: 1.3rem;
-    padding: 1.4rem 2rem;
+    padding: 1.3rem 1.2rem;
     border-bottom: 1px solid var(--c-border);
     white-space: nowrap;
     letter-spacing: 0.03em;
@@ -376,7 +376,7 @@
   }
 
   td {
-    padding: 1.8rem 2rem;
+    padding: 1.5rem 1.2rem;
     border-bottom: 1px solid #f1f5f9;
     color: var(--c-neutral-700);
     vertical-align: middle;
@@ -395,26 +395,26 @@
 
 /* 欄位寬度定義 */
 .th-id, .col-id {
-  width: 6.5rem;
-  min-width: 5rem;
-  padding-left: 1.6rem !important;
+  width: 5.2rem;
+  min-width: 4.5rem;
+  padding-left: 1.4rem !important;
   white-space: nowrap;
 }
 
 .id-badge {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--c-primary-700);
   background: var(--c-primary-50);
   border: 1px solid var(--c-primary-200);
-  padding: 0.35rem 0.8rem;
+  padding: 0.25rem 0.65rem;
   border-radius: var(--r-sm);
   display: inline-block;
   white-space: nowrap;
 }
 
 .th-title, .col-title {
-  min-width: 16rem;
+  min-width: 13rem;
   width: auto;
 }
 
@@ -509,29 +509,51 @@
 }
 
 .th-time, .col-time {
-  width: 21rem;
-  min-width: 18rem;
-  white-space: nowrap;
+  width: 15rem;
+  min-width: 12.5rem;
 }
 
-.time-container {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.35rem;
+.time-range-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
   font-family: ui-monospace, monospace;
-  color: var(--c-neutral-600);
-  background: var(--c-neutral-50);
-  border: 1px solid var(--c-neutral-200);
-  padding: 0.4rem 0.9rem;
-  border-radius: var(--r-sm);
-  white-space: nowrap;
+  font-size: 1.2rem;
+  line-height: 1.35;
 
-  .time-calendar-icon {
-    width: 1.4rem;
-    height: 1.4rem;
-    color: var(--c-primary-600);
-    flex-shrink: 0;
+  .time-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+
+    .time-tag {
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 0.1rem 0.45rem;
+      border-radius: var(--r-xs);
+      background: var(--c-neutral-100);
+      color: var(--c-neutral-600);
+      border: 1px solid var(--c-neutral-200);
+    }
+
+    &.start .time-tag {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-color: #bfdbfe;
+    }
+
+    &.end .time-tag {
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+
+    .time-val {
+      color: var(--c-neutral-700);
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
   }
 }
 
@@ -540,43 +562,42 @@
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 600;
   font-style: normal;
   color: #0369a1;
   background: #f0f9ff;
   border: 1px solid #bae6fd;
-  padding: 0.3rem 0.85rem;
+  padding: 0.3rem 0.8rem;
   border-radius: var(--r-full);
   white-space: nowrap;
-
-  .time-infinity-icon {
-    width: 1.4rem;
-    height: 1.4rem;
-    color: #0284c7;
-    flex-shrink: 0;
-  }
 }
 
 .th-status, .col-status {
-  width: 12rem;
-  min-width: 11rem;
-  white-space: nowrap;
+  width: 11rem;
+  min-width: 9.5rem;
+}
+
+.dual-status-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-start;
 }
 
 .status-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 1.25rem;
+  gap: 0.5rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  padding: 0.4rem 1rem;
+  padding: 0.25rem 0.8rem;
   border-radius: var(--r-full);
   white-space: nowrap;
 
   .status-dot {
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 0.65rem;
+    height: 0.65rem;
     border-radius: 50%;
     background: #94a3b8;
 
@@ -596,21 +617,33 @@
     color: #475569;
     border: 1px solid #cbd5e1;
   }
+
+  &.chip-lobby-public {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  &.chip-lobby-private {
+    background: rgba(148, 163, 184, 0.12);
+    color: #64748b;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+  }
 }
 
 .th-actions, .col-actions {
-  width: 20rem;
-  min-width: 19rem;
+  width: auto;
+  min-width: 21rem;
   white-space: nowrap;
   text-align: right;
-  padding-right: 1.6rem !important;
+  padding-right: 1.2rem !important;
 }
 
 /* =====================================================
    行動版自適應卡片流
    消除水平捲動，提供觸控友善卡片體驗
    ===================================================== */
-@media (max-width: 880px) {
+@media (max-width: 960px) {
   .table-card {
     background: transparent !important;
     border: none !important;
@@ -794,7 +827,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.6rem;
+  gap: 0.4rem;
   flex-wrap: nowrap !important;
   white-space: nowrap;
 }
@@ -802,11 +835,11 @@
 .btn-act {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  height: 3.4rem;
-  padding: 0 1.2rem;
+  gap: 0.35rem;
+  height: 3rem;
+  padding: 0 0.75rem;
   font-family: inherit;
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   font-weight: 600;
   border-radius: var(--r-md);
   cursor: pointer;
@@ -815,8 +848,8 @@
   border: 1px solid transparent;
 
   .act-icon {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.4rem;
+    height: 1.4rem;
     flex-shrink: 0;
   }
 

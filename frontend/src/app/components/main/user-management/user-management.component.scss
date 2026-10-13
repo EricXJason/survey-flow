@@ -350,27 +350,27 @@
 
 .table-responsive {
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
 }
 
 .custom-user-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 1.4rem;
+  font-size: 1.35rem;
+  table-layout: auto;
 
   th.mat-mdc-header-cell {
     background: var(--c-neutral-50);
     color: var(--c-neutral-700);
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    padding: 1.6rem 2rem;
+    padding: 1.3rem 1.4rem;
     border-bottom: 1.5px solid var(--c-neutral-200);
     white-space: nowrap;
   }
 
   td.mat-mdc-cell {
-    padding: 1.6rem 2rem;
+    padding: 1.3rem 1.4rem;
     border-bottom: 1px solid var(--c-neutral-100);
     color: var(--c-neutral-800);
   }

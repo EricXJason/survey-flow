@@ -214,50 +214,50 @@
                   <th mat-header-cell *matHeaderCellDef class="th-time">填答有效區間</th>
                   <td mat-cell *matCellDef="let item" class="col-time">
                     @if (item.startDate && item.endDate) {
-                      <div class="time-container">
-                        <svg class="time-calendar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                          <line x1="16" y1="2" x2="16" y2="6"></line>
-                          <line x1="8" y1="2" x2="8" y2="6"></line>
-                          <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        <span class="time-text">{{ item.startDate }} ~ {{ item.endDate }}</span>
+                      <div class="time-range-compact">
+                        <div class="time-row start">
+                          <span class="time-tag">起</span>
+                          <span class="time-val">{{ formatDateTimeShort(item.startDate) }}</span>
+                        </div>
+                        <div class="time-row end">
+                          <span class="time-tag">訖</span>
+                          <span class="time-val">{{ formatDateTimeShort(item.endDate) }}</span>
+                        </div>
                       </div>
                     } @else {
                       <span class="time-permanent-chip">
-                        <svg class="time-infinity-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-                          <path d="M18.178 8c5.096 0 5.096 8 0 8-2.673 0-4.35-2.667-6.178-5.333C10.172 8 8.495 8 5.822 8 0.726 8 .726 16 5.822 16c2.673 0 4.35-2.667 6.178-5.333C13.828 8 15.505 8 18.178 8z"/>
-                        </svg>
                         <span>常態開放（無填答時限）</span>
                       </span>
                     }
                   </td>
                 </ng-container>
 
-                <!-- 狀態欄位 -->
+                <!-- 狀態欄位 (兩個狀態維度) -->
                 <ng-container matColumnDef="status">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-status">狀態維度</th>
                   <td mat-cell *matCellDef="let item" class="col-status">
-                    <div class="dual-status-chips" style="display: flex; flex-direction: column; gap: 4px;">
+                    <div class="dual-status-chips">
+                      <!-- 維度一：大廳公開狀態 -->
+                      @if (item.isPublicToLobby) {
+                        <span class="status-chip chip-lobby-public" title="已公開展示於問卷大廳">
+                          <span>🌐 大廳公開</span>
+                        </span>
+                      } @else {
+                        <span class="status-chip chip-lobby-private" title="未發布至大廳，屬私人專案">
+                          <span>🔒 私人專案</span>
+                        </span>
+                      }
+
+                      <!-- 維度二：填答開放狀態 (支援專屬連結或大廳填答) -->
                       @if (item.isPublished) {
-                        <span class="status-chip chip-public" title="目前可透過連結進行填寫">
+                        <span class="status-chip chip-public" title="目前開放填寫中">
                           <span class="status-dot dot-published" aria-hidden="true"></span>
                           <span>開放填寫中</span>
                         </span>
                       } @else {
-                        <span class="status-chip chip-private" title="已關閉填寫，任何填答請求將被拒絕">
+                        <span class="status-chip chip-private" title="已停止填寫，任何填答請求將被拒絕">
                           <span class="status-dot" aria-hidden="true"></span>
                           <span>已停止填寫</span>
-                        </span>
-                      }
-
-                      @if (item.isPublicToLobby) {
-                        <span class="status-chip chip-lobby-public" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; width: fit-content;" title="出現在問卷大廳供全站訪客瀏覽">
-                          <span>🌐 大廳公開</span>
-                        </span>
-                      } @else {
-                        <span class="status-chip chip-lobby-private" style="background: rgba(148, 163, 184, 0.1); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; display: inline-flex; align-items: center; width: fit-content;" title="未發布至大廳，僅持專屬連結者可填寫">
-                          <span>🔒 僅限連結</span>
                         </span>
                       }
                     </div>
@@ -885,7 +885,7 @@
                     }
                   </div>
                   <div class="q-stats-pills">
-                    <span class="q-stat-pill">有效 {{ q.totalAnswerCount }} 筆</span>
+                    <span class="q-stat-pill">有效 {{ (q.totalAnswerCount !== undefined && q.totalAnswerCount !== null) ? q.totalAnswerCount : (q.totalResponses ?? (q.textResponses ? q.textResponses.length : 0)) }} 筆</span>
                     @if (q.skippedCount) {
                       <span class="q-stat-pill muted">跳過 {{ q.skippedCount }} 筆</span>
                     }
@@ -895,7 +895,7 @@
                   </div>
                 </div>
 
-                <h3 class="q-question-text">{{ q.description }}</h3>
+                <h3 class="q-question-text">{{ q.description || q.questionText || ('題目 ' + (idx + 1)) }}</h3>
 
                 <!-- (A) 單選 / 多選選項統計長條圖 -->
                 @if (q.optionsStats && q.optionsStats.length > 0) {
@@ -989,40 +989,41 @@
                 }
 
                 <!-- (C) 文字題填答摘錄卡片 -->
-                @if (q.textResponses && q.textResponses.length > 0) {
+                @if (q.type === 'text') {
                   <div class="text-responses-wrap">
-                    @if (q.textStats) {
-                      <div class="text-stats-bar">
-                        <span>共 {{ q.textStats.totalCount }} 則回覆</span>
-                        <span>平均字數：{{ q.textStats.averageLength }} 字</span>
-                        <span class="text-showing">顯示前 {{ q.textResponses.length }} 筆</span>
-                      </div>
-                    }
-                    <div class="text-cards-grid">
-                      @for (resp of q.textResponses; track resp.id) {
-                        <div class="text-card" [class]="'sentiment-' + (resp.sentiment ?? 'neutral')">
-                          <div class="text-card-header">
-                            <div class="text-card-author">
-                              <div class="text-avatar">{{ (resp.respondentName ?? '匿名')[0] }}</div>
-                              <span>{{ resp.respondentName ?? '匿名受訪者' }}</span>
-                            </div>
-                            <div class="text-card-meta">
-                              @if (resp.sentiment) {
-                                <span class="sentiment-badge sentiment-{{ resp.sentiment }}">
-                                  {{ resp.sentiment === 'positive' ? '😊 正面' : resp.sentiment === 'negative' ? '😞 負面' : '😐 中性' }}
-                                </span>
-                              }
-                              <span class="text-time">{{ resp.submittedAt }}</span>
-                            </div>
-                          </div>
-                          @if (resp.content && resp.content.trim().length > 0) {
-                            <p class="text-content">"{{ resp.content }}"</p>
-                          } @else {
-                            <p class="text-content text-empty">（受訪者未填寫文字反饋）</p>
-                          }
+                    @if (q.textResponses && q.textResponses.length > 0) {
+                      @if (q.textStats) {
+                        <div class="text-stats-bar">
+                          <span>共 {{ q.textStats.totalCount }} 則回覆</span>
+                          <span>平均字數：{{ q.textStats.averageLength }} 字</span>
+                          <span class="text-showing">顯示全部 {{ q.textResponses.length }} 筆</span>
                         </div>
                       }
-                    </div>
+                      <div class="text-cards-grid">
+                        @for (resp of q.textResponses; track resp.id) {
+                          <div class="text-card" [class]="'sentiment-' + (resp.sentiment ?? 'neutral')">
+                            <div class="text-card-header">
+                              <div class="text-card-author">
+                                <div class="text-avatar">{{ (resp.respondentName ?? '填')[0] }}</div>
+                                <span>{{ resp.respondentName ?? '匿名受訪者' }}</span>
+                              </div>
+                              <div class="text-card-meta">
+                                <span class="text-time">{{ resp.submittedAt }}</span>
+                              </div>
+                            </div>
+                            @if (resp.content && resp.content.trim().length > 0) {
+                              <p class="text-content">"{{ resp.content }}"</p>
+                            } @else {
+                              <p class="text-content text-empty">（受訪者未填寫文字反饋）</p>
+                            }
+                          </div>
+                        }
+                      </div>
+                    } @else {
+                      <div class="text-empty-box" style="padding: 2.4rem; text-align: center; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; color: #64748b; font-size: 1.3rem;">
+                        <span>此文字簡答題目前尚無填答內容記錄</span>
+                      </div>
+                    }
                   </div>
                 }
 
@@ -1127,8 +1128,8 @@
               <!-- 開關二：是否開放填寫 -->
               <label class="toggle-card" [class.active]="settingsIsOpen()">
                 <div class="toggle-card-info">
-                  <span class="toggle-title">開放受訪者填寫</span>
-                  <span class="toggle-desc">開啟後受訪者可進入填答；關閉後問卷即時鎖定，任何存取連結均提示已截止。</span>
+                  <span class="toggle-title">開放私人連結填寫</span>
+                  <span class="toggle-desc">開啟後受訪者可透過專屬直達連結進入填答；關閉後問卷即時鎖定，任何存取連結均提示已截止。</span>
                 </div>
                 <input
                   type="checkbox"
