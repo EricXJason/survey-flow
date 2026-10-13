@@ -5,6 +5,17 @@
 
 ---
 
+## [2026-10-13 18:16] - 本地 MySQL 9 表完整建置、種子資料初始化與前後端完整運行打通
+- **改動原因**: 依據使用者指示，由 AI 直接執行 MySQL DDL 建置資料庫與資料表，注入種子測試帳號與範例問卷，實現本地前後端開箱即用完整運行。
+- **具體內容**:
+  - **資料庫實體建置**: 透過本機 MySQL CLI 完整執行 `schema.sql`，建立 `survey_flow` 資料庫與 9 張正規化資料表
+  - **開箱即用種子初始化**: 實作 `DataInitializer`，於空資料庫啟動時自動寫入管理員 (`admin`)、一般會員 (`user1`) 及一筆完整公開調研示範問卷
+  - **原生查詢型別防禦**: 強化 `AnalyticsService` 中 MySQL 原生聚合查詢結果（COUNT/AVG/別名）之相容性轉換，杜絕 `ClassCastException`；在 `User.passwordHash` 標註 `@JsonIgnore` 防止機敏密碼外洩
+  - **全端運行驗收**: 後端 (http://localhost:8080) 與前端 (http://localhost:4200) 同步在線，成功完成問卷瀏覽、作答提交、數據分析報表調用等全流程測試
+- **影響範圍**: `DataInitializer.java`, `AnalyticsService.java`, `User.java`, `GlobalExceptionHandler.java`, 本機 MySQL 資料庫
+
+---
+
 ## [2026-10-13 18:02] - application.properties 每行註解淨化、移除 AWS 與全面移除 UI/UX Figma 文檔
 - **改動原因**: 依據使用者指示，將 application.properties 每一行皆補充詳細臺灣繁體中文註解、剔除未使用的 AWS/Actuator 設定，並徹底清除 docs 中的 UI/UX 與 Figma 相關規範與文檔。
 - **具體內容**:

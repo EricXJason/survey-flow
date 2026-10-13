@@ -204,13 +204,15 @@ public class AnalyticsService {
                 List<Map<String, Object>> rawCounts = answerRepository.countSelectionsByQuestionNative(q.getId());
                 long sumSelections = 0;
                 for (Map<String, Object> row : rawCounts) {
-                    Long optId = (Long) row.get("optionId");
-                    Long count = (Long) row.get("selectedCount");
+                    Long optId = getLong(getCaseInsensitive(row, "optionId"));
+                    Long count = getLong(getCaseInsensitive(row, "selectedCount"));
                     sumSelections += count;
 
-                    q.getOptions().stream().filter(o -> o.getId().equals(optId)).findFirst().ifPresent(o -> {
-                        counts.put(o.getOptionText(), count);
-                    });
+                    if (optId != null) {
+                        q.getOptions().stream().filter(o -> o.getId().equals(optId)).findFirst().ifPresent(o -> {
+                            counts.put(o.getOptionText(), count);
+                        });
+                    }
                 }
 
                 // 計算百分比
@@ -226,8 +228,8 @@ public class AnalyticsService {
 
             } else if (q.getType() == QuestionType.RATING) {
                 Map<String, Object> ratingStats = answerRepository.calculateRatingStatsNative(q.getId());
-                Double avg = (Double) ratingStats.get("avgRating");
-                Long count = (Long) ratingStats.get("totalCount");
+                Double avg = getDouble(getCaseInsensitive(ratingStats, "avgRating"));
+                Long count = getLong(getCaseInsensitive(ratingStats, "totalCount"));
 
                 builder.totalAnswers(count != null ? count : 0L)
                         .averageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
@@ -255,10 +257,49 @@ public class AnalyticsService {
         if (ratingQ.isEmpty()) return 50; // 預設滿意基準值
 
         Map<String, Object> stats = answerRepository.calculateRatingStatsNative(ratingQ.get().getId());
-        Double avg = (Double) stats.get("avgRating");
+        Double avg = getDouble(getCaseInsensitive(stats, "avgRating"));
         if (avg == null) return 50;
 
         // 若 5 分制換算 NPS (4-5 分推薦, 3 分被動, 1-2 分貶損)
         return (int) Math.round((avg / 5.0) * 100 - 30);
+    }
+
+    /**
+     * 不區分大小寫自 Map 讀取屬性值，相容不同資料庫驅動欄位別名慣例
+     */
+    private Object getCaseInsensitive(Map<String, Object> map, String key) {
+        if (map == null || key == null) return null;
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (key.equalsIgnoreCase(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 安全轉型為 Double，防止 BigDecimal / Double / Long 之 ClassCastException
+     */
+    private Double getDouble(Object val) {
+        if (val == null) return null;
+        if (val instanceof Number) return ((Number) val).doubleValue();
+        try {
+            return Double.valueOf(val.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * 安全轉型為 Long，防止 BigInteger / Integer / Long 之 ClassCastException
+     */
+    private Long getLong(Object val) {
+        if (val == null) return 0L;
+        if (val instanceof Number) return ((Number) val).longValue();
+        try {
+            return Long.valueOf(val.toString());
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
     }
 }
