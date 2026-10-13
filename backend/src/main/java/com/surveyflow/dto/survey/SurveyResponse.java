@@ -33,6 +33,7 @@ public class SurveyResponse {
     private String authorName;
     private String title;
     private String description;
+    private String coverImageUrl;
     private String category;
     private Boolean isPublicToLobby;
     private SurveyStatus status;

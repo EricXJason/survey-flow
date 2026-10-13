@@ -36,10 +36,12 @@ import { ApiClientService } from '../../../@services/api-client.service';
  */
 export interface ManagedUser {
   id: string;
+  username: string;
+  fullName: string;
   name: string;
   email: string;
   phone: string;
-  role: 'admin' | 'employee' | 'student' | 'teacher' | 'researcher' | 'retired' | 'other';
+  role: 'admin' | 'user' | string;
   status: 'active' | 'suspended';
   registeredAt: string;
   lastLoginAt: string;
@@ -169,24 +171,32 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * 向後端 API 載入全站真實會員清單
+   * 向後端 API 載入全站真實會員清單 (嚴格排除 admin，僅列出一般會員)
    */
   public loadUsers(): void {
     this.isLoading.set(true);
     this._apiClient.get<any>('/api/admin/users?page=0&size=100').subscribe({
       next: (res) => {
         if (res && res.data && res.data.content) {
-          const mapped: ManagedUser[] = res.data.content.map((item: any) => ({
-            id: String(item.id),
-            name: item.name || '未命名',
-            email: item.email || '',
-            phone: item.phone || '未填寫',
-            role: (item.identity ? item.identity.toLowerCase() : 'other') as any,
-            status: item.status === 'ACTIVE' ? 'active' : 'suspended',
-            registeredAt: item.createdAt ? item.createdAt.substring(0, 10) : '2026-10-13',
-            lastLoginAt: item.createdAt ? item.createdAt.substring(0, 16).replace('T', ' ') : '-',
-            surveysCount: item.surveyCount || 0,
-          }));
+          const mapped: ManagedUser[] = res.data.content
+            .filter((item: any) => item.role !== 'ROLE_ADMIN' && item.username !== 'admin')
+            .map((item: any) => {
+              const uName = item.username || 'user';
+              const fName = item.fullName || uName;
+              return {
+                id: String(item.id),
+                username: uName,
+                fullName: fName,
+                name: uName,
+                email: item.email || '未填寫',
+                phone: item.phone || '未填寫',
+                role: item.role === 'ROLE_ADMIN' ? 'admin' : 'user',
+                status: item.status === 'ACTIVE' ? 'active' : 'suspended',
+                registeredAt: item.createdAt ? item.createdAt.substring(0, 10) : '2026-10-13',
+                lastLoginAt: item.createdAt ? item.createdAt.substring(0, 16).replace('T', ' ') : '-',
+                surveysCount: item.surveyCount || 0,
+              };
+            });
           this.usersList.set(mapped);
         }
         this.isLoading.set(false);
@@ -208,14 +218,16 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
   public getRoleLabel(role: string): string {
     const roleMap: Record<string, string> = {
       admin: '系統管理員',
-      employee: '上班族',
-      student: '學生',
-      teacher: '教師',
-      researcher: '研究人員',
-      retired: '已退休',
-      other: '其他',
+      ROLE_ADMIN: '系統管理員',
+      user: '一般會員',
+      ROLE_USER: '一般會員',
+      guest: '訪客',
+      ROLE_GUEST: '訪客',
+      employee: '一般會員',
+      student: '一般會員',
+      other: '一般會員',
     };
-    return roleMap[role] || role;
+    return roleMap[role] || '一般會員';
   }
 
   /**

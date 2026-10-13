@@ -42,6 +42,8 @@ public class QuestionDto {
     @Size(min = 1, max = 500, message = "題目文字長度需介於 1 至 500 字元")
     private String questionText;
 
+    private String imageUrl;
+
     @Builder.Default
     private Boolean isRequired = true;
 

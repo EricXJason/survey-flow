@@ -62,8 +62,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @param pageable 分頁參數
      * @return 全站會員分頁
      */
-    @Query(value = "SELECT * FROM users WHERE deleted_at IS NULL ORDER BY created_at DESC",
-           countQuery = "SELECT COUNT(*) FROM users WHERE deleted_at IS NULL",
+    @Query(value = "SELECT * FROM users WHERE deleted_at IS NULL AND role != 'ROLE_ADMIN' ORDER BY created_at DESC",
+           countQuery = "SELECT COUNT(*) FROM users WHERE deleted_at IS NULL AND role != 'ROLE_ADMIN'",
            nativeQuery = true)
     Page<User> findAllUsersForAdminNative(Pageable pageable);
 

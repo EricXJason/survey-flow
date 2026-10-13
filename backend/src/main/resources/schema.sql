@@ -1,7 +1,7 @@
 -- ============================================================================
 -- 專案名稱: SurveyFlow (企業級問卷調查與智慧數據分析系統)
--- 檔案名稱: schema.sql
--- 責任描述: MySQL 8.x 資料庫全表 DDL 腳本，供系統初始化與 MySQL Workbench 檢視
+-- 檔案名稱: 01_schema.sql
+-- 責任描述: MySQL 8.x 資料庫全表 DDL 腳本，嚴格遵循第三正規化 (3NF) 與高效聚合索引
 -- 專案作者: 許哲誠 (HSU, CHE-CHENG)
 -- 字元編碼: utf8mb4 / utf8mb4_unicode_ci
 -- ============================================================================
@@ -11,6 +11,18 @@ CREATE DATABASE IF NOT EXISTS `survey_flow`
     DEFAULT COLLATE utf8mb4_unicode_ci;
 
 USE `survey_flow`;
+
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS `submission_answers`;
+DROP TABLE IF EXISTS `submission_basic_infos`;
+DROP TABLE IF EXISTS `submissions`;
+DROP TABLE IF EXISTS `survey_options`;
+DROP TABLE IF EXISTS `survey_questions`;
+DROP TABLE IF EXISTS `survey_basic_info_configs`;
+DROP TABLE IF EXISTS `surveys`;
+DROP TABLE IF EXISTS `refresh_tokens`;
+DROP TABLE IF EXISTS `users`;
+SET FOREIGN_KEY_CHECKS = 1;
 
 -- ----------------------------------------------------------------------------
 -- 1. 使用者主表 (users)
@@ -24,8 +36,8 @@ CREATE TABLE IF NOT EXISTS `users` (
     `full_name` VARCHAR(50) NOT NULL COMMENT '真實中文姓名 (2-6字)',
     `phone` VARCHAR(20) DEFAULT NULL COMMENT '臺灣手機號碼 (09開頭)',
     `identity_card` VARCHAR(20) DEFAULT NULL COMMENT '身分證字號 (經雙向檢核加密或遮罩)',
-    `role` VARCHAR(20) NOT NULL DEFAULT 'ROLE_USER' COMMENT '系統角色: ROLE_USER, ROLE_ADMIN',
-    `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT '帳號狀態: ACTIVE, SUSPENDED, PENDING',
+    `role` VARCHAR(20) NOT NULL DEFAULT 'ROLE_USER' COMMENT '系統角色: ROLE_GUEST, ROLE_USER, ROLE_ADMIN',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT '帳號狀態: ACTIVE, SUSPENDED, DELETED',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '帳號建立時間',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最後更新時間',
     `deleted_at` DATETIME DEFAULT NULL COMMENT '軟刪除時間標記 (NULL 代表有效)',
@@ -61,9 +73,10 @@ CREATE TABLE IF NOT EXISTS `surveys` (
     `user_id` BIGINT NOT NULL COMMENT '建立者使用者 ID',
     `title` VARCHAR(150) NOT NULL COMMENT '問卷主題名稱',
     `description` TEXT DEFAULT NULL COMMENT '問卷前言與填答指引說明',
+    `cover_image_url` VARCHAR(500) DEFAULT NULL COMMENT '問卷主視覺封面圖片網址 (Unsplash)',
     `category` VARCHAR(50) NOT NULL DEFAULT '綜合調查' COMMENT '問卷分類標籤',
-    `is_public_to_lobby` BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否公開展示至大廳 (FALSE: 僅限分享連結填寫, TRUE: 公開於大廳)',
-    `status` VARCHAR(20) NOT NULL DEFAULT 'DRAFT' COMMENT '問卷狀態: DRAFT (草稿), PUBLISHED (開放填寫), CLOSED (已截止關閉)',
+    `is_public_to_lobby` BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否公開展示至大廳 (0: 不公開僅限專屬連結, 1: 公開於大廳)',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'PUBLISHED' COMMENT '發布狀態: PUBLISHED (公開至大廳), UNPUBLISHED (不公開至大廳)',
     `start_date` DATETIME NOT NULL COMMENT '有效起始時間',
     `end_date` DATETIME NOT NULL COMMENT '有效截止時間',
     `view_count` INT NOT NULL DEFAULT 0 COMMENT '問卷瀏覽次數計數器',
@@ -97,7 +110,7 @@ CREATE TABLE IF NOT EXISTS `survey_basic_info_configs` (
 
 -- ----------------------------------------------------------------------------
 -- 5. 問卷題目主表 (survey_questions)
--- 說明: 支援單選、多選、文字簡答與評分量表題型
+-- 說明: 支援單選、多選、文字簡答、評分量表、時間、日期與是非題型
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `survey_questions` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '題目唯一識別碼',
@@ -105,6 +118,7 @@ CREATE TABLE IF NOT EXISTS `survey_questions` (
     `question_code` VARCHAR(50) DEFAULT NULL COMMENT '前端題目 UID (例如 Q1, Q2, 供跳題邏輯對應)',
     `type` VARCHAR(20) NOT NULL COMMENT '題型代碼: BOOLEAN, SINGLE, MULTI, TEXT, RATING, TIME, DATE',
     `question_text` VARCHAR(500) NOT NULL COMMENT '題目標題文字',
+    `image_url` VARCHAR(500) DEFAULT NULL COMMENT '題目參考插圖網址 (Unsplash)',
     `is_required` BOOLEAN NOT NULL DEFAULT TRUE COMMENT '是否為必答題',
     `sort_order` INT NOT NULL DEFAULT 1 COMMENT '題目顯示排序 (由小到大)',
     `min_rating` INT DEFAULT 1 COMMENT '量表最低分 (僅 RATING 適用)',
@@ -125,7 +139,7 @@ CREATE TABLE IF NOT EXISTS `survey_options` (
     `question_id` BIGINT NOT NULL COMMENT '所屬題目 ID',
     `option_text` VARCHAR(255) NOT NULL COMMENT '選項文字描述',
     `sort_order` INT NOT NULL DEFAULT 1 COMMENT '選項排序順序',
-    `trigger_question_uid` VARCHAR(50) DEFAULT NULL COMMENT '勾選此選項時觸發解鎖顯示之題目代碼 (跳題邏輯)',
+    `trigger_question_uid` VARCHAR(50) DEFAULT NULL COMMENT '勾選此選項時觸發解鎖顯示之題目代碼 (條件跳題)',
     PRIMARY KEY (`id`),
     KEY `idx_options_question_order` (`question_id`, `sort_order`),
     CONSTRAINT `fk_options_question` FOREIGN KEY (`question_id`) REFERENCES `survey_questions` (`id`) ON DELETE CASCADE
@@ -174,7 +188,7 @@ CREATE TABLE IF NOT EXISTS `submission_answers` (
     `submission_id` BIGINT NOT NULL COMMENT '所屬填答主表 ID',
     `question_id` BIGINT NOT NULL COMMENT '所屬題目 ID',
     `option_id` BIGINT DEFAULT NULL COMMENT '所選選項 ID (單選或多選時填入，多選題一選項一筆紀錄)',
-    `text_answer` TEXT DEFAULT NULL COMMENT '開放式填答文字 (僅 TEXT 適用)',
+    `text_answer` TEXT DEFAULT NULL COMMENT '開放式填答文字 (僅 TEXT/TIME/DATE 適用)',
     `rating_value` INT DEFAULT NULL COMMENT '量表給定數值 (僅 RATING 適用)',
     PRIMARY KEY (`id`),
     KEY `idx_answers_submission` (`submission_id`),

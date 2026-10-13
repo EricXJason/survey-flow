@@ -58,6 +58,7 @@
                 type="text"
                 class="field-input"
                 formControlName="name"
+                maxlength="10"
                 placeholder="請輸入中文姓名"
               />
               @if (
@@ -94,6 +95,10 @@
                 type="number"
                 class="field-input"
                 formControlName="age"
+                min="1"
+                max="120"
+                maxlength="3"
+                oninput="if(this.value.length>3) this.value=this.value.slice(0,3)"
                 placeholder="例如：22"
               />
               @if (
@@ -161,6 +166,7 @@
                 type="tel"
                 class="field-input"
                 formControlName="mobilePhone"
+                maxlength="10"
                 placeholder="例如：0912345678"
               />
               @if (
@@ -197,6 +203,7 @@
                 type="email"
                 class="field-input"
                 formControlName="email"
+                maxlength="100"
                 placeholder="例如：user@university.edu.tw"
               />
               @if (
@@ -233,6 +240,7 @@
                 type="text"
                 class="field-input"
                 formControlName="residentialAddress"
+                maxlength="100"
                 placeholder="請輸入現居居住地址"
               />
               @if (
@@ -331,7 +339,7 @@
           @if (survey.basicInfoRequirements.requireJobIndustry) {
             <div class="field-item">
               <label class="field-label">產業領域 <span class="req-star">*</span></label>
-              <input type="text" class="field-input" formControlName="jobIndustry" placeholder="例如：資訊科技業" />
+              <input type="text" class="field-input" formControlName="jobIndustry" maxlength="50" placeholder="例如：資訊科技業" />
               @if (
                 runnerFormGroup.get("jobIndustry")?.invalid &&
                 runnerFormGroup.get("jobIndustry")?.touched

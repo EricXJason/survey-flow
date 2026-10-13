@@ -437,8 +437,23 @@
     border-radius: var(--r-sm);
   }
 
-  .user-email {
+  .user-subline {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
     font-size: 1.3rem;
+  }
+
+  .user-realname {
+    font-weight: 500;
+    color: var(--c-primary-600, #2563eb);
+    background: #eff6ff;
+    padding: 0.1rem 0.5rem;
+    border-radius: var(--r-sm);
+  }
+
+  .user-email-text, .user-email {
+    font-size: 1.25rem;
     color: var(--c-neutral-500);
   }
 }

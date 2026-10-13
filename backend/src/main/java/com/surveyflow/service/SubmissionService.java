@@ -46,13 +46,12 @@ public class SubmissionService {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(request.getSurveyId())
                 .orElseThrow(() -> new IllegalArgumentException("填答之問卷不存在或已刪除"));
 
-        if (survey.getStatus() == SurveyStatus.CLOSED) {
-            throw new IllegalArgumentException("此問卷目前已截止關閉，無法再提交回答");
-        }
-
         LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(survey.getStartDate()) || now.isAfter(survey.getEndDate())) {
-            throw new IllegalArgumentException("目前非此問卷開放填答之有效時間範圍");
+        if (survey.getStartDate() != null && now.isBefore(survey.getStartDate())) {
+            throw new IllegalArgumentException("問卷尚未到達開放填答時間");
+        }
+        if (survey.getEndDate() != null && now.isAfter(survey.getEndDate())) {
+            throw new IllegalArgumentException("目前非此問卷開放填答之有效時間範圍，填答已截止");
         }
 
         // 1. 建立填答主記錄

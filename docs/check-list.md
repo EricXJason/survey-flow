@@ -55,12 +55,16 @@
   - [x] **真實測試數據持久化**: 建立 4 筆 `testuser` 問卷（3 筆公開 + 1 筆私人）與 40 筆真實作答記錄（191 筆題型回答明細），支援數據分析儀表板真實查詢。
   - [x] **問卷上傳不可溯及修改題目規範**: 上傳發布後鎖定問卷題目結構，避免修改既有題項導致既有回覆資料失真或關聯錯亂。
   - [x] **問卷雙維度狀態與時程 API (`PATCH /api/user/surveys/{id}/settings`)**:
-    - [x] 維度一：是否公開至問卷大廳 (`is_public_to_lobby` / `isPublicToLobby`)。
-    - [x] 維度二：是否開放填寫 (`isOpen` / `PUBLISHED` vs `CLOSED`)。
-    - [x] 時效區間：支援動態設定開始時間 (`startDate`) 與截止時間 (`endDate`)，或設為常態開放。
+    - [x] 維度一：是否公開至問卷大廳（`PUBLISHED` vs `UNPUBLISHED`）。
+    - [x] 維度二：開放填答時段判定（由 `startDate` 與 `endDate` 決定，過期或未達時程自動攔截）。
   - [x] **會員身分證字號不可竄改性 (`identityCard` 唯讀鎖定)**: 前端個人檔案頁面將身分證號鎖定為唯讀狀態，後端 `UserService.updateProfile` 徹底移除身分證號更新賦值，確保實名綁定無漏洞。
   - [x] **單選題條件跳題解鎖關聯 (`trigger_question_uid`)**: 資料庫 `survey_options` 與後端 `SurveyOption` 實體擴展支援觸發題號，前端於載入時自動將受觸發題預設鎖定為隱藏，勾選指定選項時動態解鎖。
   - [x] **數據分析儀表板全端 SaaS 純白風格重構**: 根除殘留的深黑 HUD 破版樣式，還原現代清新純白 SaaS 卡片風格，時程設定彈窗與簡答題無內容優雅提示皆一併升級。
+  - [x] **訪客角色 (ROLE_GUEST) 與未登入問卷設計阻斷守衛 (`authGuard`)**: 前端路由對 `/survey-design` 等頁面進行登入檢驗，未登入者僅能填寫問卷與瀏覽大廳，點擊設計自動彈窗提示並引導登入。
+  - [x] **高畫質開源圖片整合 (Unsplash)**: 資料庫支援 `cover_image_url` 與 `image_url`，前後端完整映射並於問卷封面與題目中渲染真實商業/學術情境視覺。
+  - [x] **受訪者基本資料防呆防溢出**: 姓名、手機（10碼）、信箱、現居地址與產業全面加上 `maxlength` 與數值上下限防護。
+  - [x] **Admin 會員列表資訊完整化與管理員防護**: 會員名冊展示真實 `username`、姓名、ID 與電話，角色正確顯示「一般會員」，並徹底排除與保護 admin 帳號。
+  - [x] **資料庫模組化歸檔與單一重置 SQL (`backend/src/main/resources/db/reset_database.sql`)**: 建立 `db/` 目錄並產出單一完整重置檔案，可一鍵 100% 重建資料庫與 40 筆真實數據。
   - [x] **問卷題目 7 大型態全端完整支援 (是非、單選、複選、評分量表、簡答、時間、日期)**:
     - [x] 後端 `QuestionType` 擴展 `BOOLEAN`, `TIME`, `DATE`，達成完整 7 大題型定義。
     - [x] 前端 `SurveyGetterService` 與 `UserEmitterService` 完成 7 種題型雙向完整映射。

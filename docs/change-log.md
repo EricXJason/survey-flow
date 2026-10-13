@@ -3,6 +3,37 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-14 00:20] - 新增訪客角色 ROLE_GUEST、狀態對齊大廳公開性 (PUBLISHED/UNPUBLISHED)、開源高畫質圖片整合、填答防呆防溢出、未登入路由攔截與單一資料庫快速重置 SQL 模組化
+- **改動原因**: 依據使用者最新業務指令與截圖反饋，擴展身分角色至包含未登入訪客 (`ROLE_GUEST`)；簡化問卷狀態生命週期，徹底移除 DRAFT，僅保留 `PUBLISHED` 與 `UNPUBLISHED` 決定是否公開至問卷大廳，並將填答權限完全回歸有效時程判定；全端整合 Unsplash 高品質開源圖片（問卷主視覺封面與關鍵題目附圖）；全面為受訪者基本資料輸入欄位補齊 `maxlength` 與數值邊界防呆；實作未登入訪客路由守衛，嚴格限制僅登入會員可發起或設計問卷；優化 Admin 會員名冊展示真實 `username`、姓名與電話並徹底隱藏保護管理員帳號；重構 `application.properties` 為整潔大區塊集中註解；並將全部資料庫 DDL 與 40 筆預設數據歸檔至 `db/` 目錄並產出 `reset_database.sql` 單一檔案一鍵重置腳本。
+- **具體內容**:
+  - **擴充 RoleType 列舉與訪客身分**:
+    - 後端 `RoleType.java` 新增 `ROLE_GUEST` 訪客枚舉值。
+    - 前端 `UserStateService` 提供 `isLoggedIn()` 響應式判斷。
+  - **問卷狀態流轉與時程控制嚴格解耦**:
+    - `SurveyStatus.java` 移除 `DRAFT` 與 `CLOSED`，僅保留 `PUBLISHED`（大廳公開）與 `UNPUBLISHED`（未發布至大廳／僅持直達連結可填答）。
+    - 問卷是否可填答完全由 `startDate` 與 `endDate` 決定（`SubmissionService` 與 `SurveyService` 依當前系統時間進行嚴格時效檢核）。
+  - **問卷與題目開源高畫質圖片支援 (Unsplash)**:
+    - 資料表新增 `surveys.cover_image_url` 與 `survey_questions.image_url`。
+    - 後端 Entity 與 DTO 建立雙向映射管線。
+    - 前端 `SurveyGetterService` 自動將封面圖與題目插圖映射至 `SurveyRunnerComponent` 視覺渲染區塊。
+  - **填答者基本資料防呆與長度防溢出限制 (對齊截圖 1)**:
+    - `survey-runner.component.html` 全面加上嚴格長度限制：姓名限制 10 字、年齡限制 1-120 歲、手機電話嚴格限制 10 碼（`maxlength="10"`）、電子信箱 100 字、現居地址 100 字、產業領域 50 字。
+  - **首頁與路由安全防護：未登入嚴禁設計問卷**:
+    - 於 `app.routes.ts` 實作 `authGuard` 守衛，為 `/survey-design`、`/survey-management`、`/user-management` 與 `/user-profile` 加上啟用保護。
+    - 未登入之訪客若嘗試進入，將由 `DialogService` 彈出「請先登入會員」錯誤提示並自動導向 `/log-in`，訪客僅能填答與瀏覽大廳。
+  - **管理員會員清單修復與保護 (對齊截圖 2)**:
+    - 後端 `UserRepository.findAllUsersForAdminNative` 原生 SQL 加入 `AND role != 'ROLE_ADMIN'`，管理員後台查詢名冊完全排除 admin。
+    - `AdminController.deleteUser` 加入安全防護，嚴禁刪除任何系統最高管理員帳號。
+    - 前端 `user-management.component.html` 與 TS 修正資料映射：會員帳號標題展示真實 `username`，副標籤展示真實姓名 `fullName` 與 `ID` 徽章，身分角色正確展示「一般會員」而非「其他」。
+  - **application.properties 區塊化註解重構**:
+    - 徹底消除逐行零散註解，劃分為「網路伺服器」、「資料庫連線」、「JPA/ORM」、「JWT 安全」、「日誌輸出」、「預設帳密同步」等 6 大集中註解區塊。
+  - **資料庫專屬目錄歸檔與單一重置腳本 (`db/`)**:
+    - 建立 `backend/src/main/resources/db/` 目錄：
+      - `01_schema.sql`: 完整 8 張資料表全新 DDL。
+      - `02_seed_data.sql`: 4 份高水準問卷（商業調研、電商回購、AI 學術研究、封測福利）與 40 位真實受訪者作答數據。
+      - `reset_database.sql`: 整合 DROP、DDL 與預設資料之**單一完整重置檔案**，供使用者直接一次性複製或執行還原。
+- **影響範圍**: `RoleType.java`, `SurveyStatus.java`, `Survey.java`, `SurveyQuestion.java`, `SurveyResponse.java`, `SurveySummaryResponse.java`, `QuestionDto.java`, `SurveyService.java`, `SubmissionService.java`, `UserRepository.java`, `AdminController.java`, `application.properties`, `app.routes.ts`, `user-state.service.ts`, `survey-runner.component.html`, `survey-getter.service.ts`, `user-management.component.ts`, `user-management.component.html`, `user-management.component.scss`, `db/01_schema.sql`, `db/02_seed_data.sql`, `db/reset_database.sql`
+
 ## [2026-10-14 00:05] - 重構登入與數據分析 SaaS 介面、身分證號嚴格唯讀綁定、全端實現 10 題條件跳題問卷與 40 筆真實作答數據還原
 - **改動原因**: 依據使用者指示與截圖指引，全面修正登入介面懸空排版與殘留之第三方登入按鈕；嚴格將會員個人身分證字號設定為系統實名不可竄改之綁定欄位；根除數據分析報表頁面中殘留的深黑 Cyber HUD 破版樣式，完全還原現代清新白色 SaaS 風格並優化簡答題空反饋提示；擴展後端與資料庫 schema 支援題目選項之條件跳題解鎖關聯 (`trigger_question_uid`)；徹底清理測試雜訊並重置 MySQL 資料庫至僅有 `admin` 與 `testuser`，為其注入 4 份每份 10 題（含單選條件解鎖關聯題）、各 10 筆（共 40 筆）真實人口輪廓與非同步深度建議之問卷數據。
 - **具體內容**:

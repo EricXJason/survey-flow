@@ -57,8 +57,9 @@ public class SurveyService {
                 .creator(creator)
                 .title(request.getTitle())
                 .description(request.getDescription())
+                .coverImageUrl(request.getCoverImageUrl())
                 .category(request.getCategory() != null ? request.getCategory() : "綜合調查")
-                .status(request.getStatus() != null ? request.getStatus() : SurveyStatus.DRAFT)
+                .status(request.getStatus() != null ? request.getStatus() : SurveyStatus.PUBLISHED)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .viewCount(0)
@@ -89,6 +90,7 @@ public class SurveyService {
                         .questionCode(qDto.getQuestionCode())
                         .type(qDto.getType())
                         .questionText(qDto.getQuestionText())
+                        .imageUrl(qDto.getImageUrl())
                         .isRequired(qDto.getIsRequired() != null ? qDto.getIsRequired() : true)
                         .sortOrder(qDto.getSortOrder() != null ? qDto.getSortOrder() : 1)
                         .minRating(qDto.getMinRating())
@@ -157,11 +159,11 @@ public class SurveyService {
 
         survey.setStartDate(request.getStartDate());
         survey.setEndDate(request.getEndDate());
-        survey.setIsPublicToLobby(request.getIsPublicToLobby() != null ? request.getIsPublicToLobby() : true);
-        survey.setStatus(Boolean.TRUE.equals(request.getIsOpen()) ? SurveyStatus.PUBLISHED : SurveyStatus.CLOSED);
+        survey.setIsPublicToLobby(Boolean.TRUE.equals(request.getIsPublicToLobby()));
+        survey.setStatus(Boolean.TRUE.equals(request.getIsPublicToLobby()) ? SurveyStatus.PUBLISHED : SurveyStatus.UNPUBLISHED);
 
         survey = surveyRepository.save(survey);
-        log.info("問卷時限與狀態更新成功: id={}, isOpen={}, isPublicToLobby={}", survey.getId(), request.getIsOpen(), request.getIsPublicToLobby());
+        log.info("問卷時限與狀態更新成功: id={}, status={}, isPublicToLobby={}", survey.getId(), survey.getStatus(), survey.getIsPublicToLobby());
         return convertToDetailResponse(survey);
     }
 
@@ -187,8 +189,12 @@ public class SurveyService {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("問卷不存在或已下架"));
 
-        if (survey.getStatus() == SurveyStatus.CLOSED) {
-            throw new IllegalArgumentException("此問卷已截止結束收件，無法再進行填答");
+        LocalDateTime now = LocalDateTime.now();
+        if (survey.getStartDate() != null && now.isBefore(survey.getStartDate())) {
+            throw new IllegalArgumentException("此問卷尚未到達開放填答時間，請於 " + survey.getStartDate() + " 後再次嘗試");
+        }
+        if (survey.getEndDate() != null && now.isAfter(survey.getEndDate())) {
+            throw new IllegalArgumentException("此問卷已過截止期限，無法再進行填答");
         }
 
         // 累加瀏覽次數
@@ -291,6 +297,7 @@ public class SurveyService {
                     .questionCode(q.getQuestionCode())
                     .type(q.getType())
                     .questionText(q.getQuestionText())
+                    .imageUrl(q.getImageUrl())
                     .isRequired(q.getIsRequired())
                     .sortOrder(q.getSortOrder())
                     .minRating(q.getMinRating())
@@ -305,6 +312,7 @@ public class SurveyService {
                 .authorName(survey.getCreator() != null ? survey.getCreator().getFullName() : "未知")
                 .title(survey.getTitle())
                 .description(survey.getDescription())
+                .coverImageUrl(survey.getCoverImageUrl())
                 .category(survey.getCategory())
                 .isPublicToLobby(survey.getIsPublicToLobby())
                 .status(survey.getStatus())
@@ -328,6 +336,7 @@ public class SurveyService {
                 .id(survey.getId())
                 .title(survey.getTitle())
                 .description(survey.getDescription())
+                .coverImageUrl(survey.getCoverImageUrl())
                 .category(survey.getCategory())
                 .isPublicToLobby(survey.getIsPublicToLobby())
                 .status(survey.getStatus())

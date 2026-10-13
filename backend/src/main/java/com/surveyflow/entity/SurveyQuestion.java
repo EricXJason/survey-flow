@@ -51,6 +51,9 @@ public class SurveyQuestion {
     @Column(name = "question_text", nullable = false, length = 500)
     private String questionText;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Column(name = "is_required", nullable = false)
     @Builder.Default
     private Boolean isRequired = true;

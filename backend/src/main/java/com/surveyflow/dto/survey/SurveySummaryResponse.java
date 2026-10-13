@@ -29,6 +29,7 @@ public class SurveySummaryResponse {
     private Long id;
     private String title;
     private String description;
+    private String coverImageUrl;
     private String category;
     private Boolean isPublicToLobby;
     private SurveyStatus status;

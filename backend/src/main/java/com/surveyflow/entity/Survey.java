@@ -58,7 +58,10 @@ public class Survey {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private SurveyStatus status = SurveyStatus.DRAFT;
+    private SurveyStatus status = SurveyStatus.PUBLISHED;
+
+    @Column(name = "cover_image_url", length = 500)
+    private String coverImageUrl;
 
     @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;

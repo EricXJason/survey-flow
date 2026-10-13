@@ -113,6 +113,13 @@ export class UserStateService {
   }
 
   /**
+   * 檢查當前是否為正式登入會員（非訪客 guest）
+   */
+  public isLoggedIn(): boolean {
+    return this.access() !== 'guest' && this.userName() !== 'guest' && !!this.userName();
+  }
+
+  /**
    * 私有方法：將當前 userProfile 狀態序列化寫入 SessionStorage
    */
   private _syncToSession(): void {

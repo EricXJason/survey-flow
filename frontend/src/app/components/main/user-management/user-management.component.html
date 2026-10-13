@@ -217,14 +217,17 @@
                 <td mat-cell *matCellDef="let user">
                   <div class="user-cell">
                     <div class="user-avatar" [class.avatar-admin]="user.role === 'admin'">
-                      {{ getUserInitial(user.name) }}
+                      {{ getUserInitial(user.username) }}
                     </div>
                     <div class="user-info">
                       <div class="user-name-line">
-                        <span class="user-fullname">{{ user.name }}</span>
-                        <span class="user-id-badge">{{ user.id }}</span>
+                        <span class="user-fullname">{{ user.username }}</span>
+                        <span class="user-id-badge">ID: {{ user.id }}</span>
                       </div>
-                      <span class="user-email">{{ user.email }}</span>
+                      <div class="user-subline">
+                        <span class="user-realname" title="真實姓名">{{ user.fullName }}</span>
+                        <span class="user-email-text">{{ user.email }}</span>
+                      </div>
                     </div>
                   </div>
                 </td>

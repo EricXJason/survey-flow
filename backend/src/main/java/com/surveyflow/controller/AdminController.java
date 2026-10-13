@@ -96,6 +96,9 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
+        if (user.getRole() == com.surveyflow.common.enums.RoleType.ROLE_ADMIN) {
+            throw new IllegalArgumentException("系統最高管理員帳號受保護，嚴禁刪除");
+        }
         user.setDeletedAt(LocalDateTime.now());
         user.setStatus("DELETED");
         userRepository.save(user);

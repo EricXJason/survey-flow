@@ -13,6 +13,9 @@
 package com.surveyflow.common.enums;
 
 public enum RoleType {
+    /** 訪客：未登入之匿名受訪者，僅能填答公開或持分享連結之問卷 */
+    ROLE_GUEST,
+
     /** 一般註冊會員：可建立與管理自己發布的問卷、查閱自己問卷之分析統計報表 */
     ROLE_USER,
 
