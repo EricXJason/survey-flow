@@ -3,6 +3,29 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-20 18:12] - 協定優化：四個 AGENTS 檔案全面去重、消除資安矛盾與納入 Security 規格書
+
+- **改動原因**: 使用者要求 doc 內明確具備 security 安全方面規劃設計，四個 MD 檔案嚴禁重複敘述或不合理設計，並確保極高閱讀效率、低 Token 與嚴格準確落實度
+- **具體內容**:
+  - **文檔規格補充**: 於 `AGENTS.md` §4.2 之 `docs/system-design/` 目錄樹中正式補入 `09-security.md`（資安防護、認證授權、加密與資料脫敏規格書），完備系統架構庫
+  - **資安架構對齊**: 修正 `AGENTS-BACK.md` §3 原陳舊之雙 Token 敘述，全面對齊 `09-security.md` 之「單一高安全 JWT 憑證架構 (Stateless Single Token)」與「Argon2id 密碼雜湊」，消除設計矛盾
+  - **跨檔案重複全面掃除**:
+    - **SOLID 與 CRUD**: `AGENTS.md` 專注定義通用軟體架構底線；`AGENTS-BACK.md` 僅保留後端分層隔離 (SRP)、構造器注入 (DIP) 與 CRUD 排序落地，刪除課本式重複文字
+    - **守衛條款**: 精簡 `AGENTS-GIT.md` 中的協定常駐與原子 Commit 描述，聚焦於 Git CLI 流程防禦，消除與 `AGENTS.md` §1.1 的大量字面重複
+    - **註解與 MCP**: 前後端特化協定精簡為繼承中樞標準並明確指涉特定層級對象，去除跨檔冗言贅字
+  - **HUD Mermaid 規範精煉**: 精簡 `AGENTS.md` §4.3 條款文字，維持直角 HUD、無背景線條、橫向展開等高密度工程事實
+- **影響範圍**: [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md)、[`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md)、[`AGENTS-FRONT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-FRONT.md)、[`AGENTS-GIT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-GIT.md)、[`docs/change-log.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/change-log.md)
+
+## [2026-10-20 18:07] - 協定重構：四個 AGENTS MD 內容重新分配與去重
+
+- **改動原因**: 使用者指出四個 AGENTS MD 檔案內容分配不合理，Java 特化規範不應放在總中樞 `AGENTS.md`，要求確實做好分類
+- **具體內容**:
+  - **AGENTS.md**: 移除 Java 後端工程標準（ModelMapper/Lombok/SQL）、全端雙目錄拓撲、五種語言特化命名慣例，改為一句指引至各特化協定；SRP 改為語言中立描述
+  - **AGENTS-BACK.md**: 新增 SOLID 後端落地準則（SRP 分層隔離/OCP/LSP/ISP/DIP 含 Java 特化說明）與 CRUD 方法排序規範
+  - **AGENTS-FRONT.md**: 更新日期（內容已完整無需大改）
+  - **AGENTS-GIT.md**: 更新日期（內容已完整無需大改）
+- **影響範圍**: `AGENTS.md` §2 §3、`AGENTS-BACK.md` §1、`AGENTS-FRONT.md`、`AGENTS-GIT.md`
+
 ## [2026-10-20 18:02] - 協定新增：CRUD 方法排序強制規範
 
 - **改動原因**: 使用者要求所有涉及 CRUD 操作之類別，方法排列順序必須遵循 Create → Read → Update → Delete 的標準順序
