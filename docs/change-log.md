@@ -3,6 +3,12 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-20 18:02] - 協定新增：CRUD 方法排序強制規範
+
+- **改動原因**: 使用者要求所有涉及 CRUD 操作之類別，方法排列順序必須遵循 Create → Read → Update → Delete 的標準順序
+- **具體內容**: 於 `AGENTS.md` 第 3 節「軟體工程底線」新增 **CRUD 方法排序強制規範 (Method Ordering by CRUD)** 條款，涵蓋 Controller / Service / Repository / 介面定義與 API 規格文檔之端點條列順序
+- **影響範圍**: `AGENTS.md` 第 3 節
+
 ## [2026-10-20 16:03] - 協定架構整合：全端雙目錄分流拓撲、Java ModelMapper 映射標準、Lombok 深度賦能與 SQL 集中歸檔規範
 
 - **改動原因**:
