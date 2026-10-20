@@ -3,6 +3,27 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-20 16:03] - 協定架構整合：全端雙目錄分流拓撲、Java ModelMapper 映射標準、Lombok 深度賦能與 SQL 集中歸檔規範
+
+- **改動原因**:
+  - 使用者明確要求將現行標準工作模式正式寫入 AI Agent 規範庫中，維持高閱讀效率與低 Token 開銷：
+    1. 全端專案強制採用 `frontend/` 與 `backend/` 雙資料夾物理隔離分流架構。
+    2. Java 後端專案之 Entity ⇄ DTO 轉換強制使用 `ModelMapper`，消滅重複 set/get 樣板。
+    3. Java 專案盡可能全面深度採用 Lombok（`@Getter`, `@Setter`, `@Builder`, `@RequiredArgsConstructor`, `@Slf4j` 等）。
+    4. 所有 SQL 語法與腳本（`schema.sql`, `data.sql`）強制集中持久化存放在專屬資料夾中（如 `resources/database/`）。
+- **具體內容**:
+  - **核心協定高密度整合 (`AGENTS.md`)**:
+    - 於第 3 節「軟體工程底線」以極簡條列擴充「全端專案雙目錄物理隔離拓撲」與「Java 後端核心工程標準」。
+  - **後端特化協定深度規範 (`AGENTS-BACK.md`)**:
+    - 第 1 節新增「Java 後端核心工程標準」，明確規定 ModelMapper 映射管線、Lombok 註解全覆蓋（消滅 `@Autowired`、統一 `@Slf4j`）。
+    - 第 2 節新增「SQL 語法集中持久化歸檔規範」，明訂 DDL 與 DML 腳本必須集中存放在專屬目錄（如 `backend/src/main/resources/database/`），杜絕零散散落。
+  - **雙重保險庫同步備份**:
+    - 同步鏡像更新至本機保險庫 `~/.agents-vault/`。
+- **影響範圍**:
+  - `AGENTS.md`
+  - `AGENTS-BACK.md`
+  - `docs/change-log.md`
+
 ## [2026-10-20 15:37] - 協定規範強化：確立私有協定實體永久常駐、推前必拉、衝突人類協商與 README 嚴格維護邊界
 
 - **改動原因**:
