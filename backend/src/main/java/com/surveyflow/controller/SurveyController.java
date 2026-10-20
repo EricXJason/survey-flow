@@ -43,7 +43,7 @@ public class SurveyController {
     public ResponseEntity<ApiResponse<Page<SurveySummaryResponse>>> getLobbySurveys(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String keyword,
-            @PageableDefault(size = 10, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 100, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<SurveySummaryResponse> result = surveyService.searchLobbySurveys(category, keyword, pageable);
         return ResponseEntity.ok(ApiResponse.ok(result, "成功獲取問卷大廳清單"));
     }
@@ -68,7 +68,7 @@ public class SurveyController {
     @GetMapping({"/api/user/surveys", "/api/surveys/my"})
     public ResponseEntity<ApiResponse<Page<SurveySummaryResponse>>> getMySurveys(
             @AuthenticationPrincipal UserDetails userDetails,
-            @PageableDefault(size = 10, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 100, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<SurveySummaryResponse> result = surveyService.getUserSurveys(userDetails.getUsername(), pageable);
         return ResponseEntity.ok(ApiResponse.ok(result, "成功獲取我的問卷專案列表"));
     }
@@ -126,5 +126,21 @@ public class SurveyController {
             @AuthenticationPrincipal UserDetails userDetails) {
         surveyService.deleteSurvey(id, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok("問卷專案已成功移除"));
+    }
+
+    /**
+     * 更新問卷可填寫日期時間區間、大廳公開性與即時填寫開放狀態 (需登入且為擁有者)
+     * @param id 問卷 ID
+     * @param request 時限與狀態設定請求
+     * @param userDetails 當前操作者身分
+     * @return 更新後之問卷詳情
+     */
+    @PatchMapping({"/api/user/surveys/{id}/settings", "/api/surveys/{id}/settings"})
+    public ResponseEntity<ApiResponse<SurveyResponse>> updateSurveySettings(
+            @PathVariable Long id,
+            @Valid @RequestBody SurveySettingsRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        SurveyResponse response = surveyService.updateSurveySettings(id, request, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.ok(response, "問卷時限與發布狀態已成功更新"));
     }
 }

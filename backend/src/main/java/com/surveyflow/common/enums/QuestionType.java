@@ -13,6 +13,9 @@
 package com.surveyflow.common.enums;
 
 public enum QuestionType {
+    /** 是非題：二元判斷（是/否、對/錯） */
+    BOOLEAN,
+
     /** 單選題：受訪者僅能從既定選項中勾選 1 項 */
     SINGLE,
 
@@ -23,5 +26,11 @@ public enum QuestionType {
     TEXT,
 
     /** 評分量表題：1 至 5 分 (或 1 至 10 分) Likert 滿意度或 NPS 量表 */
-    RATING
+    RATING,
+
+    /** 時間選擇題：HH:mm 格式時間戳記 */
+    TIME,
+
+    /** 日期選擇題：YYYY-MM-DD 格式日期 */
+    DATE
 }

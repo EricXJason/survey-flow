@@ -13,7 +13,6 @@
 package com.surveyflow.service;
 
 import com.surveyflow.common.enums.RoleType;
-import com.surveyflow.common.enums.SurveyStatus;
 import com.surveyflow.dto.analytics.SurveyAnalyticsResponse;
 import com.surveyflow.entity.Submission;
 import com.surveyflow.entity.Survey;
@@ -79,7 +78,8 @@ class AnalyticsServiceTest {
                 .id(1L)
                 .creator(owner)
                 .title("平台滿意度調查")
-                .status(SurveyStatus.PUBLISHED)
+                .isOpen(true)
+                .isPublicToLobby(true)
                 .viewCount(100)
                 .questions(new ArrayList<>())
                 .build();

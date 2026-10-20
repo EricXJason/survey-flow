@@ -14,7 +14,6 @@
 package com.surveyflow.service;
 
 import com.surveyflow.common.enums.RoleType;
-import com.surveyflow.common.enums.SurveyStatus;
 import com.surveyflow.dto.survey.*;
 import com.surveyflow.entity.*;
 import com.surveyflow.repository.SubmissionRepository;
@@ -30,7 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -57,8 +58,10 @@ public class SurveyService {
                 .creator(creator)
                 .title(request.getTitle())
                 .description(request.getDescription())
+                .coverImageUrl(request.getCoverImageUrl())
                 .category(request.getCategory() != null ? request.getCategory() : "綜合調查")
-                .status(request.getStatus() != null ? request.getStatus() : SurveyStatus.DRAFT)
+                .isOpen(request.getIsOpen() != null ? request.getIsOpen() : true)
+                .isPublicToLobby(request.getIsPublicToLobby() != null ? request.getIsPublicToLobby() : true)
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .viewCount(0)
@@ -69,13 +72,26 @@ public class SurveyService {
         if (configDto != null) {
             SurveyBasicInfoConfig config = SurveyBasicInfoConfig.builder()
                     .survey(survey)
-                    .requireName(configDto.getRequireName() != null ? configDto.getRequireName() : true)
-                    .requireGender(configDto.getRequireGender() != null ? configDto.getRequireGender() : true)
-                    .requireAge(configDto.getRequireAge() != null ? configDto.getRequireAge() : true)
-                    .requirePhone(configDto.getRequirePhone() != null ? configDto.getRequirePhone() : false)
-                    .requireEmail(configDto.getRequireEmail() != null ? configDto.getRequireEmail() : false)
-                    .requireIndustry(configDto.getRequireIndustry() != null ? configDto.getRequireIndustry() : false)
-                    .requireResidence(configDto.getRequireResidence() != null ? configDto.getRequireResidence() : false)
+                    .collectBasicInfo(configDto.getCollectBasicInfo() != null ? configDto.getCollectBasicInfo() : true)
+                    .requireName(Boolean.TRUE.equals(configDto.getRequireName()))
+                    .requireGender(Boolean.TRUE.equals(configDto.getRequireGender()))
+                    .requireAge(Boolean.TRUE.equals(configDto.getRequireAge()))
+                    .requireBirthday(Boolean.TRUE.equals(configDto.getRequireBirthday()))
+                    .requireNationalId(Boolean.TRUE.equals(configDto.getRequireNationalId()))
+                    .requirePhone(Boolean.TRUE.equals(configDto.getRequirePhone()))
+                    .requireHomePhone(Boolean.TRUE.equals(configDto.getRequireHomePhone()))
+                    .requireEmail(Boolean.TRUE.equals(configDto.getRequireEmail()))
+                    .requireIndustry(Boolean.TRUE.equals(configDto.getRequireIndustry()))
+                    .requireJobTitle(Boolean.TRUE.equals(configDto.getRequireJobTitle()))
+                    .requireDepartment(Boolean.TRUE.equals(configDto.getRequireDepartment()))
+                    .requireEmployeeId(Boolean.TRUE.equals(configDto.getRequireEmployeeId()))
+                    .requireAcademicMajor(Boolean.TRUE.equals(configDto.getRequireAcademicMajor()))
+                    .requireClassName(Boolean.TRUE.equals(configDto.getRequireClassName()))
+                    .requireStudentId(Boolean.TRUE.equals(configDto.getRequireStudentId()))
+                    .requireHeight(Boolean.TRUE.equals(configDto.getRequireHeight()))
+                    .requireWeight(Boolean.TRUE.equals(configDto.getRequireWeight()))
+                    .requireResidence(Boolean.TRUE.equals(configDto.getRequireResidence()))
+                    .requireRegisteredAddress(Boolean.TRUE.equals(configDto.getRequireRegisteredAddress()))
                     .build();
             survey.setBasicInfoConfig(config);
         }
@@ -89,6 +105,7 @@ public class SurveyService {
                         .questionCode(qDto.getQuestionCode())
                         .type(qDto.getType())
                         .questionText(qDto.getQuestionText())
+                        .imageUrl(qDto.getImageUrl())
                         .isRequired(qDto.getIsRequired() != null ? qDto.getIsRequired() : true)
                         .sortOrder(qDto.getSortOrder() != null ? qDto.getSortOrder() : 1)
                         .minRating(qDto.getMinRating())
@@ -102,6 +119,7 @@ public class SurveyService {
                                 .question(question)
                                 .optionText(oDto.getOptionText())
                                 .sortOrder(oDto.getSortOrder() != null ? oDto.getSortOrder() : 1)
+                                .triggerQuestionUid(oDto.getTriggerQuestionUid())
                                 .build();
                         options.add(option);
                     }
@@ -131,12 +149,43 @@ public class SurveyService {
         if (request.getTitle() != null) survey.setTitle(request.getTitle());
         if (request.getDescription() != null) survey.setDescription(request.getDescription());
         if (request.getCategory() != null) survey.setCategory(request.getCategory());
-        if (request.getStatus() != null) survey.setStatus(request.getStatus());
+        if (request.getIsPublicToLobby() != null) survey.setIsPublicToLobby(request.getIsPublicToLobby());
+        if (request.getIsOpen() != null) survey.setIsOpen(request.getIsOpen());
         if (request.getStartDate() != null) survey.setStartDate(request.getStartDate());
         if (request.getEndDate() != null) survey.setEndDate(request.getEndDate());
 
         survey = surveyRepository.save(survey);
         log.info("問卷專案更新成功: id={}", survey.getId());
+        return convertToDetailResponse(survey);
+    }
+
+    /**
+     * 更新問卷可填寫日期時間區間、大廳公開性與即時填寫開放狀態
+     * @param surveyId 問卷 ID
+     * @param request 時限與狀態設定請求
+     * @param currentUsername 當前操作者帳號
+     * @return 更新後之問卷詳情
+     */
+    @Transactional
+    public SurveyResponse updateSurveySettings(Long surveyId, SurveySettingsRequest request, String currentUsername) {
+        Survey survey = findSurveyByIdAndVerifyOwner(surveyId, currentUsername);
+        if (request.getStartDate() != null && request.getEndDate() != null) {
+            if (request.getStartDate().isAfter(request.getEndDate())) {
+                throw new IllegalArgumentException("可填寫起始時間不可晚於截止時間");
+            }
+        }
+
+        survey.setStartDate(request.getStartDate());
+        survey.setEndDate(request.getEndDate());
+        boolean isOpen = Boolean.TRUE.equals(request.getIsOpen());
+        boolean isPublic = Boolean.TRUE.equals(request.getIsPublicToLobby());
+
+        survey.setIsPublicToLobby(isPublic);
+        survey.setIsOpen(isOpen);
+
+        survey = surveyRepository.save(survey);
+        log.info("問卷時限與狀態更新成功: id={}, isOpen={}, isPublicToLobby={}",
+                survey.getId(), survey.getIsOpen(), survey.getIsPublicToLobby());
         return convertToDetailResponse(survey);
     }
 
@@ -162,8 +211,16 @@ public class SurveyService {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("問卷不存在或已下架"));
 
-        if (survey.getStatus() != SurveyStatus.PUBLISHED) {
-            throw new IllegalArgumentException("此問卷尚未公開發布或已截止收件");
+        if (Boolean.FALSE.equals(survey.getIsOpen())) {
+            throw new IllegalArgumentException("此問卷目前尚未開放填答，或已由發起人手動關閉");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        if (survey.getStartDate() != null && now.isBefore(survey.getStartDate())) {
+            throw new IllegalArgumentException("此問卷尚未到達開放填答時間，請於 " + survey.getStartDate() + " 後再次嘗試");
+        }
+        if (survey.getEndDate() != null && now.isAfter(survey.getEndDate())) {
+            throw new IllegalArgumentException("此問卷已過截止期限，無法再進行填答");
         }
 
         // 累加瀏覽次數
@@ -196,7 +253,30 @@ public class SurveyService {
     public Page<SurveySummaryResponse> getUserSurveys(String currentUsername, Pageable pageable) {
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("查無此使用者"));
+
+        // [Why]: 依建立時間由舊至新為每份問卷編定該會員之個人問卷編號 (#1, #2, #3...)，使會員在個人專案中看到的是自己的問卷序號，而非系統全域 ID
+        List<Long> userSurveyIds = surveyRepository.findSurveyIdsByUserIdOrderByCreatedAtAscNative(user.getId());
+        Map<Long, Integer> numberMap = new HashMap<>();
+        for (int i = 0; i < userSurveyIds.size(); i++) {
+            numberMap.put(userSurveyIds.get(i), i + 1);
+        }
+
         Page<Survey> page = surveyRepository.findByUserIdAndDeletedAtIsNullNative(user.getId(), pageable);
+        return page.map(survey -> {
+            SurveySummaryResponse dto = convertToSummaryResponse(survey);
+            dto.setUserSurveyNumber(numberMap.getOrDefault(survey.getId(), 1));
+            return dto;
+        });
+    }
+
+    /**
+     * 系統管理員查詢全站所有問卷清單 (包含公開與非公開/私人專案)
+     * @param pageable 分頁參數
+     * @return 全站所有問卷之概要分頁清單
+     */
+    @Transactional(readOnly = true)
+    public Page<SurveySummaryResponse> getAllSurveysForAdmin(Pageable pageable) {
+        Page<Survey> page = surveyRepository.findAllSurveysForAdminNative(pageable);
         return page.map(this::convertToSummaryResponse);
     }
 
@@ -243,13 +323,26 @@ public class SurveyService {
         if (survey.getBasicInfoConfig() != null) {
             SurveyBasicInfoConfig c = survey.getBasicInfoConfig();
             configDto = BasicInfoConfigDto.builder()
+                    .collectBasicInfo(c.getCollectBasicInfo())
                     .requireName(c.getRequireName())
                     .requireGender(c.getRequireGender())
                     .requireAge(c.getRequireAge())
+                    .requireBirthday(c.getRequireBirthday())
+                    .requireNationalId(c.getRequireNationalId())
                     .requirePhone(c.getRequirePhone())
+                    .requireHomePhone(c.getRequireHomePhone())
                     .requireEmail(c.getRequireEmail())
                     .requireIndustry(c.getRequireIndustry())
+                    .requireJobTitle(c.getRequireJobTitle())
+                    .requireDepartment(c.getRequireDepartment())
+                    .requireEmployeeId(c.getRequireEmployeeId())
+                    .requireAcademicMajor(c.getRequireAcademicMajor())
+                    .requireClassName(c.getRequireClassName())
+                    .requireStudentId(c.getRequireStudentId())
+                    .requireHeight(c.getRequireHeight())
+                    .requireWeight(c.getRequireWeight())
                     .requireResidence(c.getRequireResidence())
+                    .requireRegisteredAddress(c.getRequireRegisteredAddress())
                     .build();
         }
 
@@ -258,6 +351,7 @@ public class SurveyService {
                     .id(o.getId())
                     .optionText(o.getOptionText())
                     .sortOrder(o.getSortOrder())
+                    .triggerQuestionUid(o.getTriggerQuestionUid())
                     .build()).collect(Collectors.toList());
 
             return QuestionDto.builder()
@@ -265,6 +359,7 @@ public class SurveyService {
                     .questionCode(q.getQuestionCode())
                     .type(q.getType())
                     .questionText(q.getQuestionText())
+                    .imageUrl(q.getImageUrl())
                     .isRequired(q.getIsRequired())
                     .sortOrder(q.getSortOrder())
                     .minRating(q.getMinRating())
@@ -279,8 +374,10 @@ public class SurveyService {
                 .authorName(survey.getCreator() != null ? survey.getCreator().getFullName() : "未知")
                 .title(survey.getTitle())
                 .description(survey.getDescription())
+                .coverImageUrl(survey.getCoverImageUrl())
                 .category(survey.getCategory())
-                .status(survey.getStatus())
+                .isPublicToLobby(survey.getIsPublicToLobby())
+                .isOpen(survey.getIsOpen())
                 .startDate(survey.getStartDate())
                 .endDate(survey.getEndDate())
                 .viewCount(survey.getViewCount())
@@ -301,8 +398,10 @@ public class SurveyService {
                 .id(survey.getId())
                 .title(survey.getTitle())
                 .description(survey.getDescription())
+                .coverImageUrl(survey.getCoverImageUrl())
                 .category(survey.getCategory())
-                .status(survey.getStatus())
+                .isPublicToLobby(survey.getIsPublicToLobby())
+                .isOpen(survey.getIsOpen())
                 .authorName(survey.getCreator() != null ? survey.getCreator().getFullName() : "未知")
                 .startDate(survey.getStartDate())
                 .endDate(survey.getEndDate())

@@ -2,10 +2,10 @@
  * ============================================================================
  * 檔案名稱: AuthService.java
  * 所屬模組: Service 業務邏輯層 - 認證模組
- * 責任描述: 處理會員註冊 (Argon2id 密碼雜湊)、身分登入校驗、JWT 雙 Token 簽發與旋轉更新
+ * 責任描述: 處理會員註冊 (Argon2id 密碼雜湊)、身分登入校驗、JWT 單一高安全 Token 簽發與無狀態驗證
  * 架構分層: Business Logic / Service Layer
  * 聯動關係:
- *   - 上游依賴: UserRepository, RefreshTokenRepository, PasswordEncoder, TokenProvider
+ *   - 上游依賴: UserRepository, PasswordEncoder, TokenProvider
  *   - 下游消費: AuthController
  * 邊界處理: 密碼校驗失敗時拋出 BadCredentialsException，使用者重複註冊時拋出 IllegalArgumentException
  * ============================================================================
@@ -15,12 +15,12 @@ package com.surveyflow.service;
 
 import com.surveyflow.common.enums.RoleType;
 import com.surveyflow.dto.auth.AuthResponse;
+import com.surveyflow.dto.auth.ForgetPasswordRequest;
 import com.surveyflow.dto.auth.LoginRequest;
 import com.surveyflow.dto.auth.RefreshTokenRequest;
 import com.surveyflow.dto.auth.RegisterRequest;
-import com.surveyflow.entity.RefreshToken;
+import com.surveyflow.dto.auth.ResetPasswordRequest;
 import com.surveyflow.entity.User;
-import com.surveyflow.repository.RefreshTokenRepository;
 import com.surveyflow.repository.UserRepository;
 import com.surveyflow.security.TokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +30,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
 
@@ -99,18 +96,18 @@ public class AuthService {
     }
 
     /**
-     * 透過長效 Refresh Token 換發新的 Access Token (旋轉機制)
+     * 透過現有有效 Token 續約或重新核發單一 Token (簡化架構相容端點)
      * @param request 刷新請求
-     * @return 換發後之 AuthResponse
+     * @return 重新簽發之 AuthResponse
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public AuthResponse refreshToken(RefreshTokenRequest request) {
-        String refreshTokenStr = request.getRefreshToken();
-        if (!tokenProvider.validateToken(refreshTokenStr)) {
-            throw new IllegalArgumentException("Refresh Token 無效或已過期，請重新登入");
+        String tokenStr = request.getRefreshToken();
+        if (!tokenProvider.validateToken(tokenStr)) {
+            throw new IllegalArgumentException("憑證無效或已過期，請重新登入");
         }
 
-        String username = tokenProvider.getUsernameFromToken(refreshTokenStr);
+        String username = tokenProvider.getUsernameFromToken(tokenStr);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("查無所屬使用者"));
 
@@ -118,36 +115,57 @@ public class AuthService {
     }
 
     /**
-     * 處理會員主動登出，撤銷名下所有 Refresh Token
+     * 處理會員主動登出 (無狀態 JWT 由客戶端丟棄，後端記錄審計日誌)
      * @param username 當前登入帳號
      */
     @Transactional
     public void logout(String username) {
-        userRepository.findByUsername(username).ifPresent(user -> {
-            refreshTokenRepository.revokeAllByUserId(user.getId());
-            log.info("會員已成功登出並撤銷權杖: username={}", username);
-        });
+        log.info("會員已成功登出 (無狀態會話終止): username={}", username);
     }
 
     /**
-     * 內部簽發雙 Token 並封裝回傳物件
+     * 處理忘記密碼身分核驗
+     * @param request 包含帳號與信箱之請求
+     */
+    @Transactional(readOnly = true)
+    public void processForgotPassword(ForgetPasswordRequest request) {
+        User user = userRepository.findByUsernameNative(request.getUsername().trim())
+                .orElseThrow(() -> new IllegalArgumentException("查無此會員帳號，請確認輸入是否正確"));
+
+        if (!user.getEmail().equalsIgnoreCase(request.getEmail().trim())) {
+            throw new IllegalArgumentException("輸入之電子信箱與該帳號綁定之信箱不相符");
+        }
+        log.info("忘記密碼核驗成功: username={}, email={}", user.getUsername(), user.getEmail());
+    }
+
+    /**
+     * 處理重設新密碼
+     * @param request 包含帳號、信箱與新密碼之請求
+     */
+    @Transactional
+    public void processResetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByUsernameNative(request.getUsername().trim())
+                .orElseThrow(() -> new IllegalArgumentException("查無此會員帳號"));
+
+        if (!user.getEmail().equalsIgnoreCase(request.getEmail().trim())) {
+            throw new IllegalArgumentException("電子信箱核對失敗，無法重設密碼");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        log.info("會員密碼已成功重設: username={}", user.getUsername());
+    }
+
+    /**
+     * 內部簽發單一高安全 JWT Token 並封裝回傳物件
      */
     private AuthResponse createAuthResponse(User user) {
-        String accessToken = tokenProvider.generateAccessToken(user.getUsername(), user.getRole().name());
-        String refreshToken = tokenProvider.generateRefreshToken(user.getUsername());
-
-        // 持久化記錄 Refresh Token
-        RefreshToken tokenEntity = RefreshToken.builder()
-                .user(user)
-                .tokenHash(refreshToken)
-                .expiresAt(LocalDateTime.now().plusDays(7))
-                .revoked(false)
-                .build();
-        refreshTokenRepository.save(tokenEntity);
+        String token = tokenProvider.generateToken(user.getUsername(), user.getRole().name());
 
         return AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
+                .token(token)
+                .accessToken(token)      // 向下相容既有讀取
+                .refreshToken(token)     // 向下相容
                 .tokenType("Bearer")
                 .userId(user.getId())
                 .username(user.getUsername())

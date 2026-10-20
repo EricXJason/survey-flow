@@ -14,19 +14,34 @@ package com.surveyflow.dto.survey;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class BasicInfoConfigDto {
+    private Boolean collectBasicInfo;
     private Boolean requireName;
     private Boolean requireGender;
     private Boolean requireAge;
+    private Boolean requireBirthday;
+    private Boolean requireNationalId;
     private Boolean requirePhone;
+    private Boolean requireHomePhone;
     private Boolean requireEmail;
     private Boolean requireIndustry;
+    private Boolean requireJobTitle;
+    private Boolean requireDepartment;
+    private Boolean requireEmployeeId;
+    private Boolean requireAcademicMajor;
+    private Boolean requireClassName;
+    private Boolean requireStudentId;
+    private Boolean requireHeight;
+    private Boolean requireWeight;
     private Boolean requireResidence;
+    private Boolean requireRegisteredAddress;
 }

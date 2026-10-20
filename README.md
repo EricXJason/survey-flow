@@ -56,7 +56,6 @@ flowchart LR
 %%{init: {'theme': 'base', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'attributeBackgroundColorOdd': '#060a14', 'attributeBackgroundColorEven': '#0b0f19' }, 'themeCSS': 'rect, .node rect { rx: 0px !important; ry: 0px !important; } .er.relationshipLabelBox { fill: none !important; stroke: none !important; display: none !important; }' }}%%
 erDiagram
     users ||--o{ surveys : " "
-    users ||--o{ refresh_tokens : " "
     surveys ||--o| survey_basic_info_configs : " "
     surveys ||--o{ survey_questions : " "
     surveys ||--o{ submissions : " "

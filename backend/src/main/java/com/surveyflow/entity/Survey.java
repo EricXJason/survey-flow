@@ -12,7 +12,6 @@
 
 package com.surveyflow.entity;
 
-import com.surveyflow.common.enums.SurveyStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -51,15 +50,21 @@ public class Survey {
     @Builder.Default
     private String category = "綜合調查";
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(name = "is_public_to_lobby", nullable = false)
     @Builder.Default
-    private SurveyStatus status = SurveyStatus.DRAFT;
+    private Boolean isPublicToLobby = true;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "is_open", nullable = false)
+    @Builder.Default
+    private Boolean isOpen = true;
+
+    @Column(name = "cover_image_url", columnDefinition = "LONGTEXT")
+    private String coverImageUrl;
+
+    @Column(name = "start_date")
     private LocalDateTime startDate;
 
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date")
     private LocalDateTime endDate;
 
     @Column(name = "view_count", nullable = false)

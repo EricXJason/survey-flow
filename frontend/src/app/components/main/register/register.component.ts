@@ -15,7 +15,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { AccountRegisterPayload } from '../../../@interfaces/account-model';
+import { AccountRegisterPayload, CAREER_OPTIONS } from '../../../@interfaces/account-model';
 import { ValidationService } from '../../../@services/validation.service';
 import { DialogService, DialogData } from '../../../@services/dialog.service';
 import { UserEmitterService } from '../../../@services/user-emitter.service';
@@ -33,6 +33,9 @@ import { UserEmitterService } from '../../../@services/user-emitter.service';
   styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
+  /** 全域標準職業選項清單 */
+  public readonly careerOptions = CAREER_OPTIONS;
+
   /** 響應式表單建構服務 */
   private readonly _formBuilder = inject(FormBuilder);
   /** 表單格式驗證服務 */

@@ -12,17 +12,18 @@
 
 package com.surveyflow.dto.survey;
 
-import com.surveyflow.common.enums.SurveyStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,8 +34,10 @@ public class SurveyResponse {
     private String authorName;
     private String title;
     private String description;
+    private String coverImageUrl;
     private String category;
-    private SurveyStatus status;
+    private Boolean isPublicToLobby;
+    private Boolean isOpen;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Integer viewCount;

@@ -29,15 +29,19 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { UserStateService } from '../../../@services/user-state.service';
 import { DialogService, DialogData } from '../../../@services/dialog.service';
 
+import { ApiClientService } from '../../../@services/api-client.service';
+
 /**
  * 全站會員帳號資料模型
  */
 export interface ManagedUser {
   id: string;
+  username: string;
+  fullName: string;
   name: string;
   email: string;
   phone: string;
-  role: 'admin' | 'employee' | 'student' | 'teacher' | 'researcher' | 'retired' | 'other';
+  role: 'admin' | 'user' | string;
   status: 'active' | 'suspended';
   registeredAt: string;
   lastLoginAt: string;
@@ -67,154 +71,22 @@ export interface ManagedUser {
   styleUrl: './user-management.component.scss',
 })
 export class UserManagementComponent implements OnInit, AfterViewInit {
+  private readonly _apiClient = inject(ApiClientService);
   private readonly _userState = inject(UserStateService);
   private readonly _dialogService = inject(DialogService);
   private readonly _router = inject(Router);
 
   /** 載入中狀態信號 */
   public readonly isLoading = signal<boolean>(true);
+  /** 伺服器是否連線異常信號 */
+  public readonly isServerUnavailable = signal<boolean>(false);
   /** 搜尋關鍵字信號 */
   public readonly searchQuery = signal<string>('');
   /** 狀態過濾信號 ('all' | 'active' | 'suspended') */
   public readonly statusFilter = signal<'all' | 'active' | 'suspended'>('all');
-  /** 角色過濾信號 ('all' | 特定角色) */
-  public readonly roleFilter = signal<string>('all');
 
-  /** 模擬會員資料清單信號 */
-  public readonly usersList = signal<ManagedUser[]>([
-    {
-      id: 'USR-001',
-      name: '系統總管理員',
-      email: 'admin@surveyflow.com',
-      phone: '0912-345-678',
-      role: 'admin',
-      status: 'active',
-      registeredAt: '2024-01-01',
-      lastLoginAt: '2026-09-17 12:45',
-      surveysCount: 18,
-    },
-    {
-      id: 'USR-002',
-      name: '陳雅婷',
-      email: 'yating.chen@enterprise.tw',
-      phone: '0923-456-789',
-      role: 'employee',
-      status: 'active',
-      registeredAt: '2024-03-15',
-      lastLoginAt: '2026-09-16 18:20',
-      surveysCount: 8,
-    },
-    {
-      id: 'USR-003',
-      name: '林冠宇',
-      email: 'guanyu.lin@ntu.edu.tw',
-      phone: '0934-567-890',
-      role: 'student',
-      status: 'active',
-      registeredAt: '2024-04-10',
-      lastLoginAt: '2026-09-15 09:12',
-      surveysCount: 4,
-    },
-    {
-      id: 'USR-004',
-      name: '張家銘 教授',
-      email: 'jmzhang@academic.edu.tw',
-      phone: '0955-678-901',
-      role: 'teacher',
-      status: 'active',
-      registeredAt: '2024-05-02',
-      lastLoginAt: '2026-09-14 20:30',
-      surveysCount: 12,
-    },
-    {
-      id: 'USR-005',
-      name: '黃怡君 研究員',
-      email: 'yjhuang@stat.sinica.edu.tw',
-      phone: '0966-789-012',
-      role: 'researcher',
-      status: 'active',
-      registeredAt: '2024-06-20',
-      lastLoginAt: '2026-09-17 11:05',
-      surveysCount: 15,
-    },
-    {
-      id: 'USR-006',
-      name: '李建宏',
-      email: 'jh.lee@techcorp.io',
-      phone: '0977-890-123',
-      role: 'employee',
-      status: 'suspended',
-      registeredAt: '2024-07-08',
-      lastLoginAt: '2026-08-30 14:18',
-      surveysCount: 2,
-    },
-    {
-      id: 'USR-007',
-      name: '吳詩涵',
-      email: 'shihan.wu@alumni.org',
-      phone: '0988-901-234',
-      role: 'student',
-      status: 'active',
-      registeredAt: '2024-08-19',
-      lastLoginAt: '2026-09-16 22:40',
-      surveysCount: 5,
-    },
-    {
-      id: 'USR-008',
-      name: '趙敏芬 主任',
-      email: 'mfzhao@hospital.gov.tw',
-      role: 'researcher',
-      phone: '0911-234-567',
-      status: 'active',
-      registeredAt: '2024-09-03',
-      lastLoginAt: '2026-09-13 16:55',
-      surveysCount: 9,
-    },
-    {
-      id: 'USR-009',
-      name: '周維哲',
-      email: 'wz.chou@freelance.cc',
-      phone: '0922-345-678',
-      role: 'employee',
-      status: 'active',
-      registeredAt: '2024-10-11',
-      lastLoginAt: '2026-09-17 08:22',
-      surveysCount: 6,
-    },
-    {
-      id: 'USR-010',
-      name: '謝志明',
-      email: 'zm.hsieh@life.com',
-      phone: '0933-456-789',
-      role: 'retired',
-      status: 'active',
-      registeredAt: '2024-11-25',
-      lastLoginAt: '2026-09-10 10:15',
-      surveysCount: 1,
-    },
-    {
-      id: 'USR-011',
-      name: '楊舒涵',
-      email: 'sh.yang@startup.ai',
-      phone: '0944-567-890',
-      role: 'employee',
-      status: 'suspended',
-      registeredAt: '2024-12-05',
-      lastLoginAt: '2026-08-12 15:40',
-      surveysCount: 0,
-    },
-    {
-      id: 'USR-012',
-      name: '郭俊逸',
-      email: 'jy.kuo@designlab.org',
-      phone: '0955-123-456',
-      role: 'other',
-      status: 'active',
-      registeredAt: '2025-01-18',
-      lastLoginAt: '2026-09-15 19:10',
-      surveysCount: 3,
-    },
-  ]);
+  /** 會員資料清單信號（真實對接 MySQL 後端 API） */
+  public readonly usersList = signal<ManagedUser[]>([]);
 
   /** 表格欄位清單 */
   public readonly displayedColumns: string[] = [
@@ -229,8 +101,25 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
   /** Material Table 資料來源 */
   public readonly dataSource = new MatTableDataSource<ManagedUser>([]);
 
-  @ViewChild(MatPaginator) public paginator!: MatPaginator;
-  @ViewChild(MatSort) public sort!: MatSort;
+  /** Material 分頁器組件引用 (採用 setter 確保 @if 延遲渲染時自動完成 dataSource 綁定) */
+  @ViewChild(MatPaginator)
+  public set matPaginator(mp: MatPaginator | undefined) {
+    if (mp) {
+      this.paginator = mp;
+      this.dataSource.paginator = mp;
+    }
+  }
+  public paginator!: MatPaginator;
+
+  /** Material 排序控制組件引用 (採用 setter 確保 @if 延遲渲染時自動完成 dataSource 綁定) */
+  @ViewChild(MatSort)
+  public set matSort(ms: MatSort | undefined) {
+    if (ms) {
+      this.sort = ms;
+      this.dataSource.sort = ms;
+    }
+  }
+  public sort!: MatSort;
 
   /** 計算屬性：會員總數 */
   public readonly totalUsers = computed(() => this.usersList().length);
@@ -255,12 +144,6 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
     const sf = this.statusFilter();
     if (sf !== 'all') {
       list = list.filter((u) => u.status === sf);
-    }
-
-    // 角色篩選
-    const rf = this.roleFilter();
-    if (rf !== 'all') {
-      list = list.filter((u) => u.role === rf);
     }
 
     // 關鍵字搜尋
@@ -295,9 +178,46 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    setTimeout(() => {
-      this.isLoading.set(false);
-    }, 280);
+    this.loadUsers();
+  }
+
+  /**
+   * 向後端 API 載入全站真實會員清單 (嚴格排除 admin，僅列出一般會員)
+   */
+  public loadUsers(): void {
+    this.isLoading.set(true);
+    this.isServerUnavailable.set(false);
+    this._apiClient.get<any>('/api/admin/users?page=0&size=100').subscribe({
+      next: (res) => {
+        if (res && res.data && res.data.content) {
+          const mapped: ManagedUser[] = res.data.content
+            .filter((item: any) => item.role !== 'ROLE_ADMIN' && item.username !== 'admin')
+            .map((item: any) => {
+              const uName = item.username || 'user';
+              const fName = item.fullName || uName;
+              return {
+                id: String(item.id),
+                username: uName,
+                fullName: fName,
+                name: uName,
+                email: item.email || '未填寫',
+                phone: item.phone || '未填寫',
+                role: item.role === 'ROLE_ADMIN' ? 'admin' : 'user',
+                status: item.status === 'ACTIVE' ? 'active' : 'suspended',
+                registeredAt: item.createdAt ? item.createdAt.substring(0, 10) : '2026-10-13',
+                lastLoginAt: item.createdAt ? item.createdAt.substring(0, 16).replace('T', ' ') : '-',
+                surveysCount: item.surveyCount || 0,
+              };
+            });
+          this.usersList.set(mapped);
+        }
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.isServerUnavailable.set(true);
+      },
+    });
   }
 
   public ngAfterViewInit(): void {
@@ -311,14 +231,16 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
   public getRoleLabel(role: string): string {
     const roleMap: Record<string, string> = {
       admin: '系統管理員',
-      employee: '上班族',
-      student: '學生',
-      teacher: '教師',
-      researcher: '研究人員',
-      retired: '已退休',
-      other: '其他',
+      ROLE_ADMIN: '系統管理員',
+      user: '一般會員',
+      ROLE_USER: '一般會員',
+      guest: '訪客',
+      ROLE_GUEST: '訪客',
+      employee: '一般會員',
+      student: '一般會員',
+      other: '一般會員',
     };
-    return roleMap[role] || role;
+    return roleMap[role] || '一般會員';
   }
 
   /**
@@ -333,14 +255,6 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
    */
   public setStatusFilter(status: 'all' | 'active' | 'suspended'): void {
     this.statusFilter.set(status);
-  }
-
-  /**
-   * 處理角色下拉選單切換
-   */
-  public onRoleSelectChange(event: Event): void {
-    const select = event.target as HTMLSelectElement;
-    this.roleFilter.set(select.value);
   }
 
   /**
@@ -384,20 +298,51 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
 
     this._dialogService.showDialog(dialogData).subscribe((confirmed) => {
       if (confirmed) {
-        this.usersList.update((list) =>
-          list.filter((u) => u.id !== user.id),
-        );
+        this._apiClient.delete(`/api/admin/users/${user.id}`).subscribe({
+          next: () => {
+            this.usersList.update((list) =>
+              list.filter((u) => u.id !== user.id),
+            );
 
-        this._dialogService
-          .showDialog({
-            title: '會員帳號已移除',
-            message: `會員「${user.name}」已被系統永久移除。`,
-            mode: 'noticeMode',
-            confirmText: '確定',
-            autoCloseDuration: 2500,
-          })
-          .subscribe();
+            this._dialogService
+              .showDialog({
+                title: '會員帳號已移除',
+                message: `會員「${user.name}」已被系統永久移除。`,
+                mode: 'noticeMode',
+                confirmText: '確定',
+                autoCloseDuration: 2500,
+              })
+              .subscribe();
+          },
+          error: (err) => {
+            this._dialogService
+              .showDialog({
+                title: '移除會員失敗',
+                message: err?.error?.message || '伺服器執行刪除時發生錯誤，請稍後再試。',
+                mode: 'errorMode',
+                errorText: '確定',
+              })
+              .subscribe();
+          },
+        });
       }
+    });
+  }
+
+  /**
+   * 切換會員帳號啟用/凍結狀態
+   */
+  public toggleUserStatus(user: ManagedUser): void {
+    if (user.role === 'admin') {
+      return;
+    }
+    const targetStatus = user.status === 'active' ? 'SUSPENDED' : 'ACTIVE';
+    this._apiClient.patch(`/api/admin/users/${user.id}/status?status=${targetStatus}`, {}).subscribe({
+      next: () => {
+        this.usersList.update((list) =>
+          list.map((u) => (u.id === user.id ? { ...u, status: targetStatus === 'ACTIVE' ? 'active' : 'suspended' } : u)),
+        );
+      },
     });
   }
 }

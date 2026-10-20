@@ -6,7 +6,7 @@
  * 架構分層: Test Layer / Unit Test
  * 聯動關係:
  *   - 測試目標: AuthService
- *   - 模擬對象: UserRepository, RefreshTokenRepository, PasswordEncoder, TokenProvider
+ *   - 模擬對象: UserRepository, PasswordEncoder, TokenProvider
  * ============================================================================
  */
 
@@ -17,7 +17,6 @@ import com.surveyflow.dto.auth.AuthResponse;
 import com.surveyflow.dto.auth.LoginRequest;
 import com.surveyflow.dto.auth.RegisterRequest;
 import com.surveyflow.entity.User;
-import com.surveyflow.repository.RefreshTokenRepository;
 import com.surveyflow.repository.UserRepository;
 import com.surveyflow.security.TokenProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,9 +40,6 @@ class AuthServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private RefreshTokenRepository refreshTokenRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -70,7 +66,7 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("註冊測試: 正常輸入參數時應成功建立使用者並簽發雙 Token")
+    @DisplayName("註冊測試: 正常輸入參數時應成功建立使用者並簽發單一 Token")
     void register_Success() {
         RegisterRequest request = RegisterRequest.builder()
                 .username("newuser")
@@ -84,14 +80,13 @@ class AuthServiceTest {
         when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encoded_pass");
         when(userRepository.save(any(User.class))).thenReturn(sampleUser);
-        when(tokenProvider.generateAccessToken(anyString(), anyString())).thenReturn("mock_access_token");
-        when(tokenProvider.generateRefreshToken(anyString())).thenReturn("mock_refresh_token");
+        when(tokenProvider.generateToken(anyString(), anyString())).thenReturn("mock_single_token");
 
         AuthResponse response = authService.register(request);
 
         assertNotNull(response);
-        assertEquals("mock_access_token", response.getAccessToken());
-        assertEquals("mock_refresh_token", response.getRefreshToken());
+        assertEquals("mock_single_token", response.getToken());
+        assertEquals("mock_single_token", response.getAccessToken());
         verify(userRepository, times(1)).save(any(User.class));
     }
 
@@ -112,20 +107,20 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("登入測試: 帳號密碼正確時應成功登入並回傳會員資料")
+    @DisplayName("登入測試: 帳號密碼正確時應成功登入並回傳單一 Token")
     void login_Success() {
         LoginRequest request = new LoginRequest("testuser", "CorrectPassword123!");
 
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(sampleUser));
         when(passwordEncoder.matches("CorrectPassword123!", "hashed_argon2_password")).thenReturn(true);
-        when(tokenProvider.generateAccessToken(anyString(), anyString())).thenReturn("access_token_ok");
-        when(tokenProvider.generateRefreshToken(anyString())).thenReturn("refresh_token_ok");
+        when(tokenProvider.generateToken(anyString(), anyString())).thenReturn("mock_single_token");
 
         AuthResponse response = authService.login(request);
 
         assertNotNull(response);
         assertEquals("testuser", response.getUsername());
         assertEquals("ROLE_USER", response.getRole());
+        assertEquals("mock_single_token", response.getToken());
     }
 
     @Test
@@ -140,12 +135,8 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("登出測試: 應調用 RefreshTokenRepository 撤銷名下所有 Token")
+    @DisplayName("登出測試: 無狀態會話登出成功")
     void logout_Success() {
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(sampleUser));
-
-        authService.logout("testuser");
-
-        verify(refreshTokenRepository, times(1)).revokeAllByUserId(sampleUser.getId());
+        assertDoesNotThrow(() -> authService.logout("testuser"));
     }
 }

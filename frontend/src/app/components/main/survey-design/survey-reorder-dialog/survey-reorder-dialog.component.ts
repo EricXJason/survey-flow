@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { Component, inject, Input, OnInit } from '@angular/core';
+import { Component, HostListener, inject, Input, OnInit } from '@angular/core';
 import {
   CdkDragDrop,
   DragDropModule,
@@ -82,6 +82,19 @@ export class SurveyReorderDialogComponent implements OnInit {
       this._parent.questionArray.push(item.control);
     });
     this.onCancel();
+  }
+
+  /**
+   * 監聽鍵盤 ESC 鍵事件 (window:keydown)
+   * 當重排對話框開啟期間按下 ESC 鍵，自動調用 onCancel() 取消並關閉對話框。
+   * @param event 鍵盤按鍵事件
+   */
+  @HostListener('window:keydown', ['$event'])
+  public handleKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' || event.key === 'Esc') {
+      event.preventDefault();
+      this.onCancel();
+    }
   }
 
   /**

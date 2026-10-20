@@ -12,11 +12,10 @@
  */
 
 import { Injectable, inject } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { SurveyPayload, SurveySummaryItem } from '../@interfaces/survey-model';
 import { ApiClientService } from './api-client.service';
-import surveys from '../datas/surveys.json';
 
 @Injectable({
   providedIn: 'root',
@@ -25,10 +24,10 @@ export class SurveyGetterService {
   private readonly apiClient = inject(ApiClientService);
 
   /**
-   * 取得大廳公開問卷清單 (優先請求後端 /api/public/surveys/lobby，斷線降級本地)
+   * 取得大廳公開問卷清單 (請求後端 /api/public/surveys/lobby，以資料庫真實資料為主)
    */
   public getLobbySurveys(): Observable<SurveySummaryItem[]> {
-    return this.apiClient.get<any>('/api/public/surveys/lobby').pipe(
+    return this.apiClient.get<any>('/api/public/surveys/lobby?page=0&size=100').pipe(
       map((res) => {
         if (res && res.success && res.data && res.data.content) {
           return res.data.content.map((item: any) => ({
@@ -36,112 +35,79 @@ export class SurveyGetterService {
             title: item.title,
             category: item.category ?? '一般問卷',
             authorId: item.authorName ?? '',
+            authorName: item.authorName ?? '',
             startDate: item.startDate ?? '',
             endDate: item.endDate ?? '',
-            isPublished: item.status === 'PUBLISHED',
+            isPublished: item.isPublicToLobby !== undefined ? Boolean(item.isPublicToLobby) : true,
+            isPublicToLobby: item.isPublicToLobby !== undefined ? Boolean(item.isPublicToLobby) : true,
+            isOpen: item.isOpen !== undefined ? Boolean(item.isOpen) : true,
           }));
         }
-        throw new Error('Fallback to local mock');
+        return [];
       }),
-      catchError(() => {
-        const rawSurveys = (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
-        const summaries: SurveySummaryItem[] = rawSurveys
-          .filter((survey) => survey.isPublished)
-          .map((survey, index) => ({
-            id: survey.id ?? `survey_${index + 1}`,
-            title: survey.title,
-            category: survey.category ?? '一般問卷',
-            authorId: survey.authorId,
-            startDate: survey.timeLimit?.startDate ?? '',
-            endDate: survey.timeLimit?.endDate ?? '',
-            isPublished: survey.isPublished,
-          }));
-        return of(summaries);
-      })
+      catchError(() => of([]))
     );
   }
 
   /**
-   * 依使用者編號取得個人問卷清單 (優先請求後端 /api/user/surveys)
+   * 依使用者編號取得個人問卷清單 (請求後端 /api/user/surveys，以資料庫真實資料為主)
    */
   public getMemberSurveys(userId: string): Observable<SurveySummaryItem[]> {
-    return this.apiClient.get<any>('/api/user/surveys').pipe(
+    return this.apiClient.get<any>('/api/user/surveys?page=0&size=100').pipe(
       map((res) => {
         if (res && res.success && res.data && res.data.content) {
-          return res.data.content.map((item: any) => ({
+          return res.data.content.map((item: any, idx: number) => ({
             id: String(item.id),
+            userSurveyNumber: item.userSurveyNumber !== undefined && item.userSurveyNumber !== null ? Number(item.userSurveyNumber) : (idx + 1),
             title: item.title,
             category: item.category ?? '一般問卷',
-            authorId: item.authorName ?? userId,
+            authorId: String(item.userId ?? userId),
+            authorName: item.authorName ?? '',
             startDate: item.startDate ?? '',
             endDate: item.endDate ?? '',
-            isPublished: item.status === 'PUBLISHED',
+            isPublished: item.isPublicToLobby !== undefined ? Boolean(item.isPublicToLobby) : true,
+            isOpen: item.isOpen !== undefined ? Boolean(item.isOpen) : true,
+            isPublicToLobby: item.isPublicToLobby !== undefined ? Boolean(item.isPublicToLobby) : true,
           }));
         }
-        throw new Error('Fallback to local mock');
+        return [];
       }),
-      catchError(() => {
-        const rawSurveys =
-          (surveys as unknown as (SurveyPayload & {
-            id?: string;
-            authorId?: string;
-            userId?: string;
-          })[]) ?? [];
-
-        const memberSurveys = rawSurveys
-          .filter((survey) => survey.authorId === userId || survey.userId === userId)
-          .map((survey, index) => ({
-            id: survey.id ?? `survey_${index + 1}`,
-            title: survey.title,
-            category: survey.category ?? '一般問卷',
-            authorId: survey.authorId || userId,
-            startDate: survey.timeLimit?.startDate ?? '',
-            endDate: survey.timeLimit?.endDate ?? '',
-            isPublished: survey.isPublished,
-          }));
-
-        return of(memberSurveys);
-      })
+      catchError(() => of([]))
     );
   }
 
   /**
-   * 取得全系統所有問卷清單 (管理員請求 /api/admin/surveys)
+   * 取得全系統所有問卷清單 (管理員請求 /api/admin/surveys，以資料庫真實資料為主)
    */
   public getAllSurveys(): Observable<SurveySummaryItem[]> {
-    return this.apiClient.get<any>('/api/admin/surveys').pipe(
+    return this.apiClient.get<any>('/api/admin/surveys?page=0&size=100').pipe(
       map((res) => {
         if (res && res.success && res.data && res.data.content) {
           return res.data.content.map((item: any) => ({
             id: String(item.id),
+            userSurveyNumber: item.userSurveyNumber ? Number(item.userSurveyNumber) : undefined,
             title: item.title,
             category: item.category ?? '一般問卷',
-            authorId: item.authorName,
+            authorId: item.authorName ?? '',
+            authorName: item.authorName ?? '',
             startDate: item.startDate ?? '',
             endDate: item.endDate ?? '',
-            isPublished: item.status === 'PUBLISHED',
+            isPublished: item.isPublicToLobby !== undefined ? Boolean(item.isPublicToLobby) : true,
+            isOpen: item.isOpen !== undefined ? Boolean(item.isOpen) : true,
+            isPublicToLobby: item.isPublicToLobby !== undefined ? Boolean(item.isPublicToLobby) : true,
           }));
         }
-        throw new Error('Fallback to local mock');
+        return [];
       }),
-      catchError(() => {
-        const rawSurveys = (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
-        const summaries: SurveySummaryItem[] = rawSurveys.map((survey, index) => ({
-          id: survey.id ?? `survey_${index + 1}`,
-          title: survey.title,
-          category: survey.category ?? '一般問卷',
-          authorId: survey.authorId,
-          startDate: survey.timeLimit?.startDate ?? '',
-          endDate: survey.timeLimit?.endDate ?? '',
-          isPublished: survey.isPublished,
-        }));
-        return of(summaries);
+      catchError((err) => {
+        console.error('取得管理員全站問卷清單發生異常:', err);
+        return of([]);
       })
     );
   }
 
   /**
-   * 依問卷編號取得單一問卷內容 (請求 /api/public/surveys/{id})
+   * 依問卷編號取得單一問卷內容 (請求 /api/public/surveys/{id}，以資料庫真實資料為主)
    */
   public getSurveyById(id: string): Observable<SurveyPayload | null> {
     const numericId = parseInt(id.replace(/\D/g, ''), 10);
@@ -153,11 +119,84 @@ export class SurveyGetterService {
       map((res) => {
         if (res && res.success && res.data) {
           const d = res.data;
+          const rawQuestions = (d.questions ?? []).map((q: any, idx: number) => {
+            const rawType = (q.type || '').toUpperCase();
+            let frontendType = 'text';
+            if (rawType === 'BOOLEAN') {
+              frontendType = 't/f';
+            } else if (rawType === 'SINGLE') {
+              frontendType = 'radio';
+            } else if (rawType === 'MULTI') {
+              frontendType = 'multiRadio';
+            } else if (rawType === 'RATING') {
+              frontendType = 'scale';
+            } else if (rawType === 'TIME') {
+              frontendType = 'time';
+            } else if (rawType === 'DATE') {
+              frontendType = 'date';
+            } else {
+              frontendType = 'text';
+            }
+
+            const optionsConfig = (q.options ?? []).map((o: any) => ({
+              id: o.id,
+              text: o.optionText,
+              enableUnlockQuestion: !!o.triggerQuestionUid,
+              unlockTargetUid: o.triggerQuestionUid || '',
+            }));
+
+            let determinedScaleType = 'scale-text-satisfaction-5';
+            if (q.minRating === 0 && q.maxRating === 10) {
+              determinedScaleType = 'scale-num-0-10';
+            } else if (q.minRating === 1 && q.maxRating === 10) {
+              determinedScaleType = 'scale-num-1-10';
+            } else if (q.minRating === 1 && q.maxRating === 5) {
+              determinedScaleType = 'scale-num-1-5';
+            } else if (q.scaleType) {
+              determinedScaleType = q.scaleType;
+            }
+
+            return {
+              uid: q.questionCode ?? `Q${idx + 1}`,
+              id: q.id ?? idx + 1,
+              type: frontendType,
+              isRequired: q.isRequired ?? true,
+              hasImage: !!q.imageUrl,
+              imageBase64: q.imageUrl || '',
+              description: q.questionText,
+              scaleType: determinedScaleType,
+              minRating: q.minRating,
+              maxRating: q.maxRating,
+              options: (q.options ?? []).map((o: any) => o.optionText),
+              optionsConfig,
+              isLockedByOther: false,
+            };
+          });
+
+          // 條件跳題關聯掃描：被上游題目選項指向者標記為受鎖定
+          const lockedUids = new Set<string>();
+          for (const q of rawQuestions) {
+            if (q.optionsConfig) {
+              for (const opt of q.optionsConfig) {
+                if (opt.enableUnlockQuestion && opt.unlockTargetUid) {
+                  lockedUids.add(opt.unlockTargetUid);
+                }
+              }
+            }
+          }
+          for (const q of rawQuestions) {
+            if (lockedUids.has(q.uid)) {
+              q.isLockedByOther = true;
+            }
+          }
+
           return {
             id: String(d.id),
             title: d.title,
-            category: d.category,
-            isPublished: d.status === 'PUBLISHED',
+            isOpen: d.isOpen !== undefined ? Boolean(d.isOpen) : true,
+            isPublicToLobby: d.isPublicToLobby !== undefined ? Boolean(d.isPublicToLobby) : false,
+            // [Why]: isPublished 於填答端語意代表「是否開放受訪者作答」，與後端 isOpen 嚴格對齊
+            isPublished: d.isOpen !== undefined ? Boolean(d.isOpen) : true,
             hasTimeLimit: !!(d.startDate && d.endDate),
             timeLimit: {
               startDate: d.startDate ? d.startDate.split('T')[0] : '',
@@ -167,46 +206,38 @@ export class SurveyGetterService {
             },
             hasDescription: !!d.description,
             description: d.description,
-            hasDescriptionImage: false,
+            hasDescriptionImage: !!d.coverImageUrl,
+            descriptionImageBase64: d.coverImageUrl || '',
             basicInfoRequirements: {
-              collectBasicInfo: true,
-              requireName: d.basicInfoConfig?.requireName ?? true,
-              requireGender: d.basicInfoConfig?.requireGender ?? true,
-              requireAge: d.basicInfoConfig?.requireAge ?? true,
-              requireBirthday: false,
-              requireHeight: false,
-              requireWeight: false,
-              requireMobilePhone: d.basicInfoConfig?.requirePhone ?? false,
-              requireHomePhone: false,
-              requireEmail: d.basicInfoConfig?.requireEmail ?? false,
-              requireRegisteredAddress: false,
-              requireResidentialAddress: d.basicInfoConfig?.requireResidence ?? false,
-              requireDepartment: false,
-              requireAcademicMajor: false,
-              requireClassName: false,
-              requireStudentId: false,
-              requireEmployeeId: false,
-              requireNationalId: false,
-              requireJobIndustry: d.basicInfoConfig?.requireIndustry ?? false,
-              requireJobTitle: false,
+              collectBasicInfo: d.basicInfoConfig?.collectBasicInfo ?? (d.basicInfoConfig != null),
+              requireName: !!d.basicInfoConfig?.requireName,
+              requireGender: !!d.basicInfoConfig?.requireGender,
+              requireAge: !!d.basicInfoConfig?.requireAge,
+              requireBirthday: !!d.basicInfoConfig?.requireBirthday,
+              requireHeight: !!d.basicInfoConfig?.requireHeight,
+              requireWeight: !!d.basicInfoConfig?.requireWeight,
+              requireMobilePhone: !!d.basicInfoConfig?.requirePhone,
+              requireHomePhone: !!d.basicInfoConfig?.requireHomePhone,
+              requireEmail: !!d.basicInfoConfig?.requireEmail,
+              requireRegisteredAddress: !!d.basicInfoConfig?.requireRegisteredAddress,
+              requireResidentialAddress: !!d.basicInfoConfig?.requireResidence,
+              requireDepartment: !!d.basicInfoConfig?.requireDepartment,
+              requireAcademicMajor: !!d.basicInfoConfig?.requireAcademicMajor,
+              requireClassName: !!d.basicInfoConfig?.requireClassName,
+              requireStudentId: !!d.basicInfoConfig?.requireStudentId,
+              requireEmployeeId: !!d.basicInfoConfig?.requireEmployeeId,
+              requireNationalId: !!d.basicInfoConfig?.requireNationalId,
+              requireJobIndustry: !!d.basicInfoConfig?.requireIndustry,
+              requireJobTitle: !!d.basicInfoConfig?.requireJobTitle,
             },
-            questions: (d.questions ?? []).map((q: any, idx: number) => ({
-              uid: q.questionCode ?? `Q${idx + 1}`,
-              id: q.id ?? idx + 1,
-              type: q.type.toLowerCase(),
-              isRequired: q.isRequired,
-              hasImage: false,
-              description: q.questionText,
-              options: (q.options ?? []).map((o: any) => o.optionText),
-            })),
+            questions: rawQuestions,
           } as SurveyPayload;
         }
-        throw new Error('Fallback to local mock');
+        return null;
       }),
-      catchError(() => {
-        const rawSurveys = (surveys as unknown as (SurveyPayload & { id?: string })[]) ?? [];
-        const matched = rawSurveys.find((survey) => survey.id === id) ?? rawSurveys[0] ?? null;
-        return of(matched);
+      catchError((err) => {
+        const message = err?.error?.message || err?.message || '問卷不存在或目前未開放填答';
+        return throwError(() => new Error(message));
       })
     );
   }

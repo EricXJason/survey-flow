@@ -44,24 +44,25 @@ export class LogInComponent {
   /** 使用者身分事件廣播服務（登入成功處理） */
   private readonly _userEmitter = inject(UserEmitterService);
 
-  /** 登入表單群組，包含帳號與複合密碼控制項 */
+  /** 登入表單群組，包含帳號與密碼控制項 */
   protected readonly formBuilderGroup = this._formBuilder.group({
     username: [
       '',
-      [Validators.required, this._validationService.usernameValidator(6, 12)],
+      [Validators.required, this._validationService.usernameValidator(3, 20)],
     ],
     password: [
       '',
       [
         Validators.required,
-        this._validationService.strictPasswordValidator(8, 16),
+        Validators.minLength(4),
+        Validators.maxLength(50),
       ],
     ],
   });
 
   /**
    * 檢查並核驗登入表單資料格式
-   * 包含帳號 6 至 12 碼英數字核對，以及 8 至 16 碼高強度密碼（大小寫英數與特殊符號）檢驗。
+   * 包含帳號 3 至 20 碼英數字核對，以及密碼長度檢驗。
    * 若有錯誤則彈出錯誤對話框；通過則呼叫 sendSignInData 送出。
    */
   protected checkLogInData(): void {
@@ -70,10 +71,10 @@ export class LogInComponent {
     const errors: string[] = [];
 
     if (this.formBuilderGroup.get('username')?.invalid) {
-      errors.push('• 使用者帳號未填寫或長度格式不符（須為 6 至 12 碼）');
+      errors.push('• 使用者帳號未填寫或長度格式不符（須為 3 至 20 碼英數字）');
     }
     if (this.formBuilderGroup.get('password')?.invalid) {
-      errors.push('• 登入密碼未填寫或長度不符（須為 8 至 16 碼）');
+      errors.push('• 登入密碼未填寫或長度不符（須為 4 至 50 碼）');
     }
 
     if (errors.length > 0) {
@@ -101,32 +102,6 @@ export class LogInComponent {
   }
 
   /**
-   * 測試專用：管理員帳號快速填入並登入
-   * 快速填入測試管理員憑證並立即執行登入。
-   */
-  protected quickLoginAsAdmin(): void {
-    const payload: AccountLogInPayload = {
-      username: 'User46972A',
-      password: '@User46972',
-    };
-    this.formBuilderGroup.patchValue(payload);
-    this._userEmitter.emitLogin(payload);
-  }
-
-  /**
-   * 測試專用：一般會員帳號快速填入並登入
-   * 快速填入測試一般會員憑證並立即執行登入。
-   */
-  protected quickLoginAsMember(): void {
-    const payload: AccountLogInPayload = {
-      username: 'User46972M',
-      password: '@User46972M',
-    };
-    this.formBuilderGroup.patchValue(payload);
-    this._userEmitter.emitLogin(payload);
-  }
-
-  /**
    * 導向忘記密碼頁面 (/forget-password)
    */
   protected goToForgetPasswordPage(): void {
@@ -139,11 +114,5 @@ export class LogInComponent {
   protected goToRegisterAccountPage(): void {
     this._router.navigateByUrl('/register');
   }
-
-  /**
-   * 導向重設密碼頁面 (/reset-password)
-   */
-  protected goToResetPasswordPage(): void {
-    this._router.navigateByUrl('/reset-password');
-  }
 }
+

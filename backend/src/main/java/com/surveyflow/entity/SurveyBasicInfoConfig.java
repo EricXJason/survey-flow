@@ -32,6 +32,10 @@ public class SurveyBasicInfoConfig {
     @JoinColumn(name = "survey_id", nullable = false, unique = true)
     private Survey survey;
 
+    @Column(name = "collect_basic_info", nullable = false)
+    @Builder.Default
+    private Boolean collectBasicInfo = true;
+
     @Column(name = "require_name", nullable = false)
     @Builder.Default
     private Boolean requireName = true;
@@ -44,9 +48,21 @@ public class SurveyBasicInfoConfig {
     @Builder.Default
     private Boolean requireAge = true;
 
+    @Column(name = "require_birthday", nullable = false)
+    @Builder.Default
+    private Boolean requireBirthday = false;
+
+    @Column(name = "require_national_id", nullable = false)
+    @Builder.Default
+    private Boolean requireNationalId = false;
+
     @Column(name = "require_phone", nullable = false)
     @Builder.Default
     private Boolean requirePhone = false;
+
+    @Column(name = "require_home_phone", nullable = false)
+    @Builder.Default
+    private Boolean requireHomePhone = false;
 
     @Column(name = "require_email", nullable = false)
     @Builder.Default
@@ -56,7 +72,43 @@ public class SurveyBasicInfoConfig {
     @Builder.Default
     private Boolean requireIndustry = false;
 
+    @Column(name = "require_job_title", nullable = false)
+    @Builder.Default
+    private Boolean requireJobTitle = false;
+
+    @Column(name = "require_department", nullable = false)
+    @Builder.Default
+    private Boolean requireDepartment = false;
+
+    @Column(name = "require_employee_id", nullable = false)
+    @Builder.Default
+    private Boolean requireEmployeeId = false;
+
+    @Column(name = "require_academic_major", nullable = false)
+    @Builder.Default
+    private Boolean requireAcademicMajor = false;
+
+    @Column(name = "require_class_name", nullable = false)
+    @Builder.Default
+    private Boolean requireClassName = false;
+
+    @Column(name = "require_student_id", nullable = false)
+    @Builder.Default
+    private Boolean requireStudentId = false;
+
+    @Column(name = "require_height", nullable = false)
+    @Builder.Default
+    private Boolean requireHeight = false;
+
+    @Column(name = "require_weight", nullable = false)
+    @Builder.Default
+    private Boolean requireWeight = false;
+
     @Column(name = "require_residence", nullable = false)
     @Builder.Default
     private Boolean requireResidence = false;
+
+    @Column(name = "require_registered_address", nullable = false)
+    @Builder.Default
+    private Boolean requireRegisteredAddress = false;
 }

@@ -79,15 +79,21 @@ export class ValidationService {
     maxLength: number = 6,
   ): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const value: unknown = control.value;
-      if (!value || typeof value !== 'string') {
+      const rawValue: unknown = control.value;
+      if (rawValue === null || rawValue === undefined || rawValue === '') {
         return null;
       }
 
+      const strValue = String(rawValue).trim();
+      if (!strValue) {
+        return null;
+      }
+
+      // 支援繁體中文常用漢字及 CJK 統一漢字集，去除前後空格防呆
       const regex: RegExp = new RegExp(
-        `^[\\u4e00-\\u9fa5]{${minLength},${maxLength}}$`,
+        `^[\\u4e00-\\u9fff\\u3400-\\u4dbf\\uf900-\\ufaff]{${minLength},${maxLength}}$`,
       );
-      return regex.test(value)
+      return regex.test(strValue)
         ? null
         : {
           invalidChineseName: {

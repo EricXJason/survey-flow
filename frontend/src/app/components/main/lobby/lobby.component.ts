@@ -63,6 +63,8 @@ export class LobbyComponent implements OnInit, AfterViewInit {
   public readonly surveyList = signal<SurveySummaryItem[]>([]);
   /** 問卷列表載入狀態信號 */
   public readonly isLoading = signal<boolean>(true);
+  /** 伺服器是否連線異常信號 (Server Unavailable) */
+  public readonly isServerUnavailable = signal<boolean>(false);
   /** 關鍵字搜尋輸入信號 */
   public readonly searchQuery = signal<string>('');
   /** 當前選取的問卷主題分類（預設 'all' 表示全部） */
@@ -74,17 +76,31 @@ export class LobbyComponent implements OnInit, AfterViewInit {
     'title',
     'category',
     'timeRange',
-    'status',
     'actions',
   ];
 
   /** Angular Material Table 專用資料來源執行個體 */
   public readonly dataSource = new MatTableDataSource<SurveySummaryItem>([]);
 
-  /** Material 分頁器組件引用 */
-  @ViewChild(MatPaginator) public paginator!: MatPaginator;
-  /** Material 排序控制組件引用 */
-  @ViewChild(MatSort) public sort!: MatSort;
+  /** Material 分頁器組件引用 (採用 setter 確保 @if 延遲渲染時自動完成 dataSource 綁定) */
+  @ViewChild(MatPaginator)
+  public set matPaginator(mp: MatPaginator | undefined) {
+    if (mp) {
+      this.paginator = mp;
+      this.dataSource.paginator = mp;
+    }
+  }
+  public paginator!: MatPaginator;
+
+  /** Material 排序控制組件引用 (採用 setter 確保 @if 延遲渲染時自動完成 dataSource 綁定) */
+  @ViewChild(MatSort)
+  public set matSort(ms: MatSort | undefined) {
+    if (ms) {
+      this.sort = ms;
+      this.dataSource.sort = ms;
+    }
+  }
+  public sort!: MatSort;
   /** 搜尋輸入框參照（支援 ⌘K 快捷鍵聚焦） */
   @ViewChild('searchInput') public searchInputRef?: ElementRef<HTMLInputElement>;
 
@@ -147,6 +163,19 @@ export class LobbyComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * 計算屬性：統計當前有包含問卷之有效主題分類數量
+   */
+  public readonly activeCategoriesCount = computed(() => {
+    const cats = new Set<string>();
+    for (const survey of this.surveyList()) {
+      if (survey.category) {
+        cats.add(survey.category);
+      }
+    }
+    return cats.size;
+  });
+
+  /**
    * 計算屬性：統計當前開放公開填答之問卷數量
    */
   public readonly publishedSurveysCount = computed(() => {
@@ -187,6 +216,7 @@ export class LobbyComponent implements OnInit, AfterViewInit {
    */
   public fetchLobbySurveys(): void {
     this.isLoading.set(true);
+    this.isServerUnavailable.set(false);
     this._surveyGetter.getLobbySurveys().subscribe({
       next: (surveys) => {
         this.surveyList.set(surveys);
@@ -194,6 +224,7 @@ export class LobbyComponent implements OnInit, AfterViewInit {
       },
       error: () => {
         this.isLoading.set(false);
+        this.isServerUnavailable.set(true);
       },
     });
   }
@@ -222,6 +253,17 @@ export class LobbyComponent implements OnInit, AfterViewInit {
     this.selectedCategory.set(category);
   }
 
+  /**
+   * 處理下拉式選單之分類變更事件
+   * @param event 原生 Select 變更事件
+   */
+  public onCategorySelectChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    if (target) {
+      this.setCategory(target.value);
+    }
+  }
+
   public onSelectSurvey(surveyId: string): void {
     this._surveyGetter.getSurveyById(surveyId).subscribe((fullSurvey) => {
       if (!fullSurvey) {
@@ -229,7 +271,24 @@ export class LobbyComponent implements OnInit, AfterViewInit {
       }
 
       this._surveyState.setForRunMode(fullSurvey);
-      this._router.navigateByUrl('/survey-runner');
+      this._router.navigate(['/survey-runner'], {
+        queryParams: { from: 'lobby', surveyId },
+      });
     });
+  }
+
+  /**
+   * 格式化 ISO 日期時間字串為簡潔精確的顯示格式 (YYYY/MM/DD HH:mm)
+   * 去除不必要的 T 與秒數，方便垂直緊湊呈現，防止表格橫向溢出
+   * @param dtStr ISO 格式日期時間字串
+   * @returns 簡潔格式化之日期時間
+   */
+  protected formatDateTimeShort(dtStr?: string | null): string {
+    if (!dtStr) return '-';
+    const clean = dtStr.replace('T', ' ');
+    if (clean.length >= 16) {
+      return clean.substring(0, 16).replace(/-/g, '/');
+    }
+    return clean.replace(/-/g, '/');
   }
 }

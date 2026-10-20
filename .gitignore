@@ -48,10 +48,6 @@ frontend/typings/
 frontend/npm-debug.log
 frontend/yarn-error.log
 
-# figma-bridge 工具依賴
-frontend/tools/**/node_modules/
-frontend/tools/**/package-lock.json
-
 # --------------------------------------------------
 # Java Spring Boot 後端 (backend/)
 # --------------------------------------------------
@@ -88,3 +84,9 @@ backend/*.log
 coverage/
 *.lcov
 .nyc_output/
+
+# --------------------------------------------------
+# 私人 AI Agent 協定架構規範庫 (本地私有資產，不推送遠端)
+# --------------------------------------------------
+AGENTS*.md
+AGENTS-*.md

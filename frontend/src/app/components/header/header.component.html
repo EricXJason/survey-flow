@@ -1,35 +1,35 @@
-<div class="site-header-bar">
+<!--
+  ============================================================================
+  檔案名稱: header.component.html
+  所屬模組: Presentation Layer / Navigation
+  責任描述: 全域簡約黑白中性頂部導航列 (Minimalist Neutral Header)
+            維持黑白純淨風格，去除 01/02 與虛飾代號，採標準清晰之問卷與會員用語
+  聯動關係:
+    - 上游依賴: AuthService (身分驗證與角色資訊)
+    - 下游消費: 嵌入各頁面頂部作為全域 Masthead
+  ============================================================================
+-->
+<header class="site-header-bar" role="banner">
   <div class="header-inner container">
-    <!-- 1. 左側：品牌標識與向量圖示 -->
+    <!-- 1. 左側：品牌標識 -->
     <a class="brand" routerLink="/home" (click)="closeMobileMenu()" aria-label="SurveyFlow — 返回首頁">
       <div class="brand-symbol" aria-hidden="true">
-        <svg viewBox="0 0 38 38" fill="none" class="brand-svg">
-          <defs>
-            <linearGradient id="header-sf-grad" x1="0" y1="0" x2="38" y2="38" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#3b82f6"/>
-              <stop offset="100%" stop-color="#1d4ed8"/>
-            </linearGradient>
-            <linearGradient id="header-sf-check" x1="14" y1="24" x2="28" y2="14" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#38bdf8"/>
-              <stop offset="100%" stop-color="#ffffff"/>
-            </linearGradient>
-            <filter id="header-sf-shadow" x="0" y="2" width="42" height="42" filterUnits="userSpaceOnUse">
-              <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#1e40af" flood-opacity="0.25"/>
-            </filter>
-          </defs>
-          <rect x="0" y="0" width="38" height="38" rx="10" fill="url(#header-sf-grad)" filter="url(#header-sf-shadow)"/>
-          <rect x="7" y="7" width="24" height="24" rx="6" fill="#ffffff" fill-opacity="0.15" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1"/>
-          <rect x="10.5" y="11.5" width="10" height="2" rx="1" fill="#ffffff" fill-opacity="0.95"/>
-          <rect x="10.5" y="15.5" width="14" height="1.8" rx="0.9" fill="#ffffff" fill-opacity="0.7"/>
-          <path d="M12 23.5L16.5 28L26 16.5" stroke="url(#header-sf-check)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg viewBox="0 0 36 36" fill="none" class="brand-svg">
+          <rect x="1" y="1" width="34" height="34" rx="4" fill="#0f172a" stroke="#1e293b" stroke-width="1.2"/>
+          <line x1="8" y1="11" x2="28" y2="11" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="8" y1="17" x2="23" y2="17" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="8" y1="23" x2="26" y2="23" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="26" cy="23" r="4.5" fill="#15803d"/>
+          <path d="M24.2 23l1.2 1.2L28 21.8" stroke="#ffffff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
       <div class="brand-text-wrap">
-        <span class="brand-name">Survey<span class="brand-name-accent">Flow</span></span>
+        <span class="brand-name">SURVEY<span class="brand-name-serif">FLOW</span></span>
+        <span class="brand-sub-tag">線上問卷平台</span>
       </div>
     </a>
 
-    <!-- 2. 中間：主導航連結 -->
+    <!-- 2. 中間：主導航連結 (不帶 01 02 編號，簡約黑白) -->
     <nav aria-label="主要導航" class="header-nav desktop-only">
       <ul role="list" class="nav-list">
         <li>
@@ -39,26 +39,26 @@
             [routerLinkActiveOptions]="{ exact: true }"
             class="nav-link"
           >
-            首頁
+            <span>首頁</span>
           </a>
         </li>
 
         <li>
           <a routerLink="/lobby" routerLinkActive="active" class="nav-link">
-            問卷大廳
+            <span>問卷大廳</span>
           </a>
         </li>
 
         @if (isLoggedIn()) {
           <li>
             <a routerLink="/survey-management" routerLinkActive="active" class="nav-link">
-              問卷管理
+              <span>問卷管理</span>
             </a>
           </li>
           @if (isAdmin()) {
             <li>
               <a routerLink="/user-management" routerLinkActive="active" class="nav-link">
-                會員管理
+                <span>會員管理</span>
               </a>
             </li>
           }
@@ -69,41 +69,37 @@
     <!-- 3. 右側：會員身分與功能按鈕 -->
     <div class="header-actions desktop-only">
       @if (isLoggedIn()) {
-        <!-- 使用者個人資料膠囊 (管理員導向會員管理，一般使用者導向個人資料維護) -->
+        <!-- 會員身分卡片 -->
         @if (isAdmin()) {
-          <a routerLink="/user-management" routerLinkActive="user-chip-active" class="user-chip user-chip-admin" title="系統管理員 — 點擊前往會員管理">
-            <div class="user-avatar avatar-admin" aria-hidden="true">
-              {{ userInitial() }}
-            </div>
-            <div class="user-details">
+          <a routerLink="/user-management" routerLinkActive="user-chip-active" class="user-chip user-chip-admin" title="系統管理員 — 點擊前往管理中心">
+            <span class="user-avatar avatar-admin" aria-hidden="true">{{ userInitial() }}</span>
+            <span class="user-details">
               <span class="user-name">{{ userName() }}</span>
-              <span class="user-role admin-role">系統管理員</span>
-            </div>
+              <span class="user-role-badge admin-badge">系統管理員</span>
+            </span>
           </a>
         } @else {
           <a routerLink="/user-profile" routerLinkActive="user-chip-active" class="user-chip" title="檢視個人基本資料">
-            <div class="user-avatar" aria-hidden="true">
-              {{ userInitial() }}
-            </div>
-            <div class="user-details">
+            <span class="user-avatar" aria-hidden="true">{{ userInitial() }}</span>
+            <span class="user-details">
               <span class="user-name">{{ userName() }}</span>
-              <span class="user-role">{{ userRole() }}</span>
-            </div>
+              <span class="user-role-badge">{{ userRole() }}</span>
+            </span>
           </a>
         }
 
-        <!-- 發起問卷按鈕 -->
-        <a routerLink="/survey-design" class="btn btn-primary btn-sm btn-nav-cta">
-          <svg class="cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <!-- 建立問卷按鈕 -->
+        <a routerLink="/survey-design" class="btn btn-academic-cta">
+          <svg class="cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
           </svg>
-          <span>發起問卷</span>
+          <span>建立問卷</span>
         </a>
 
         <!-- 登出按鈕 -->
         <button type="button" class="btn-logout" (click)="onLogout()" title="登出系統" aria-label="登出系統">
-          <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
             <line x1="21" y1="12" x2="9" y2="12"/>
@@ -114,8 +110,8 @@
         <a routerLink="/register" class="nav-register-link">
           會員註冊
         </a>
-        <a routerLink="/log-in" routerLinkActive="nav-login-active" class="btn btn-primary btn-sm btn-nav-login">
-          <svg class="login-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+        <a routerLink="/log-in" routerLinkActive="nav-login-active" class="btn btn-academic-login">
+          <svg class="login-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
             <polyline points="10 17 15 12 10 7"/>
             <line x1="15" y1="12" x2="3" y2="12"/>
@@ -139,123 +135,130 @@
       <span class="bar bot-bar"></span>
     </button>
   </div>
+</header>
 
-  <!-- 行動版抽屜導航層 -->
-  @if (isMobileMenuOpen()) {
-    <div class="mobile-drawer-backdrop" (click)="closeMobileMenu()" role="presentation">
-      <div class="mobile-drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="行動版選單">
-        @if (isLoggedIn()) {
-          <div class="mobile-user-card">
-            <div class="mobile-avatar" aria-hidden="true">{{ userInitial() }}</div>
-            <div class="mobile-user-meta">
-              <span class="mobile-name">{{ userName() }}</span>
-              <span class="mobile-role" [class.admin-role]="isAdmin()">
-                {{ isAdmin() ? "系統管理員" : userRole() }}
-              </span>
-            </div>
+<!-- 行動版抽屜導航層 -->
+@if (isMobileMenuOpen()) {
+  <div class="mobile-drawer-backdrop" (click)="closeMobileMenu()" role="presentation">
+    <div class="mobile-drawer" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="行動版選單">
+      <div class="mobile-drawer-head">
+        <span class="mobile-drawer-title">SURVEYFLOW</span>
+        <button type="button" class="mobile-drawer-close" (click)="closeMobileMenu()" aria-label="關閉選單">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      @if (isLoggedIn()) {
+        <div class="mobile-user-card">
+          <div class="mobile-avatar" aria-hidden="true">{{ userInitial() }}</div>
+          <div class="mobile-user-meta">
+            <span class="mobile-name">{{ userName() }}</span>
+            <span class="mobile-role-chip" [class.admin-role]="isAdmin()">
+              {{ userRole() }}
+            </span>
           </div>
-        }
+        </div>
+      }
 
-        <nav class="mobile-nav" aria-label="行動版主要導航">
-          <ul class="mobile-nav-list" role="list">
+      <nav class="mobile-nav" aria-label="行動版主要導航">
+        <ul class="mobile-nav-list" role="list">
+          <li>
+            <a
+              routerLink="/home"
+              (click)="closeMobileMenu()"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="mobile-link"
+            >
+              <svg class="m-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <span>首頁</span>
+            </a>
+          </li>
+          <li>
+            <a routerLink="/lobby" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
+              <svg class="m-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>問卷大廳</span>
+            </a>
+          </li>
+
+          @if (isLoggedIn()) {
             <li>
-              <a
-                routerLink="/home"
-                (click)="closeMobileMenu()"
-                routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: true }"
-                class="mobile-link"
-              >
-                <svg class="m-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
+              <a routerLink="/survey-design" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
+                <svg class="m-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                 </svg>
-                <span>首頁</span>
+                <span>建立問卷</span>
               </a>
             </li>
             <li>
-              <a routerLink="/lobby" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
-                <svg class="m-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <rect x="3" y="3" width="7" height="7" rx="1"/>
-                  <rect x="14" y="3" width="7" height="7" rx="1"/>
-                  <rect x="14" y="14" width="7" height="7" rx="1"/>
-                  <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <a routerLink="/survey-management" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
+                <svg class="m-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                 </svg>
-                <span>問卷大廳</span>
+                <span>問卷管理</span>
               </a>
             </li>
-
-            @if (isLoggedIn()) {
+            @if (isAdmin()) {
               <li>
-                <a routerLink="/survey-design" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
-                  <svg class="m-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M12 20h9"/>
-                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                <a routerLink="/user-management" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
+                  <svg class="m-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                   </svg>
-                  <span>發起問卷</span>
+                  <span>會員管理</span>
                 </a>
-              </li>
-              <li>
-                <a routerLink="/survey-management" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
-                  <svg class="m-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                  </svg>
-                  <span>問卷管理</span>
-                </a>
-              </li>
-              @if (isAdmin()) {
-                <li>
-                  <a routerLink="/user-management" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
-                    <svg class="m-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                    <span>會員管理</span>
-                  </a>
-                </li>
-              } @else {
-                <li>
-                  <a routerLink="/user-profile" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
-                    <svg class="m-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                      <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    <span>個人資料維護</span>
-                  </a>
-                </li>
-              }
-
-              <li class="mobile-sep"></li>
-
-              <li>
-                <button type="button" class="mobile-btn-logout" (click)="onLogout()">
-                  <svg class="m-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                    <polyline points="16 17 21 12 16 7"/>
-                    <line x1="21" y1="12" x2="9" y2="12"/>
-                  </svg>
-                  <span>登出系統</span>
-                </button>
               </li>
             } @else {
-              <li class="mobile-sep"></li>
-              <li class="mobile-auth-actions">
-                <a routerLink="/log-in" (click)="closeMobileMenu()" class="btn btn-primary btn-block">
-                  會員登入
-                </a>
-                <a routerLink="/register" (click)="closeMobileMenu()" class="btn btn-ghost btn-block">
-                  會員註冊
+              <li>
+                <a routerLink="/user-profile" (click)="closeMobileMenu()" routerLinkActive="active" class="mobile-link">
+                  <svg class="m-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  <span>個人檔案</span>
                 </a>
               </li>
             }
-          </ul>
-        </nav>
+          }
+        </ul>
+      </nav>
+
+      <!-- 底部獨立操作區 -->
+      <div class="mobile-drawer-footer">
+        @if (isLoggedIn()) {
+          <button type="button" class="mobile-btn-logout" (click)="onLogout()">
+            <svg class="m-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            <span>登出系統</span>
+          </button>
+        } @else {
+          <div class="mobile-auth-actions">
+            <a routerLink="/log-in" (click)="closeMobileMenu()" class="btn btn-academic-login btn-block">
+              會員登入
+            </a>
+            <a routerLink="/register" (click)="closeMobileMenu()" class="btn btn-academic-outline btn-block">
+              會員註冊
+            </a>
+          </div>
+        }
       </div>
     </div>
-  }
-</div>
+  </div>
+}

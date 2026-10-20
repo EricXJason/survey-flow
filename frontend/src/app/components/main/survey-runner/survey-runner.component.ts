@@ -11,7 +11,8 @@
  * ============================================================================
  */
 
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
   AbstractControl,
@@ -22,6 +23,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { SurveyStateService } from '../../../@services/survey-state.service';
+import { SurveyGetterService } from '../../../@services/survey-getter.service';
 import { DialogService, DialogData } from '../../../@services/dialog.service';
 import { ValidationService } from '../../../@services/validation.service';
 import { UserEmitterService } from '../../../@services/user-emitter.service';
@@ -56,9 +58,13 @@ interface BasicInfoFieldMeta {
   selector: 'app-survey-runner',
   templateUrl: './survey-runner.component.html',
   styleUrl: './survey-runner.component.scss',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
 })
 export class SurveyRunnerComponent implements OnInit {
+  /** 路由參數服務 */
+  private readonly _route = inject(ActivatedRoute);
+  /** 問卷查詢服務 */
+  private readonly _surveyGetter = inject(SurveyGetterService);
   /** 響應式表單建構器 */
   private readonly _formBuilder = inject(FormBuilder);
   /** 系統對話框管理服務 */
@@ -70,16 +76,169 @@ export class SurveyRunnerComponent implements OnInit {
   /** 問卷狀態管理服務（取得當前正在填答的問卷模型） */
   protected readonly surveyStateService = inject(SurveyStateService);
 
+  /** Angular 路由服務 */
+  private readonly _router = inject(Router);
   /** 填答執行表單群組 */
   protected runnerFormGroup: FormGroup = this._formBuilder.group({});
   /** 問卷填答是否已成功提交送出之狀態旗標 */
   private _isSubmitted: boolean = false;
 
+  /** 問卷是否處於未開放或已截止狀態信號 */
+  public readonly isUnavailable = signal<boolean>(false);
+  /** 未開放狀態主標題信號 */
+  public readonly unavailableTitle = signal<string>('問卷暫未開放填答');
+  /** 未開放狀態具體說明敘述信號 */
+  public readonly unavailableMessage = signal<string>('');
+  /** 填答時程區間說明（若有） */
+  public readonly unavailableTimeRange = signal<string>('');
+
+  /** 產業領域是否選取「其他」自訂選項 */
+  public readonly isOtherIndustrySelected = signal<boolean>(false);
+  /** 自訂其他產業領域文字暫存 */
+  public readonly customOtherIndustry = signal<string>('');
+
+  /**
+   * 計算返回按鈕的友善提示文字
+   */
+  public get backButtonLabel(): string {
+    const from = this._route.snapshot.queryParams['from'];
+    if (from === 'survey-management') {
+      return '返回問卷管理';
+    }
+    if (from === 'lobby') {
+      return '返回問卷大廳';
+    }
+    return '返回上一頁';
+  }
+
+  /**
+   * 點擊頂部返回按鈕，依來源精準回到問卷管理或大廳
+   */
+  public onBack(): void {
+    const from = this._route.snapshot.queryParams['from'];
+    if (from === 'survey-management') {
+      this._router.navigateByUrl('/survey-management');
+      return;
+    }
+    if (from === 'lobby') {
+      this._router.navigateByUrl('/lobby');
+      return;
+    }
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      this._router.navigateByUrl('/lobby');
+    }
+  }
+
+  /**
+   * 檢查問卷當前開放與時效狀態
+   * 若為非預覽模式且問卷關閉或逾期，設定未開放狀態以展示說明敘述
+   * @param survey 目標問卷載荷
+   * @param errorMsg 遠端請求錯誤訊息 (若有)
+   */
+  private _checkSurveyAvailability(survey: SurveyPayload | null, errorMsg?: string): void {
+    if (this.isPreview) {
+      this.isUnavailable.set(false);
+      return;
+    }
+
+    if (errorMsg) {
+      this.isUnavailable.set(true);
+      if (errorMsg.includes('截止') || errorMsg.includes('過期')) {
+        this.unavailableTitle.set('問卷填答已截止');
+        this.unavailableMessage.set(errorMsg);
+      } else if (errorMsg.includes('尚未') || errorMsg.includes('未到達')) {
+        this.unavailableTitle.set('問卷尚未開始開放填答');
+        this.unavailableMessage.set(errorMsg);
+      } else {
+        this.unavailableTitle.set('本問卷目前未開放填答');
+        this.unavailableMessage.set(errorMsg);
+      }
+      return;
+    }
+
+    if (!survey) {
+      this.isUnavailable.set(true);
+      this.unavailableTitle.set('查無此問卷專案');
+      this.unavailableMessage.set('問卷專案不存在或已被發起人移除。');
+      return;
+    }
+
+    // 檢查開放填答狀態：若發起人關閉填答 (isOpen === false)，則停止受訪者作答
+    const isCurrentlyOpen = survey.isOpen !== undefined ? survey.isOpen : survey.isPublished;
+    if (isCurrentlyOpen === false) {
+      this.isUnavailable.set(true);
+      this.unavailableTitle.set('問卷目前未開放填答');
+      this.unavailableMessage.set('本問卷發起人目前已關閉開放填寫，暫不接受受訪者作答。若有任何疑問，請洽詢問卷發起人。');
+      return;
+    }
+
+    // 檢查時效設定 (hasTimeLimit)
+    if (survey.hasTimeLimit && survey.timeLimit) {
+      const { startDate, startTime, endDate, endTime } = survey.timeLimit;
+      const now = new Date();
+
+      if (startDate && startTime) {
+        const startDt = new Date(`${startDate}T${startTime}`);
+        if (!isNaN(startDt.getTime()) && now < startDt) {
+          this.isUnavailable.set(true);
+          this.unavailableTitle.set('問卷尚未開始開放填答');
+          this.unavailableMessage.set(`本問卷預計於 ${startDate} ${startTime} 開放填寫，目前尚未到達作答時間，請於開放後再次前往填答。`);
+          this.unavailableTimeRange.set(`填答有效期間：${startDate} ${startTime} 至 ${endDate} ${endTime}`);
+          return;
+        }
+      }
+
+      if (endDate && endTime) {
+        const endDt = new Date(`${endDate}T${endTime}`);
+        if (!isNaN(endDt.getTime()) && now > endDt) {
+          this.isUnavailable.set(true);
+          this.unavailableTitle.set('問卷填答已截止');
+          this.unavailableMessage.set(`本問卷已於 ${endDate} ${endTime} 截止填答，已無法再進行填寫，非常感謝您的關注與支持！`);
+          this.unavailableTimeRange.set(`填答有效期間：${startDate} ${startTime} 至 ${endDate} ${endTime}`);
+          return;
+        }
+      }
+    }
+
+    this.isUnavailable.set(false);
+  }
+
   /**
    * Angular 生命週期鉤子 (ngOnInit)
-   * 依據問卷定義動態初始化受訪者欄位與題目 controls；若當前為預覽模式則自動禁用全部表單控制項。
+   * 檢查網址是否有指定問卷 ID 參數 (?surveyId=... 或 ?id=...)，支援專屬連結直達載入；若為預覽模式則自動禁用全部表單控制項。
    */
   public ngOnInit(): void {
+    const queryId =
+      this._route.snapshot.queryParams['surveyId'] ||
+      this._route.snapshot.queryParams['id'];
+
+    if (queryId) {
+      this._surveyGetter.getSurveyById(String(queryId)).subscribe({
+        next: (loadedSurvey) => {
+          if (loadedSurvey) {
+            this.surveyStateService.setForRunMode(loadedSurvey);
+            this._checkSurveyAvailability(loadedSurvey);
+            this.runnerFormGroup = this.formBuilderGroupInit();
+          } else {
+            this._checkSurveyAvailability(null, '查無此問卷專案');
+            this.runnerFormGroup = this.formBuilderGroupInit();
+          }
+        },
+        error: (err) => {
+          const msg =
+            !err || err.status === 0
+              ? '後端伺服器連線異常，無法載入問卷題目（請確認 8080 後端服務已啟動）。'
+              : err?.message || '此問卷目前暫不開放填答。';
+          this._checkSurveyAvailability(null, msg);
+          this.runnerFormGroup = this.formBuilderGroupInit();
+        },
+      });
+      return;
+    }
+
+    this._checkSurveyAvailability(this.survey);
     this.runnerFormGroup = this.formBuilderGroupInit();
     if (this.isPreview) {
       this.runnerFormGroup.disable();
@@ -88,13 +247,16 @@ export class SurveyRunnerComponent implements OnInit {
 
   /**
    * 路由離開守衛 (canDeactivate)
-   * 當填答者試圖離開問卷填答頁面時，若非設計者預覽模式且尚未送出填答結果，
-   * 攔截跳轉並彈出操作確認對話框詢問「是否確定跳出？尚未提交的問卷填答內容將會遺失。」。
-   * 只有在使用者點選「是」確認離開時才放行路由跳出；
-   * 若點選「返回」或關閉對話框，則由 Angular Router 取消跳轉，完整保留當前已填答之所有題目與控制項內容。
+   * 當填答者試圖離開問卷填答頁面時：
+   * 1. 預覽模式直接放行，絕不彈出警告阻擋。
+   * 2. 只有在尚未提交且受訪者已經實質修改表單控制項 (dirty) 時，才彈出防呆確認對話框。
    */
   public canDeactivate(): Observable<boolean> | boolean {
-    if (!this.isPreview && !this._isSubmitted) {
+    if (this.isPreview || this._isSubmitted) {
+      return true;
+    }
+
+    if (this.runnerFormGroup.dirty) {
       const confirmData: DialogData = {
         title: '跳出確認',
         message: '是否確定跳出？尚未提交的問卷填答內容將會遺失。',
@@ -106,6 +268,7 @@ export class SurveyRunnerComponent implements OnInit {
 
       return this._dialogService.showDialog(confirmData);
     }
+
     return true;
   }
 
@@ -451,14 +614,54 @@ export class SurveyRunnerComponent implements OnInit {
   }
 
   /**
-   * 根據量表設定類型 (scaleType) 解析並回傳對應的量表選項標籤清單
-   * @param scaleType 量表類型字串代碼
+   * 根據量表設定類型 (scaleType) 或題目 minRating/maxRating 解析並回傳對應的量表選項標籤清單
+   * @param question 題目物件或 scaleType 字串
    * @returns 依序排列的量表級距標籤字串陣列
    */
-  protected getScaleOptions(scaleType?: string): string[] {
+  protected getScaleOptions(question: any): string[] {
+    if (!question) {
+      return ['非常不滿意', '不滿意', '普通', '滿意', '非常滿意'];
+    }
+
+    const scaleType = typeof question === 'string' ? question : question.scaleType;
+    const minRating = typeof question === 'object' ? question.minRating : undefined;
+    const maxRating = typeof question === 'object' ? question.maxRating : undefined;
+    const desc = typeof question === 'object' ? (question.description || '') : '';
+
+    // 1. 若題目資料具備 minRating 與 maxRating
+    if (minRating !== undefined && maxRating !== undefined && minRating !== null && maxRating !== null) {
+      const opts: string[] = [];
+      for (let i = minRating; i <= maxRating; i++) {
+        opts.push(i.toString());
+      }
+      if (opts.length > 0) {
+        return opts;
+      }
+    }
+
+    // 2. 檢測題目文字中的顯式分值範圍提示（防禦後端或歷史問卷未填寫 minRating/maxRating 之情境）
+    if (desc.includes('0-10') || desc.includes('0~10') || desc.includes('0至10') || desc.includes('NPS') || desc.includes('淨推薦值')) {
+      return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+    }
+    if (desc.includes('1-10') || desc.includes('1~10') || desc.includes('1至10')) {
+      return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+    }
+    if (desc.includes('1-5') || desc.includes('1~5') || desc.includes('1至5') || desc.includes('1最低，5最高') || desc.includes('1最低、5最高')) {
+      return ['1', '2', '3', '4', '5'];
+    }
+    if (desc.includes('1-7') || desc.includes('1~7') || desc.includes('1至7')) {
+      return ['1', '2', '3', '4', '5', '6', '7'];
+    }
+
+    // 3. 依據 scaleType 具體代碼判斷
     switch (scaleType) {
-      case 'scale-text-satisfaction-5':
-        return ['非常不滿意', '不滿意', '普通', '滿意', '非常滿意'];
+      case 'scale-num-1-5':
+        return ['1', '2', '3', '4', '5'];
+      case 'scale-num-1-10':
+        return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+      case 'scale-num-0-10':
+      case 'nps':
+        return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
       case 'scale-text-agreement-5':
         return ['非常不同意', '不同意', '普通', '同意', '非常同意'];
       case 'scale-text-importance-5':
@@ -469,15 +672,139 @@ export class SurveyRunnerComponent implements OnInit {
         return ['從不', '很少', '有時', '經常', '總是'];
       case 'scale-text-satisfaction-4':
         return ['非常不滿意', '不滿意', '滿意', '非常滿意'];
-      case 'scale-num-1-5':
-        return ['1', '2', '3', '4', '5'];
-      case 'scale-num-1-10':
-        return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
-      case 'scale-num-0-10':
-        return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+      case 'scale-text-satisfaction-5':
       default:
         return ['非常不滿意', '不滿意', '普通', '滿意', '非常滿意'];
     }
+  }
+
+  /**
+   * 受訪者點擊量表選項時精準賦值，並確保單選互斥
+   * @param questionUid 題目唯一識別碼
+   * @param value 所選取之值
+   */
+  protected selectScaleOption(questionUid: string, value: string): void {
+    const ctrl = this.runnerFormGroup.get(questionUid);
+    if (ctrl) {
+      ctrl.setValue(value);
+      ctrl.markAsDirty();
+      ctrl.markAsTouched();
+    }
+  }
+
+  /**
+   * 受訪者點擊是非題 (t/f) 選項時精準賦值，並確保單選嚴格互斥
+   * @param questionUid 題目唯一識別碼
+   * @param value 所選取之布林字串值 ('true' | 'false')
+   */
+  protected selectTfOption(questionUid: string, value: string): void {
+    if (this.isPreview) return;
+    const ctrl = this.runnerFormGroup.get(questionUid);
+    if (ctrl) {
+      ctrl.setValue(value);
+      ctrl.markAsDirty();
+      ctrl.markAsTouched();
+    }
+  }
+
+  /**
+   * 監聽產業領域選單變更，當選取「其他」時開啟自訂輸入框
+   */
+  protected onIndustryChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    const isOther = val === '其他';
+    this.isOtherIndustrySelected.set(isOther);
+
+    const control = this.runnerFormGroup.get('jobIndustry');
+    if (control) {
+      if (isOther) {
+        const customVal = this.customOtherIndustry().trim();
+        control.setValue(customVal ? customVal : '其他');
+      } else {
+        control.setValue(val);
+      }
+      control.markAsDirty();
+      control.updateValueAndValidity();
+    }
+  }
+
+  /**
+   * 監聽自訂其他產業領域輸入
+   */
+  protected onCustomIndustryInput(event: Event): void {
+    const val = (event.target as HTMLInputElement).value || '';
+    this.customOtherIndustry.set(val);
+    const control = this.runnerFormGroup.get('jobIndustry');
+    if (control) {
+      control.setValue(val.trim() ? val.trim() : '其他');
+      control.markAsDirty();
+      control.updateValueAndValidity();
+    }
+  }
+
+  /**
+   * 強制從原生 DOM 元素同步輸入值至 Angular 表單控制項
+   * [Why]: 徹底解決 Chrome/Safari 等瀏覽器自動填入 (Autofill) 或輸入法未觸發 Angular input/change 事件造成 FormControl 為空的頑疾
+   */
+  private _syncDomValuesToForm(): void {
+    const formElement = document.querySelector('.runner-form');
+    if (!formElement) return;
+
+    const inputs = formElement.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('[formControlName]');
+    inputs.forEach((inputEl) => {
+      const key = inputEl.getAttribute('formControlName');
+      if (!key) return;
+
+      const control = this.runnerFormGroup.get(key);
+      if (!control) return;
+
+      let domVal = inputEl.value;
+      if (typeof domVal === 'string') {
+        domVal = domVal.trim();
+      }
+
+      // 針對下拉選單 (Select) 額外檢驗選取項目文字
+      let selectText = '';
+      if (inputEl instanceof HTMLSelectElement && inputEl.selectedIndex >= 0) {
+        selectText = inputEl.options[inputEl.selectedIndex]?.text?.trim() || '';
+      }
+
+      // 若 DOM 實質有值但 control 為空或處於無效狀態，強制校驗補齊
+      const needsSync = !control.value || control.value === '' || (control.invalid && (domVal || selectText));
+
+      if (needsSync) {
+        if (key === 'age') {
+          const parsed = parseInt(domVal, 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            control.setValue(parsed);
+          }
+        } else if (key === 'gender') {
+          const combined = `${domVal} ${selectText}`.toLowerCase();
+          if (combined.includes('女') || combined.includes('female')) {
+            control.setValue('female');
+          } else if (combined.includes('男') || combined.includes('male')) {
+            control.setValue('male');
+          } else if (combined.includes('其他') || combined.includes('other')) {
+            control.setValue('other');
+          } else if (domVal) {
+            control.setValue(domVal);
+          }
+        } else if (key === 'jobIndustry') {
+          if (this.isOtherIndustrySelected() && this.customOtherIndustry().trim()) {
+            control.setValue(this.customOtherIndustry().trim());
+          } else if (domVal && domVal !== '其他') {
+            control.setValue(domVal);
+          }
+        } else if (domVal) {
+          control.setValue(domVal);
+        }
+        control.markAsDirty();
+        control.updateValueAndValidity();
+      } else if (typeof control.value === 'string' && control.value !== control.value.trim()) {
+        control.setValue(control.value.trim());
+        control.updateValueAndValidity();
+      }
+    });
   }
 
   /**
@@ -487,6 +814,9 @@ export class SurveyRunnerComponent implements OnInit {
    */
   protected checkRunnerData(): void {
     if (this.isPreview) return;
+
+    // 送出前強制執行 DOM 實體值防呆雙向同步
+    this._syncDomValuesToForm();
 
     this.runnerFormGroup.markAllAsTouched();
     const errors: string[] = [];
@@ -557,16 +887,45 @@ export class SurveyRunnerComponent implements OnInit {
     const answers: SurveyAnswerItem[] = [];
     for (const question of this.survey.questions) {
       if (this.isQuestionVisible(question)) {
+        const val = raw[question.uid] ?? null;
+        let selectedOptionId: number | null = null;
+        let selectedOptionIds: number[] | null = null;
+
+        if (question.type === 't/f') {
+          // 是非題：若選 true 匹配「是」或第 1 個選項；若選 false 匹配「否」或第 2 個選項
+          const opts = question.optionsConfig || [];
+          if ((val === 'true' || val === true) && opts.length > 0) {
+            selectedOptionId = opts[0].id ?? null;
+          } else if ((val === 'false' || val === false) && opts.length > 1) {
+            selectedOptionId = opts[1].id ?? null;
+          }
+        } else if (question.type === 'radio') {
+          // 單選題：比對選項文字獲取 optionId
+          const matchedOpt = (question.optionsConfig || []).find((o) => o.text === String(val));
+          if (matchedOpt && matchedOpt.id) {
+            selectedOptionId = matchedOpt.id;
+          }
+        } else if (question.type === 'multiRadio' && Array.isArray(val)) {
+          // 複選題：比對多個勾選項目的文字獲取對應 optionId 清單
+          selectedOptionIds = (question.optionsConfig || [])
+            .filter((o) => val.includes(o.text) && o.id)
+            .map((o) => o.id!);
+        }
+
         answers.push({
           questionUid: question.uid,
           questionId: question.id,
           type: question.type,
-          answer: raw[question.uid] ?? null,
+          answer: val,
+          selectedOptionId,
+          selectedOptionIds,
         });
       }
     }
 
+    const rawId = (this.survey as any).id || (this.survey as any).uid || 1;
     const payload: SurveySubmissionPayload = {
+      surveyId: rawId,
       surveyTitle: this.survey.title,
       surveyCategory: this.survey.category,
       submittedAt: new Date().toISOString(),

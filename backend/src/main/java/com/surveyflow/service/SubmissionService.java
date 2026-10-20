@@ -13,7 +13,7 @@
 
 package com.surveyflow.service;
 
-import com.surveyflow.common.enums.SurveyStatus;
+import com.surveyflow.common.enums.QuestionType;
 import com.surveyflow.dto.submission.*;
 import com.surveyflow.entity.*;
 import com.surveyflow.repository.SubmissionRepository;
@@ -46,13 +46,16 @@ public class SubmissionService {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(request.getSurveyId())
                 .orElseThrow(() -> new IllegalArgumentException("填答之問卷不存在或已刪除"));
 
-        if (survey.getStatus() != SurveyStatus.PUBLISHED) {
-            throw new IllegalArgumentException("此問卷目前非公開徵集狀態，無法送出回答");
+        if (Boolean.FALSE.equals(survey.getIsOpen())) {
+            throw new IllegalArgumentException("此問卷目前尚未開放填答，或已由發起人手動關閉");
         }
 
         LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(survey.getStartDate()) || now.isAfter(survey.getEndDate())) {
-            throw new IllegalArgumentException("目前非此問卷開放填答之有效時間範圍");
+        if (survey.getStartDate() != null && now.isBefore(survey.getStartDate())) {
+            throw new IllegalArgumentException("問卷尚未到達開放填答時間");
+        }
+        if (survey.getEndDate() != null && now.isAfter(survey.getEndDate())) {
+            throw new IllegalArgumentException("目前非此問卷開放填答之有效時間範圍，填答已截止");
         }
 
         // 1. 建立填答主記錄
@@ -71,10 +74,22 @@ public class SubmissionService {
                     .name(basicDto.getName())
                     .gender(basicDto.getGender())
                     .ageGroup(basicDto.getAgeGroup())
+                    .birthday(basicDto.getBirthday())
+                    .nationalId(basicDto.getNationalId())
                     .phone(basicDto.getPhone())
+                    .homePhone(basicDto.getHomePhone())
                     .email(basicDto.getEmail())
                     .industry(basicDto.getIndustry())
+                    .jobTitle(basicDto.getJobTitle())
+                    .department(basicDto.getDepartment())
+                    .employeeId(basicDto.getEmployeeId())
+                    .academicMajor(basicDto.getAcademicMajor())
+                    .className(basicDto.getClassName())
+                    .studentId(basicDto.getStudentId())
+                    .height(basicDto.getHeight())
+                    .weight(basicDto.getWeight())
                     .residence(basicDto.getResidence())
+                    .registeredAddress(basicDto.getRegisteredAddress())
                     .build();
             submission.setBasicInfo(basicInfo);
         }
@@ -105,7 +120,7 @@ public class SubmissionService {
                                 .build());
                     }
                 } else if (aDto.getSelectedOptionId() != null) {
-                    // 單選題
+                    // 單選題或是非題 (精確透過選項 ID 綁定)
                     SurveyOption option = question.getOptions().stream()
                             .filter(o -> o.getId().equals(aDto.getSelectedOptionId()))
                             .findFirst()
@@ -116,13 +131,61 @@ public class SubmissionService {
                             .question(question)
                             .option(option)
                             .build());
+                } else if ((question.getType() == QuestionType.SINGLE || question.getType() == QuestionType.BOOLEAN) 
+                        && aDto.getTextAnswer() != null && !aDto.getTextAnswer().isBlank()) {
+                    // [健壯防禦]: 單選或是非題若僅帶文字答案，依文字內容反向匹配對應之選項實體
+                    String trimmedText = aDto.getTextAnswer().trim();
+                    SurveyOption option = question.getOptions().stream()
+                            .filter(o -> o.getOptionText().equalsIgnoreCase(trimmedText))
+                            .findFirst()
+                            .orElse(null);
+
+                    answers.add(SubmissionAnswer.builder()
+                            .submission(submission)
+                            .question(question)
+                            .option(option)
+                            .textAnswer(aDto.getTextAnswer())
+                            .build());
+                } else if (question.getType() == QuestionType.MULTI && aDto.getTextAnswer() != null && !aDto.getTextAnswer().isBlank()) {
+                    // [健壯防禦]: 多選題若傳入逗號分隔之文字，拆分並反向匹配各個選項實體
+                    String[] tokens = aDto.getTextAnswer().split(",");
+                    boolean matchedAny = false;
+                    for (String token : tokens) {
+                        String trimmed = token.trim();
+                        SurveyOption option = question.getOptions().stream()
+                                .filter(o -> o.getOptionText().equalsIgnoreCase(trimmed))
+                                .findFirst()
+                                .orElse(null);
+                        if (option != null) {
+                            matchedAny = true;
+                            answers.add(SubmissionAnswer.builder()
+                                    .submission(submission)
+                                    .question(question)
+                                    .option(option)
+                                    .build());
+                        }
+                    }
+                    if (!matchedAny) {
+                        answers.add(SubmissionAnswer.builder()
+                                .submission(submission)
+                                .question(question)
+                                .textAnswer(aDto.getTextAnswer())
+                                .build());
+                    }
                 } else {
                     // 文字簡答題或評分量表題
+                    Integer rating = aDto.getRatingValue();
+                    if (rating == null && question.getType() == QuestionType.RATING && aDto.getTextAnswer() != null) {
+                        try {
+                            rating = Integer.parseInt(aDto.getTextAnswer().trim());
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
                     answers.add(SubmissionAnswer.builder()
                             .submission(submission)
                             .question(question)
                             .textAnswer(aDto.getTextAnswer())
-                            .ratingValue(aDto.getRatingValue())
+                            .ratingValue(rating)
                             .build());
                 }
             }

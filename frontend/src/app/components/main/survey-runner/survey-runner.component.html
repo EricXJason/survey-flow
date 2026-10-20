@@ -1,5 +1,61 @@
 <div class="runner-shell" [attr.data-category]="survey.category">
+  <!-- 頂部快速返回導航列 (支援返回問卷管理、問卷大廳或上一頁，僅於獨立填答路由顯示，嵌入預覽模式下隱藏以避免雙重返回按鈕與標籤衝突) -->
+  @if (!isPreview) {
+    <div class="runner-top-nav-wrap">
+      <button type="button" class="btn-runner-back" (click)="onBack()" [attr.aria-label]="backButtonLabel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>{{ backButtonLabel }}</span>
+      </button>
+    </div>
+  }
+
   <div class="runner-paper">
+  @if (isUnavailable()) {
+    <div class="runner-unavailable-block">
+      <div class="unavailable-icon-badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="38" height="38">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+
+      <div class="unavailable-status-pill">
+        <span>{{ unavailableTitle() }}</span>
+      </div>
+
+      <h1 class="unavailable-title">{{ survey.title || '問卷調研專案' }}</h1>
+
+      <div class="unavailable-message-box">
+        <p class="unavailable-desc">{{ unavailableMessage() }}</p>
+      </div>
+
+      @if (unavailableTimeRange()) {
+        <div class="unavailable-timerange-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>{{ unavailableTimeRange() }}</span>
+        </div>
+      }
+
+      <div class="unavailable-actions">
+        <button type="button" class="btn btn-primary btn-lg" (click)="onBack()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>{{ backButtonLabel }}</span>
+        </button>
+        <a routerLink="/lobby" class="btn btn-secondary btn-lg">
+          <span>前往問卷大廳</span>
+        </a>
+      </div>
+    </div>
+  } @else {
   @if (isPreview) {
     <div class="runner-preview-alert">
       <span class="preview-badge">填答預覽視角</span>
@@ -58,6 +114,7 @@
                 type="text"
                 class="field-input"
                 formControlName="name"
+                maxlength="10"
                 placeholder="請輸入中文姓名"
               />
               @if (
@@ -94,7 +151,11 @@
                 type="number"
                 class="field-input"
                 formControlName="age"
-                placeholder="例如：22"
+                min="1"
+                max="120"
+                maxlength="3"
+                oninput="if(this.value.length>3) this.value=this.value.slice(0,3)"
+                placeholder="請填寫您的年齡（例如：22）"
               />
               @if (
                 runnerFormGroup.get("age")?.invalid &&
@@ -161,6 +222,7 @@
                 type="tel"
                 class="field-input"
                 formControlName="mobilePhone"
+                maxlength="10"
                 placeholder="例如：0912345678"
               />
               @if (
@@ -197,6 +259,7 @@
                 type="email"
                 class="field-input"
                 formControlName="email"
+                maxlength="100"
                 placeholder="例如：user@university.edu.tw"
               />
               @if (
@@ -233,6 +296,7 @@
                 type="text"
                 class="field-input"
                 formControlName="residentialAddress"
+                maxlength="100"
                 placeholder="請輸入現居居住地址"
               />
               @if (
@@ -331,12 +395,39 @@
           @if (survey.basicInfoRequirements.requireJobIndustry) {
             <div class="field-item">
               <label class="field-label">產業領域 <span class="req-star">*</span></label>
-              <input type="text" class="field-input" formControlName="jobIndustry" placeholder="例如：資訊科技業" />
+              <select formControlName="jobIndustry" class="field-select" (change)="onIndustryChange($event)">
+                <option value="" disabled selected>請選擇產業領域</option>
+                <option value="資訊科技／半導體軟體">資訊科技／半導體軟體</option>
+                <option value="金融財務／銀行保險">金融財務／銀行保險</option>
+                <option value="醫療保健／生物科技">醫療保健／生物科技</option>
+                <option value="製造工業／機械工程">製造工業／機械工程</option>
+                <option value="教育研究／學術機構">教育研究／學術機構</option>
+                <option value="批發零售／電子商務">批發零售／電子商務</option>
+                <option value="大眾傳播／行銷公關設計">大眾傳播／行銷公關設計</option>
+                <option value="建築營造／房地產">建築營造／房地產</option>
+                <option value="餐飲旅宿／觀光娛樂">餐飲旅宿／觀光娛樂</option>
+                <option value="公務行政／公營事業機構">公務行政／公營事業機構</option>
+                <option value="專業諮詢／法律會計顧問">專業諮詢／法律會計顧問</option>
+                <option value="交通運輸／倉儲物流">交通運輸／倉儲物流</option>
+                <option value="農林漁牧／能源環保">農林漁牧／能源環保</option>
+                <option value="其他">其他</option>
+              </select>
+              @if (isOtherIndustrySelected()) {
+                <input
+                  type="text"
+                  class="field-input field-input-other"
+                  [value]="customOtherIndustry()"
+                  (input)="onCustomIndustryInput($event)"
+                  placeholder="請在此輸入您的自訂產業領域名稱"
+                  maxlength="50"
+                  style="margin-top: 0.8rem;"
+                />
+              }
               @if (
                 runnerFormGroup.get("jobIndustry")?.invalid &&
                 runnerFormGroup.get("jobIndustry")?.touched
               ) {
-                <span class="field-error">此欄位為必填項目</span>
+                <span class="field-error">請選擇或填寫產業領域</span>
               }
             </div>
           }
@@ -390,14 +481,34 @@
               <div class="q-input-area">
                 @switch (q.type) {
                   @case ("t/f") {
-                    <div class="tf-options-row">
-                      <label class="option-pill-label">
-                        <input type="radio" [formControlName]="q.uid" value="true" />
-                        <span>是 (Yes)</span>
+                    <div class="tf-options-row" role="radiogroup" [attr.aria-label]="q.description">
+                      <label
+                        class="option-pill-label opt-yes"
+                        [class.selected]="runnerFormGroup.get(q.uid)?.value === 'true'"
+                        (click)="selectTfOption(q.uid, 'true')"
+                      >
+                        <input
+                          type="radio"
+                          [formControlName]="q.uid"
+                          [name]="'tf_radio_' + q.uid"
+                          [value]="'true'"
+                          [checked]="runnerFormGroup.get(q.uid)?.value === 'true'"
+                        />
+                        <span>是</span>
                       </label>
-                      <label class="option-pill-label">
-                        <input type="radio" [formControlName]="q.uid" value="false" />
-                        <span>否 (No)</span>
+                      <label
+                        class="option-pill-label opt-no"
+                        [class.selected]="runnerFormGroup.get(q.uid)?.value === 'false'"
+                        (click)="selectTfOption(q.uid, 'false')"
+                      >
+                        <input
+                          type="radio"
+                          [formControlName]="q.uid"
+                          [name]="'tf_radio_' + q.uid"
+                          [value]="'false'"
+                          [checked]="runnerFormGroup.get(q.uid)?.value === 'false'"
+                        />
+                        <span>否</span>
                       </label>
                     </div>
                   }
@@ -414,10 +525,11 @@
                   @case ("radio") {
                     <div class="choice-options-list">
                       @for (opt of q.options; track $index) {
-                        <label class="choice-option-label">
+                        <label class="choice-option-label" [class.selected]="runnerFormGroup.get(q.uid)?.value === opt">
                           <input
                             type="radio"
                             [formControlName]="q.uid"
+                            [name]="q.uid"
                             [value]="opt"
                           />
                           <span class="choice-text">{{ opt }}</span>
@@ -445,11 +557,16 @@
 
                   @case ("scale") {
                     <div class="scale-options-wrap">
-                      @for (scaleOpt of getScaleOptions(q.scaleType); track $index) {
-                        <label class="scale-option-pill">
+                      @for (scaleOpt of getScaleOptions(q); track $index) {
+                        <label
+                          class="scale-option-pill"
+                          [class.selected]="runnerFormGroup.get(q.uid)?.value === scaleOpt"
+                          (click)="selectScaleOption(q.uid, scaleOpt)"
+                        >
                           <input
                             type="radio"
                             [formControlName]="q.uid"
+                            [name]="q.uid"
                             [value]="scaleOpt"
                           />
                           <span class="scale-text">{{ scaleOpt }}</span>
@@ -500,5 +617,6 @@
     </div>
 
   </form>
+  }
   </div>
 </div>

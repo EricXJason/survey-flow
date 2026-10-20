@@ -1,6 +1,7 @@
 <button
   type="button"
   class="scroll-to-top-btn"
+  [class.visible]="isVisible()"
   (click)="onScrollToTop()"
   aria-label="回到網頁頂端"
   title="回到網頁頂端"

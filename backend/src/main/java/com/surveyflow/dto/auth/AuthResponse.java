@@ -14,19 +14,24 @@ package com.surveyflow.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthResponse {
 
-    /** 短期 JWT Access Token */
+    /** 單一標準 JWT Token */
+    private String token;
+
+    /** 向下相容 JWT Access Token */
     private String accessToken;
 
-    /** 長效 JWT Refresh Token */
+    /** 向下相容 JWT Refresh Token */
     private String refreshToken;
 
     /** Token 類型 (固定為 Bearer) */

@@ -12,7 +12,6 @@
 
 package com.surveyflow.repository;
 
-import com.surveyflow.common.enums.SurveyStatus;
 import com.surveyflow.entity.Survey;
 import com.surveyflow.entity.User;
 import org.springframework.data.domain.Page;
@@ -34,11 +33,11 @@ public interface SurveyRepository extends JpaRepository<Survey, Long> {
      * @param pageable 分頁參數
      * @return 符合條件之分頁列表
      */
-    @Query(value = "SELECT * FROM surveys s WHERE s.status = 'PUBLISHED' AND s.deleted_at IS NULL " +
+    @Query(value = "SELECT * FROM surveys s WHERE s.is_open = 1 AND s.is_public_to_lobby = 1 AND s.deleted_at IS NULL " +
                    "AND (:category IS NULL OR :category = '' OR s.category = :category) " +
                    "AND (:keyword IS NULL OR :keyword = '' OR LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
                    "     OR LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%')))",
-           countQuery = "SELECT COUNT(*) FROM surveys s WHERE s.status = 'PUBLISHED' AND s.deleted_at IS NULL " +
+           countQuery = "SELECT COUNT(*) FROM surveys s WHERE s.is_open = 1 AND s.is_public_to_lobby = 1 AND s.deleted_at IS NULL " +
                         "AND (:category IS NULL OR :category = '' OR s.category = :category) " +
                         "AND (:keyword IS NULL OR :keyword = '' OR LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
                         "     OR LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%')))",
@@ -67,12 +66,20 @@ public interface SurveyRepository extends JpaRepository<Survey, Long> {
     Optional<Survey> findByIdAndDeletedAtIsNullNative(@Param("id") Long id);
 
     /**
-     * 原生 SQL 管理者查詢全站所有問卷
+     * 原生 SQL 管理者查詢全站所有問卷 (包含公開與非公開/私人專案，排除已軟刪除，預設依建立時間倒序)
      * @param pageable 分頁參數
      * @return 全站所有問卷分頁列表
      */
-    @Query(value = "SELECT * FROM surveys WHERE deleted_at IS NULL",
+    @Query(value = "SELECT * FROM surveys WHERE deleted_at IS NULL ORDER BY created_at DESC",
            countQuery = "SELECT COUNT(*) FROM surveys WHERE deleted_at IS NULL",
            nativeQuery = true)
     Page<Survey> findAllSurveysForAdminNative(Pageable pageable);
+
+    /**
+     * 原生 SQL 查詢特定使用者所有未刪除問卷 ID 清單 (依建立時間由舊至新升冪排序，供計算該使用者個人問卷序號)
+     * @param userId 建立者 ID
+     * @return 問卷 ID 升冪清單
+     */
+    @Query(value = "SELECT id FROM surveys WHERE user_id = :userId AND deleted_at IS NULL ORDER BY created_at ASC, id ASC", nativeQuery = true)
+    java.util.List<Long> findSurveyIdsByUserIdOrderByCreatedAtAscNative(@Param("userId") Long userId);
 }

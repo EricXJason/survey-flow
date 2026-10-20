@@ -2,7 +2,7 @@
  * ============================================================================
  * 檔案名稱: api-client.service.ts
  * 所屬模組: 網路通訊服務模組 (HTTP API Client Module)
- * 責任描述: 負責前端與 Spring Boot 後端 (http://localhost:8080) 進行 RESTful 通訊，封裝雙 Token 認證、全域請求頭與標準回應轉換。
+ * 責任描述: 負責前端與 Spring Boot 後端 (http://localhost:8080) 進行 RESTful 通訊，封裝單一 JWT Token 認證、全域請求頭與標準回應轉換。
  * 架構分層: Service Layer / Network Infrastructure Layer
  * 聯動關係:
  *   - 上游依賴: @angular/common/http (HttpClient), ./user-state.service
@@ -73,6 +73,15 @@ export class ApiClientService {
    */
   public put<T>(endpoint: string, body: unknown): Observable<ApiResponse<T>> {
     return this.http.put<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, body, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  /**
+   * PATCH 請求封裝
+   */
+  public patch<T>(endpoint: string, body?: unknown): Observable<ApiResponse<T>> {
+    return this.http.patch<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, body ?? {}, {
       headers: this.getHeaders(),
     });
   }

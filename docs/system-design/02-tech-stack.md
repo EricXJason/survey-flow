@@ -1,25 +1,25 @@
 # 02. 技術選型矩陣與版本理由 (Technology Stack & Decisions)
 
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
-> **系統環境**: Node.js 24.x, TypeScript 5.6.x, Angular 19.x  
-> **更新日期**: 2026-10-06  
+> **系統環境**: Node.js 24.18.0, TypeScript 5.6.2, Angular 19.0.0, Java 21.0.12, Spring Boot 4.1.1, MySQL 8.0.36  
+> **更新日期**: 2026-10-15  
 
 ---
 
-## 1. 核心技術選型矩陣
+## 1. 核心技術選型矩陣 (絕對明確版本號)
 
-| 類別 / 領域 | 選定技術 / 工具 | 版本號 | 選型權衡與架構優勢 |
+| 類別 / 領域 | 選定技術 / 工具 | 絕對明確版本號 | 選型權衡與架構優勢 |
 | :--- | :--- | :--- | :--- |
-| **前端核心框架** | Angular | `^19.0.0` | 採用現代 Standalone Components 獨立架構，徹底廢除 NgModule 繁瑣宣告；整合 Angular Signals 實現細粒度高性能響應式更新。 |
-| **語言與型別系統** | TypeScript | `~5.6.2` | 提供最高等級強型別合約保障，徹底杜絕執行期 Undefined 存取異常，支援進階型別推導與條件介面。 |
-| **狀態管理機制** | Angular Signals & RxJS | Signals + `~7.8.0` | 區域與共享狀態採用 Signals 原生追蹤，複雜事件串流與非同步彈窗交互採用 RxJS Observable，兼顧效能與開發彈性。 |
-| **UI 元件與佈局庫** | Angular Material & CDK | `^19.2.19` | 採用 Material Table、Paginator、Sort 提供具備在地化語言支援的後台資料表；導入 `@angular/cdk/drag-drop` 實現問卷題型流暢拖曳排序。 |
-| **表單核心驅動** | Angular Reactive Forms | `^19.0.0` | 支援高階動態 FormArray 與 FormGroup 巢狀陣列動態擴充，精準監聽 valueChanges 達成條件跳題與即時防呆。 |
-| **樣式與設計系統** | SCSS + CSS 自訂變數 | 原生 SCSS | 導入模組化 SCSS 體系 (`common.scss`, `variables.scss`, `styles.scss`)，建立高對比深色賽博 HUD 視覺規範與流動微動態。 |
-| **建置與打包工具** | Angular CLI (Vite + esbuild) | `^19.0.5` | 底層基於 esbuild 與 Vite 核心，提供極速熱重載 (HMR) 與體積高度壓縮之現代化 Bundle 產物。 |
-| **套件管理器** | pnpm / npm | Node 24.x | 支援高相容性依賴鎖定與現代化套件隔離機制。 |
-| **後端核心框架 (目標)** | Java / Spring Boot | `Java 21` / `3.3.x` | 業界標準企業級後端，提供高併發處理能力、靜態型別安全、Spring Security 嚴密權限防護與 Spring Data JPA 交易隔離。 |
-| **持久化關聯資料庫 (目標)** | MySQL | `8.0+` | 業界主流 ACID 關聯式資料庫，具備優異的二級索引查詢、聚合作答統計效能 (COUNT, AVG, GROUP BY) 與外鍵完整性約束。 |
+| **前端核心框架** | Angular | `19.0.0` | 採用現代 Standalone Components 獨立架構，徹底廢除 NgModule 繁瑣宣告；整合 Angular Signals 實現細粒度高性能響應式更新。 |
+| **語言與型別系統** | TypeScript | `5.6.2` | 提供最高等級強型別合約保障，徹底杜絕執行期 Undefined 存取異常，支援進階型別推導與條件介面。 |
+| **狀態管理機制** | Angular Signals & RxJS | Signals + `7.8.0` | 區域與共享狀態採用 Signals 原生追蹤，複雜事件串流與非同步彈窗交互採用 RxJS Observable，兼顧效能與開發彈性。 |
+| **UI 元件與佈局庫** | Angular Material & CDK | `19.2.19` | 採用 Material Table、Paginator、Sort 提供具備在地化語言支援的後台資料表；導入 `@angular/cdk/drag-drop` 實現問卷題型流暢拖曳排序。 |
+| **表單核心驅動** | Angular Reactive Forms | `19.0.0` | 支援高階動態 FormArray 與 FormGroup 巢狀陣列動態擴充，精準監聽 valueChanges 達成條件跳題與即時防呆。 |
+| **樣式與設計系統** | SCSS + CSS 自訂變數 | 原生 SCSS | 導入模組化 SCSS 體系 (`common.scss`, `variables.scss`, `styles.scss`)，建立去 AI 化頂級設計系統與 Editorial Typography。 |
+| **建置與打包工具** | Angular CLI (Vite + esbuild) | `19.0.5` | 底層基於 esbuild 與 Vite 核心，提供極速熱重載 (HMR) 與體積高度壓縮之現代化 Bundle 產物。 |
+| **套件管理器** | pnpm / npm | `Node.js 24.18.0` | 支援高相容性依賴鎖定與現代化套件隔離機制。 |
+| **後端核心框架** | Java / Spring Boot | `Java 21.0.12` / `Spring Boot 4.1.1` | 業界標準企業級後端，提供高併發處理能力、靜態型別安全、Spring Security 嚴密權限防護與 Spring Data JPA 交易隔離。 |
+| **持久化關聯資料庫** | MySQL | `8.0.36` | 業界主流 ACID 關聯式資料庫，具備優異的二級索引查詢、聚合作答統計效能 (COUNT, AVG, GROUP BY) 與外鍵完整性約束。 |
 
 ---
 

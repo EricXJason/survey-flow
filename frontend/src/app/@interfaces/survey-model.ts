@@ -51,6 +51,7 @@ export interface SurveyTimeLimit {
  * 問卷選項配置與解鎖關聯邏輯
  */
 export interface SurveyOptionItem {
+  id?: number;
   text: string;
   enableUnlockQuestion: boolean;
   unlockTargetUid: string;
@@ -69,6 +70,8 @@ export interface SurveyQuestion {
   description: string;
 
   scaleType?: string;
+  minRating?: number;
+  maxRating?: number;
 
   timeValue?: string;
   hasTimeLimit?: boolean;
@@ -95,6 +98,10 @@ export interface SurveyPayload {
   title: string;
   category: string;
   isPublished: boolean;
+  /** 是否公開發布至問卷大廳供所有人瀏覽探索 */
+  isPublicToLobby?: boolean;
+  /** 是否開放受訪者填答（關閉時即使持有連結亦不可填寫） */
+  isOpen?: boolean;
   hasTimeLimit: boolean;
   timeLimit?: SurveyTimeLimit;
   hasDescription: boolean;
@@ -113,6 +120,8 @@ export interface SurveyAnswerItem {
   questionId: number;
   type: string;
   answer: string | string[] | boolean | number | null;
+  selectedOptionId?: number | null;
+  selectedOptionIds?: number[] | null;
 }
 
 /**
@@ -145,6 +154,7 @@ export interface SurveyBasicInfoAnswers {
  * 受訪者送出問卷完整作答酬載
  */
 export interface SurveySubmissionPayload {
+  surveyId?: string | number;
   surveyTitle: string;
   surveyCategory: string;
   submittedAt: string;
@@ -157,12 +167,18 @@ export interface SurveySubmissionPayload {
  */
 export interface SurveySummaryItem {
   id: string;
+  /** 該使用者個人問卷編號 (#1, #2, #3...) */
+  userSurveyNumber?: number;
   title: string;
   category: string;
   authorId?: string;
+  /** 問卷發起人真實姓名或帳號 (供管理員全站檢視) */
+  authorName?: string;
   startDate: string;
   endDate: string;
   isPublished?: boolean;
+  isPublicToLobby?: boolean;
+  isOpen?: boolean;
 }
 
 /**

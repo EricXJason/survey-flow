@@ -74,27 +74,30 @@
   gap: 0.6rem;
   font-size: 1.25rem;
   font-weight: 700;
-  padding: 0.3rem 0.85rem;
+  padding: 0.35rem 1rem;
   border-radius: var(--r-full);
-  background: var(--c-primary-50);
-  color: var(--c-primary-700);
-  border: 1px solid var(--c-primary-200);
+  background: var(--c-neutral-100, #f1f5f9);
+  color: var(--c-neutral-800, #1e293b);
+  border: 1px solid var(--c-border, #e2e8f0);
   width: fit-content;
+  transition: all 0.2s ease;
 
   .status-dot {
     width: 0.75rem;
     height: 0.75rem;
     border-radius: 50%;
-    background: var(--c-primary-600);
+    background: var(--c-neutral-500, #64748b);
   }
 
   &.preview-mode {
-    background: #f5f3ff;
-    color: #7c3aed;
-    border-color: #ddd6fe;
+    background: #0f172a;
+    color: #ffffff;
+    border-color: #0f172a;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
 
     .status-dot {
-      background: #7c3aed;
+      background: #10b981;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
     }
   }
 }
@@ -142,15 +145,15 @@
   }
 
   &.btn-mode-active {
-    background: #7c3aed;
+    background: #0f172a;
     color: #ffffff !important;
-    border-color: #7c3aed;
+    border-color: #0f172a;
 
     &:hover, &:focus-visible {
-      background: #6d28d9 !important;
-      border-color: #6d28d9 !important;
+      background: #1e293b !important;
+      border-color: #1e293b !important;
       color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
     }
   }
 }
@@ -174,7 +177,7 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    border-color: rgba(37, 99, 235, 0.25);
+    border-color: var(--c-neutral-400, #9ca3af);
     box-shadow: var(--shadow-card-hover);
   }
 }
@@ -196,95 +199,186 @@
 .card-header-top {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  margin-bottom: 0.5rem;
+  gap: var(--sp-3);
+  margin-bottom: 0.6rem;
 }
 
+/* 幾段幾大尺寸指示膠囊 */
 .stage-pill {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.8rem;
-  font-size: 1.15rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  gap: 0.45rem;
+  padding: 0.35rem 1.05rem 0.35rem 0.95rem;
   border-radius: var(--r-full);
-  background: var(--step-1-bg);
-  color: var(--step-1-color);
-  border: 1px solid var(--step-1-border);
+  border: 1.5px solid transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.15s ease;
 
-  &.stage-pill-indigo {
+  .stage-prefix {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    opacity: 0.85;
+  }
+
+  .stage-number {
+    font-size: 1.55rem;
+    font-weight: 900;
+    line-height: 1;
+    font-family: var(--f-mono, monospace);
+    letter-spacing: -0.02em;
+  }
+
+  &.stage-pill-1 {
+    background: var(--step-1-bg);
+    color: var(--step-1-text);
+    border-color: var(--step-1-border);
+  }
+
+  &.stage-pill-2 {
     background: var(--step-2-bg);
-    color: var(--step-2-color);
+    color: var(--step-2-text);
     border-color: var(--step-2-border);
   }
 
-  &.stage-pill-emerald {
+  &.stage-pill-3 {
     background: var(--step-3-bg);
-    color: var(--step-3-color);
+    color: var(--step-3-text);
     border-color: var(--step-3-border);
   }
 
-  &.stage-pill-amber {
+  &.stage-pill-4 {
     background: var(--step-4-bg);
-    color: var(--step-4-color);
+    color: var(--step-4-text);
     border-color: var(--step-4-border);
   }
 }
 
-.stage-badge-req {
-  font-size: 1.15rem;
+/* 階段屬性微膠囊 (與主題同系，消除刺眼紅配綠與粉紅膏藥) */
+.stage-attr-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.35rem 0.95rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fee2e2;
-  padding: 0.2rem 0.65rem;
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+  .attr-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  &.stage-attr-1 {
+    background: #f0f7ff;
+    color: #1d4ed8;
+    border-color: #dbeafe;
+
+    .attr-dot {
+      background: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+  }
+
+  &.stage-attr-2 {
+    background: #f0fdfa;
+    color: #0f766e;
+    border-color: #ccfbf1;
+
+    .attr-dot {
+      background: #0d9488;
+      box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
+    }
+  }
+
+  &.stage-attr-3 {
+    background: #faf5ff;
+    color: #6d28d9;
+    border-color: #ede9fe;
+
+    .attr-dot {
+      background: #7c3aed;
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+    }
+  }
+
+  &.stage-attr-4 {
+    background: #fffbeb;
+    color: #b45309;
+    border-color: #fef3c7;
+
+    .attr-dot {
+      background: #d97706;
+      box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.2);
+    }
+  }
+}
+
+/* 相容既有標籤類別備用 */
+.stage-badge-req {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #f0f7ff;
+  border: 1px solid #dbeafe;
+  padding: 0.25rem 0.75rem;
   border-radius: var(--r-full);
 }
 
 .stage-badge-opt {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 600;
   color: var(--c-neutral-600);
   background: var(--c-neutral-100);
   border: 1px solid var(--c-neutral-200);
-  padding: 0.2rem 0.65rem;
+  padding: 0.25rem 0.75rem;
   border-radius: var(--r-full);
 }
 
 #stage-core-info {
-  border-top: 3.5px solid var(--step-1-color);
+  border-top: 4px solid var(--step-1-color);
 }
 
 #stage-demographics {
-  border-top: 3.5px solid var(--step-2-color);
+  border-top: 4px solid var(--step-2-color);
 }
 
 #stage-publishing {
-  border-top: 3.5px solid var(--step-4-color);
+  border-top: 4px solid var(--step-4-color);
 }
 
 .card-header-icon {
-  width: 4.4rem;
-  height: 4.4rem;
+  width: 4.8rem;
+  height: 4.8rem;
   border-radius: var(--r-md);
   background: var(--step-1-bg);
   color: var(--step-1-color);
-  border: 1px solid var(--step-1-border);
+  border: 1.5px solid var(--step-1-border);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 
   svg {
-    width: 2.2rem;
-    height: 2.2rem;
+    width: 2.4rem;
+    height: 2.4rem;
   }
 
   &.demographics-icon {
     background: var(--step-2-bg) !important;
     color: var(--step-2-color) !important;
     border-color: var(--step-2-border) !important;
+  }
+
+  &.questions-icon {
+    background: var(--step-3-bg) !important;
+    color: var(--step-3-color) !important;
+    border-color: var(--step-3-border) !important;
   }
 
   &.publishing-icon {
@@ -596,9 +690,12 @@
 }
 
 .uploaded-preview-img {
-  max-height: 10rem;
-  max-width: 18rem;
-  object-fit: cover;
+  max-height: 12rem;
+  max-width: 20rem;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  background: var(--c-surface-sunken);
   border-radius: var(--r-sm);
   border: 1px solid var(--c-border);
 }
@@ -619,6 +716,26 @@
   justify-content: space-between;
   gap: var(--sp-4);
   flex-wrap: wrap;
+  padding: clamp(var(--sp-4), 3vw, var(--sp-6));
+  background: #ffffff;
+  border: 1.5px solid var(--c-border);
+  border-top: 4px solid var(--step-3-color);
+  border-radius: var(--r-xl);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.qs-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex: 1;
+  min-width: 26rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
 }
 
 .qs-header-info {
@@ -628,8 +745,8 @@
 }
 
 .qs-title {
-  font-size: 2.2rem;
-  font-weight: 800;
+  font-size: 1.85rem;
+  font-weight: 700;
   color: var(--c-neutral-900);
   margin: 0;
 }
@@ -680,8 +797,8 @@
 
   &:hover {
     box-shadow: var(--shadow-card-hover);
-    border-color: rgba(37, 99, 235, 0.25);
-    border-left-color: var(--c-primary-600);
+    border-color: var(--c-neutral-400, #9ca3af);
+    border-left-color: #0f172a;
   }
 
   &.is-collapsed {
@@ -742,12 +859,60 @@
 }
 
 .q-type-badge {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--c-neutral-700);
-  background: var(--c-neutral-100);
-  padding: 0.3rem 0.8rem;
-  border-radius: var(--r-sm);
+  font-size: 1.15rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--r-xs, 2px);
+  white-space: nowrap;
+  line-height: 1.35;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+
+  // 單選題：沉穩藍 (Blue)
+  &.q-type-radio {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+  }
+
+  // 複選題：藍綠青 (Teal)
+  &.q-type-multiRadio,
+  &.q-type-checkbox {
+    background: #f0fdfa;
+    color: #0f766e;
+    border-color: #99f6e4;
+  }
+
+  // 是非題：翡翠綠 (Emerald)
+  &.q-type-t\/f,
+  &.q-type-boolean {
+    background: #ecfdf5;
+    color: #047857;
+    border-color: #a7f3d0;
+  }
+
+  // 量表題：琥珀金 (Amber)
+  &.q-type-scale {
+    background: #fefce8;
+    color: #a16207;
+    border-color: #fef08a;
+  }
+
+  // 文字簡答：典雅紫 (Violet)
+  &.q-type-text {
+    background: #faf5ff;
+    color: #7e22ce;
+    border-color: #e9d5ff;
+  }
+
+  // 時間與日期：板岩青 (Slate)
+  &.q-type-time,
+  &.q-type-date {
+    background: #f8fafc;
+    color: #334155;
+    border-color: #cbd5e1;
+  }
 }
 
 .q-req-badge {
@@ -1031,6 +1196,90 @@
 .q-footer-settings {
   padding-top: var(--sp-3);
   border-top: 1px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.question-insert-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: 1.2rem 0;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+
+    .divider-line {
+      border-color: var(--c-primary-400);
+    }
+
+    .btn-insert-between {
+      background: var(--c-primary-50);
+      color: #0f172a;
+      border-color: var(--c-primary-400);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+      transform: scale(1.03);
+    }
+  }
+
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    border-bottom: 1.5px dashed var(--c-border);
+    transition: border-color 0.2s ease;
+  }
+
+  .btn-insert-between {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    padding: 0.4rem 1.2rem;
+    border-radius: 9999px;
+    background: #ffffff;
+    color: var(--c-neutral-600);
+    border: 1px solid var(--c-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+}
+
+.questions-bottom-actions {
+  margin-top: var(--sp-4);
+  display: flex;
+  justify-content: center;
+
+  .btn-add-question-bottom {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1rem 1.6rem;
+    background: #ffffff;
+    border: 1.5px dashed var(--c-border-strong, #9ca3af);
+    border-radius: var(--r-lg);
+    color: #0f172a;
+    font-size: 1.4rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--c-neutral-100, #f1f5f9);
+      border-color: #0f172a;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+  }
 }
 
 /* =====================================================
@@ -1090,17 +1339,20 @@
   display: flex;
   align-items: center;
   gap: var(--sp-4);
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: var(--r-xl);
+  background: #ffffff;
+  border: 1px solid var(--c-border, #e2e8f0);
+  border-left: 4px solid #0f172a;
+  border-radius: var(--r-md);
   padding: clamp(var(--sp-4), 3vw, var(--sp-6));
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 
   .banner-icon {
     width: 4.4rem;
     height: 4.4rem;
-    border-radius: var(--r-lg);
-    background: #dbeafe;
-    color: var(--c-brand-700);
+    border-radius: var(--r-md);
+    background: var(--c-neutral-100, #f1f5f9);
+    border: 1px solid var(--c-border, #e2e8f0);
+    color: #0f172a;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1115,17 +1367,18 @@
 
   .banner-text {
     h3 {
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: #1e40af;
-      margin: 0 0 0.3rem;
+      font-size: 1.7rem;
+      font-weight: 750;
+      color: #0f172a;
+      margin: 0 0 0.4rem;
+      letter-spacing: -0.01em;
     }
 
     p {
       font-size: 1.4rem;
-      color: #1e3a8a;
+      color: var(--c-neutral-600, #475569);
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.6;
     }
   }
 }
@@ -1135,6 +1388,12 @@
   border: none;
   box-shadow: none;
   padding: 0;
+
+  ::ng-deep .runner-shell {
+    padding-block-start: 0;
+    padding-inline: 0;
+    background: transparent !important;
+  }
 }
 
 /* 通用工具間距樣式 */

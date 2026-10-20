@@ -27,27 +27,24 @@ import java.util.Date;
 public class TokenProvider {
 
     private final SecretKey key;
-    private final long accessTokenExpirationMs;
-    private final long refreshTokenExpirationMs;
+    private final long tokenExpirationMs;
 
     public TokenProvider(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-token-expiration-ms:900000}") long accessTokenExpirationMs,
-            @Value("${jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMs) {
+            @Value("${jwt.secret:SurveyFlowSecretKeyForJwtAuthenticationMustBeAtLeast256BitsLong2026!}") String secret,
+            @Value("${jwt.expiration-ms:86400000}") long tokenExpirationMs) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.accessTokenExpirationMs = accessTokenExpirationMs;
-        this.refreshTokenExpirationMs = refreshTokenExpirationMs;
+        this.tokenExpirationMs = tokenExpirationMs;
     }
 
     /**
-     * 簽發短期 Access Token (15 分鐘)
+     * 簽發單一高安全 JWT Token (預設 24 小時，兼顧安全性與簡化維護)
      * @param username 使用者帳號
-     * @param role 角色名稱
-     * @return JWT 字串
+     * @param role 角色名稱 (ROLE_USER, ROLE_ADMIN)
+     * @return 簽署完成之 JWT 憑證字串
      */
-    public String generateAccessToken(String username, String role) {
+    public String generateToken(String username, String role) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + accessTokenExpirationMs);
+        Date expiryDate = new Date(now.getTime() + tokenExpirationMs);
 
         return Jwts.builder()
                 .subject(username)
@@ -58,22 +55,6 @@ public class TokenProvider {
                 .compact();
     }
 
-    /**
-     * 簽發長效 Refresh Token (7 天)
-     * @param username 使用者帳號
-     * @return JWT 字串
-     */
-    public String generateRefreshToken(String username) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + refreshTokenExpirationMs);
-
-        return Jwts.builder()
-                .subject(username)
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(key)
-                .compact();
-    }
 
     /**
      * 從 JWT 解析使用者帳號 (Subject)

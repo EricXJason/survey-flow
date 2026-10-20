@@ -16,6 +16,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { UserStateService } from '../../@services/user-state.service';
 import { UserEmitterService } from '../../@services/user-emitter.service';
+import { CAREER_LABEL_MAP } from '../../@interfaces/account-model';
 
 /**
  * 頂部全域導航列組件
@@ -54,18 +55,10 @@ export class HeaderComponent {
 
   public readonly userRole = computed(() => {
     const r = this._userState.userProfile().role;
-    const roleMap: Record<string, string> = {
-      student: '學生',
-      teacher: '教師',
-      researcher: '研究人員',
-      employee: '上班族',
-      retired: '已退休',
-      other: '其他',
-    };
-    if (r && roleMap[r]) {
-      return roleMap[r];
+    if (r && CAREER_LABEL_MAP[r]) {
+      return CAREER_LABEL_MAP[r];
     }
-    return this.isAdmin() ? '管理員' : (r || '一般會員');
+    return this.isAdmin() ? '系統管理員' : '一般會員';
   });
 
   /** 計算屬性：使用者頭像縮寫字符（擷取姓名首字） */
@@ -86,12 +79,14 @@ export class HeaderComponent {
   }
 
   /**
-   * 監聽鍵盤 ESC 鍵按下事件 (window:keydown.escape)
+   * 監聽鍵盤 ESC 鍵按下事件 (window:keydown)
    * 符合 WCAG 無障礙鍵盤規範，當手機選單開啟時，按下 ESC 鍵即刻關閉選單。
+   * @param event 鍵盤按鍵事件
    */
-  @HostListener('window:keydown.escape')
-  protected onEscape(): void {
-    if (this.isMobileMenuOpen()) {
+  @HostListener('window:keydown', ['$event'])
+  protected onEscape(event: KeyboardEvent): void {
+    if ((event.key === 'Escape' || event.key === 'Esc') && this.isMobileMenuOpen()) {
+      event.preventDefault();
       this.closeMobileMenu();
     }
   }

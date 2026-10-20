@@ -16,6 +16,7 @@ package com.surveyflow.controller;
 import com.surveyflow.common.ApiResponse;
 import com.surveyflow.dto.analytics.SurveyAnalyticsResponse;
 import com.surveyflow.dto.survey.SurveySummaryResponse;
+import com.surveyflow.dto.user.UserProfileResponse;
 import com.surveyflow.entity.Survey;
 import com.surveyflow.entity.User;
 import com.surveyflow.repository.SubmissionRepository;
@@ -23,6 +24,7 @@ import com.surveyflow.repository.SurveyRepository;
 import com.surveyflow.repository.UserRepository;
 import com.surveyflow.service.AnalyticsService;
 import com.surveyflow.service.SurveyService;
+import com.surveyflow.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -52,16 +54,19 @@ public class AdminController {
     private final SurveyService surveyService;
     private final AnalyticsService analyticsService;
 
+    private final UserService userService;
+
     /**
      * 查詢全站會員分頁列表 (Admin 專屬)
      * @param pageable 分頁參數
      * @return 會員分頁資料
      */
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<Page<User>>> getAllUsers(
-            @PageableDefault(size = 15, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity<ApiResponse<Page<UserProfileResponse>>> getAllUsers(
+            @PageableDefault(size = 100, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<User> users = userRepository.findAllUsersForAdminNative(pageable);
-        return ResponseEntity.ok(ApiResponse.ok(users, "成功取得全站會員名冊"));
+        Page<UserProfileResponse> responsePage = users.map(userService::convertToProfileResponse);
+        return ResponseEntity.ok(ApiResponse.ok(responsePage, "成功取得全站會員名冊"));
     }
 
     /**
@@ -76,35 +81,40 @@ public class AdminController {
             @RequestParam String status) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
-        user.setStatus(status);
+        user.setStatus(status.toUpperCase());
         userRepository.save(user);
         log.info("管理員更新會員狀態: userId={}, status={}", userId, status);
         return ResponseEntity.ok(ApiResponse.ok("會員狀態已成功更新"));
     }
 
     /**
-     * 查詢全站所有問卷清單 (Admin 專屬)
+     * 管理員刪除或停權特定會員
+     * @param userId 會員識別碼
+     * @return 操作確認回應
+     */
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
+        if (user.getRole() == com.surveyflow.common.enums.RoleType.ROLE_ADMIN) {
+            throw new IllegalArgumentException("系統最高管理員帳號受保護，嚴禁刪除");
+        }
+        user.setDeletedAt(LocalDateTime.now());
+        user.setStatus("DELETED");
+        userRepository.save(user);
+        log.info("管理員已將會員軟刪除: userId={}", userId);
+        return ResponseEntity.ok(ApiResponse.ok("會員帳號已成功移除"));
+    }
+
+    /**
+     * 查詢全站所有問卷清單 (Admin 專屬，包含公開與非公開/私人問卷，完整攜帶雙狀態維度)
      * @param pageable 分頁參數
      * @return 全站問卷列表
      */
     @GetMapping("/surveys")
     public ResponseEntity<ApiResponse<Page<SurveySummaryResponse>>> getAllSurveys(
-            @PageableDefault(size = 15, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<Survey> page = surveyRepository.findAllSurveysForAdminNative(pageable);
-        Page<SurveySummaryResponse> responsePage = page.map(s -> SurveySummaryResponse.builder()
-                .id(s.getId())
-                .title(s.getTitle())
-                .description(s.getDescription())
-                .category(s.getCategory())
-                .status(s.getStatus())
-                .authorName(s.getCreator() != null ? s.getCreator().getFullName() : "未知")
-                .startDate(s.getStartDate())
-                .endDate(s.getEndDate())
-                .viewCount(s.getViewCount())
-                .submissionCount(submissionRepository.countBySurveyIdNative(s.getId()))
-                .questionCount(s.getQuestions() != null ? s.getQuestions().size() : 0)
-                .createdAt(s.getCreatedAt())
-                .build());
+            @PageableDefault(size = 100) Pageable pageable) {
+        Page<SurveySummaryResponse> responsePage = surveyService.getAllSurveysForAdmin(pageable);
         return ResponseEntity.ok(ApiResponse.ok(responsePage, "成功取得全站問卷列表"));
     }
 

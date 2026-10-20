@@ -12,15 +12,16 @@
 
 package com.surveyflow.dto.survey;
 
-import com.surveyflow.common.enums.SurveyStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,8 +30,10 @@ public class SurveySummaryResponse {
     private Long id;
     private String title;
     private String description;
+    private String coverImageUrl;
     private String category;
-    private SurveyStatus status;
+    private Boolean isPublicToLobby;
+    private Boolean isOpen;
     private String authorName;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
@@ -38,4 +41,7 @@ public class SurveySummaryResponse {
     private Long submissionCount;
     private Integer questionCount;
     private LocalDateTime createdAt;
+
+    /** 該會員個人專案之問卷編號 (從 1 起算之個人序號，非全站全局 ID) */
+    private Integer userSurveyNumber;
 }

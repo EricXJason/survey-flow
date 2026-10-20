@@ -1,158 +1,193 @@
+/**
+ * ============================================================================
+ * 檔案名稱: footer.component.scss
+ * 所屬模組: Presentation Layer / Global Footer Styles
+ * 責任描述: 學術研究中性頁尾樣式 (Academic Colophon Styles)
+ *           簡約紙本線條、等寬規格指示與實體環境絕對精確版本號展示
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens)
+ *   - 下游消費: footer.component.html
+ * ============================================================================
+ */
+
 :host {
   display: block;
 }
 
-/* =====================================================
-   網站全域頁尾規範（現代 SaaS 淺色簡約標準風格）
-   ===================================================== */
 .site-footer {
   background: #ffffff;
   color: var(--c-neutral-600);
-  border-top: 1.5px solid var(--c-border);
+  border-top: 1px solid var(--c-border);
   position: relative;
-  overflow: hidden;
 }
 
-/* ── 頁尾導航網格 ── */
 .footer-main {
-  padding-top: clamp(var(--sp-10), 5vw, var(--sp-14));
-  padding-bottom: clamp(var(--sp-10), 5vw, var(--sp-14));
+  padding-block: clamp(2.4rem, 3.2vw, 3.6rem);
 }
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 2.2fr 1fr 1fr 1fr;
-  gap: clamp(var(--sp-8), 4vw, var(--sp-12));
+  grid-template-columns: 2.2fr 1fr 1fr;
+  gap: clamp(2.8rem, 4vw, 4.8rem);
 
-  @media (max-width: 1080px) {
-    grid-template-columns: 1.6fr 1fr 1fr;
+  /* 平板中型視窗 (641px ~ 1024px)：品牌置頂，導航雙欄對稱 */
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.8rem 3.6rem;
 
-    .footer-col:last-child {
-      grid-column: 2 / span 2;
+    .footer-col-brand {
+      grid-column: 1 / -1;
+      max-width: 58rem;
     }
   }
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: var(--sp-8);
+  /* 手機窄螢幕 (<= 640px) */
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem 1.6rem;
 
-    .footer-col:last-child {
-      grid-column: auto;
+    .footer-col-brand {
+      grid-column: 1 / -1;
+      margin-bottom: 0.4rem;
+    }
+
+    .footer-col-features {
+      grid-column: 1;
+    }
+
+    .footer-col-member {
+      grid-column: 2;
     }
   }
 }
 
-/* ── 品牌資訊欄 ── */
+/* =====================================================
+   1. 品牌宗旨資訊欄
+   ===================================================== */
 .footer-col-brand {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: var(--sp-3);
 
   .footer-brand-link {
-    display: inline-block;
-    margin-bottom: var(--sp-4);
     text-decoration: none;
   }
 
-  .footer-logo {
-    height: 3.2rem;
-    width: auto;
-    display: block;
-    transition: opacity 0.2s ease;
+  .footer-brand-title {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
 
-    &:hover {
-      opacity: 0.85;
+    .f-brand-name {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--c-neutral-900);
+
+      .f-brand-serif {
+        color: var(--c-brand-600);
+      }
+    }
+
+    .f-brand-sub {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--c-neutral-500);
+      letter-spacing: 0.1em;
+      margin-top: 0.2rem;
     }
   }
 
   .brand-desc {
-    font-size: 1.4rem;
-    line-height: 1.7;
-    color: var(--c-neutral-500);
-    max-width: 32ch;
+    font-size: 1.35rem;
+    line-height: 1.65;
+    color: var(--c-neutral-600);
+    max-width: 38ch;
     margin: 0;
   }
 }
 
-/* ── 站內導航欄位 ── */
+.system-env-strip {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.1rem;
+  color: var(--c-neutral-500);
+  background: var(--c-neutral-50);
+  border: 1px solid var(--c-border);
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--r-xs);
+  margin-top: 0.4rem;
+
+  .env-item {
+    font-weight: 600;
+  }
+
+  .env-sep {
+    color: var(--c-neutral-300);
+  }
+}
+
+/* =====================================================
+   2. 導航欄位
+   ===================================================== */
 .footer-col {
   .footer-nav-title {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
     font-weight: 700;
     color: var(--c-neutral-900);
-    letter-spacing: 0.02em;
-    margin-bottom: var(--sp-4);
-    position: relative;
+    letter-spacing: 0.04em;
+    margin: 0 0 1.4rem 0;
     padding-bottom: 0.6rem;
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 2.2rem;
-      height: 2.5px;
-      background: var(--c-brand-600);
-      border-radius: 1px;
-    }
+    border-bottom: 1px solid var(--c-border);
   }
 
   .footer-links {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
     list-style: none;
     padding: 0;
     margin: 0;
-  }
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
 
-  a {
-    font-size: 1.35rem;
-    color: var(--c-neutral-600);
-    text-decoration: none;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    position: relative;
-    width: fit-content;
-
-    &:hover {
-      color: var(--c-brand-600);
-      transform: translateX(3px);
+    li a {
+      font-size: 1.35rem;
+      color: var(--c-neutral-600);
       text-decoration: none;
-    }
+      transition: color var(--transition-fast);
 
-    &:focus-visible {
-      outline: 2px solid var(--c-brand-500);
-      outline-offset: 3px;
-      border-radius: var(--r-sm);
+      &:hover {
+        color: var(--c-brand-600);
+        text-decoration: underline;
+      }
     }
   }
 }
 
-/* ── 頁尾版權列 ── */
+/* =====================================================
+   3. 頁尾底標與執行環境規格列
+   ===================================================== */
 .footer-bottom {
   border-top: 1px solid var(--c-border);
-  padding-block: var(--sp-4);
+  padding-block: 1.8rem;
   background: var(--c-neutral-50);
 }
 
 .footer-bottom-inner {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: var(--sp-3);
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    text-align: center;
-    gap: var(--sp-3);
-  }
+  justify-content: center;
+  text-align: center;
+  width: 100%;
 }
 
 .footer-copyright {
   font-size: 1.25rem;
+  font-weight: 500;
   color: var(--c-neutral-500);
+  letter-spacing: 0.03em;
   margin: 0;
+  text-align: center;
 }
+

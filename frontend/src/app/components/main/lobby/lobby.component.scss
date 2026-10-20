@@ -1,696 +1,388 @@
+/**
+ * ============================================================================
+ * 檔案名稱: lobby.component.scss
+ * 所屬模組: Presentation Layer / Survey Lobby Styles
+ * 責任描述: 公開問卷大廳樣式 (Public Survey Lobby Styles)
+ *           以黑白純淨風格為主、細節點綴，嚴格遵守 RWD 表格零橫向拖曳
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens)
+ *   - 下游消費: lobby.component.html
+ * ============================================================================
+ */
+
 :host {
   display: block;
   min-height: calc(100vh - var(--header-h) - 20rem);
-  background: var(--c-surface);
+  background: var(--c-bg, #fbfbfa);
 }
 
 /* =====================================================
-   大廳首頁橫幅區塊
+   1. 大廳頁頭區塊
    ===================================================== */
-.lobby-hero {
-  position: relative;
-  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+.lobby-header-banner {
+  background: #ffffff;
   border-bottom: 1px solid var(--c-border);
-  padding-block: clamp(var(--sp-8), 5vw, var(--sp-14));
-  overflow: hidden;
+  padding-block: clamp(3.6rem, 5vw, 5.6rem);
 }
 
-.lobby-hero-inner {
-  position: relative;
-  z-index: 1;
+.lobby-header-inner {
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
 }
 
-.lobby-hero-copy {
+.lobby-header-copy {
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  max-width: 72ch;
+  max-width: 76ch;
 }
 
-.lobby-badge {
+.lobby-label-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.8rem;
-  background: #ffffff;
-  border: 1px solid var(--c-border);
-  border-radius: var(--r-full);
-  padding: 0.4rem 1.3rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  width: fit-content;
-}
-
-.badge-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #059669;
-}
-
-.badge-title {
   font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--c-brand-700);
-}
-
-.badge-sep {
-  color: var(--c-neutral-300);
-}
-
-.badge-sub {
-  font-size: 1.2rem;
   font-weight: 600;
-  color: var(--c-neutral-600);
+  color: var(--c-neutral-700);
+  background: var(--c-neutral-50);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  padding: 0.35rem 1rem;
+  width: fit-content;
 }
 
 .lobby-main-title {
-  font-size: clamp(3.2rem, 4vw, 4.4rem);
-  font-weight: 850;
-  color: var(--c-neutral-950);
+  font-size: clamp(2.6rem, 3.6vw, 3.8rem);
+  font-weight: 800;
+  color: var(--c-neutral-900);
   line-height: 1.2;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   margin: 0;
-
-  .lobby-title-accent {
-    color: var(--c-brand-700);
-  }
 }
 
 .lobby-main-desc {
-  font-size: 1.6rem;
+  font-size: clamp(1.45rem, 1.6vw, 1.6rem);
   color: var(--c-neutral-600);
-  line-height: 1.7;
+  line-height: 1.65;
   margin: 0;
 }
 
-/* 數據統計資訊列 */
+/* 平台指標條 */
 .lobby-stats-strip {
-  display: grid;
-  grid-template-columns: auto auto auto auto auto auto auto;
+  display: flex;
   align-items: center;
   gap: var(--sp-6);
-  padding: 1.4rem 2.4rem;
-  background: #ffffff;
+  padding: 1.2rem 2rem;
+  background: var(--c-neutral-50);
   border: 1px solid var(--c-border);
-  border-radius: var(--r-xl);
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  border-radius: var(--r-sm);
   width: fit-content;
+  flex-wrap: wrap;
 
-  @media (max-width: 860px) {
+  @media (max-width: 640px) {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    width: 100%;
-    gap: var(--sp-4);
-
-    .stat-divider {
-      display: none;
-    }
-  }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
     gap: var(--sp-3);
+    width: 100%;
   }
 }
 
 .stat-item {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
+  align-items: center;
+  gap: 1.2rem;
 
-.stat-val {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--c-neutral-900);
-  letter-spacing: -0.02em;
-}
+  .stat-svg-icon {
+    width: 2rem;
+    height: 2rem;
+    color: var(--c-neutral-500);
+    flex-shrink: 0;
+  }
 
-.stat-label {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--c-neutral-500);
+  .stat-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .stat-val {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--c-neutral-900);
+    line-height: 1.2;
+  }
+
+  .stat-label {
+    font-size: 1.15rem;
+    color: var(--c-neutral-500);
+    line-height: 1.2;
+  }
 }
 
 .stat-divider {
   width: 1px;
-  height: 2.8rem;
+  height: 2.4rem;
   background: var(--c-border);
+
+  @media (max-width: 640px) {
+    display: none;
+  }
 }
 
 /* =====================================================
-   搜尋與分類篩選列
+   2. 控制列與搜尋
    ===================================================== */
 .lobby-controls-bar {
-  background: #ffffff;
+  background: var(--c-bg, #fbfbfa);
+  padding-block: var(--sp-4);
   border-bottom: 1px solid var(--c-border);
-  padding-block: var(--sp-6);
 }
 
 .controls-wrapper {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--sp-4);
   flex-wrap: wrap;
-  margin-bottom: var(--sp-5);
-
-  @media (max-width: 760px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
 
-/* 懸浮搜尋輸入框 */
 .lobby-search-container {
   position: relative;
   display: flex;
   align-items: center;
-  width: 100%;
-  max-width: 44rem;
+  flex: 1;
+  min-width: 26rem;
 
   .search-svg-icon {
     position: absolute;
-    left: 1.6rem;
-    width: 1.9rem;
-    height: 1.9rem;
+    left: 1.2rem;
+    width: 1.6rem;
+    height: 1.6rem;
     color: var(--c-neutral-400);
     pointer-events: none;
   }
 
-  @media (max-width: 760px) {
-    max-width: 100%;
-  }
-}
-
-.lobby-search-field {
-  width: 100%;
-  padding: 1.2rem 4.5rem 1.2rem 4.4rem;
-  font-family: inherit;
-  font-size: 1.5rem;
-  color: var(--c-neutral-900);
-  background: var(--c-neutral-50);
-  border: 1.5px solid var(--c-border);
-  border-radius: var(--r-full);
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: var(--c-brand-600);
+  .lobby-search-field {
+    width: 100%;
+    height: 4.2rem;
+    padding: 0 4rem 0 3.6rem;
+    font-size: 1.4rem;
     background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-sm);
+    color: var(--c-neutral-900);
     outline: none;
-  }
+    transition: all var(--transition-fast);
 
-  &::placeholder {
-    color: var(--c-neutral-400);
-  }
-}
-
-.search-suffix {
-  position: absolute;
-  right: 1.4rem;
-  display: flex;
-  align-items: center;
-}
-
-.btn-clear-search {
-  background: transparent;
-  border: none;
-  color: var(--c-neutral-400);
-  font-size: 1.4rem;
-  cursor: pointer;
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--r-full);
-
-  &:hover {
-    background: var(--c-neutral-200);
-    color: var(--c-neutral-700);
-  }
-}
-
-.kbd-hint {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--c-neutral-400);
-  background: var(--c-neutral-100);
-  border: 1px solid var(--c-border);
-  padding: 0.2rem 0.6rem;
-  border-radius: var(--r-xs);
-  letter-spacing: 0.05em;
-}
-
-/* 篩選結果數量徽章 */
-.search-results-summary {
-  display: flex;
-  align-items: center;
-
-  @media (max-width: 760px) {
-    justify-content: flex-start;
-  }
-}
-
-.results-badge {
-  font-size: 1.35rem;
-  color: var(--c-neutral-600);
-  background: var(--c-neutral-100);
-  border: 1px solid var(--c-border);
-  padding: 0.6rem 1.4rem;
-  border-radius: var(--r-full);
-  font-weight: 500;
-
-  strong {
-    color: var(--c-brand-700);
-    font-weight: 700;
-  }
-}
-
-/* 分類滑動膠囊標籤 */
-.category-pills-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  flex-wrap: wrap;
-}
-
-.cat-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.65rem 1.4rem;
-  font-family: inherit;
-  font-size: 1.35rem;
-  font-weight: 600;
-  color: var(--pill-c, var(--c-neutral-700));
-  background: var(--pill-bg, #ffffff);
-  border: 1.5px solid var(--pill-b, var(--c-border));
-  border-radius: var(--r-full);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-
-  .cat-count {
-    font-size: 1.2rem;
-    font-weight: 500;
-    color: var(--pill-count, var(--c-neutral-400));
-    transition: color 0.2s ease;
-  }
-
-  &:hover {
-    background: var(--pill-hover-bg, var(--c-neutral-50));
-    border-color: var(--pill-hover-b, var(--c-brand-300));
-    color: var(--pill-hover-c, var(--c-neutral-900));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--pill-s, rgba(15, 23, 42, 0.06));
-  }
-
-  &.active {
-    background: var(--pill-act-bg, var(--c-brand-600)) !important;
-    color: #ffffff !important;
-    border-color: var(--pill-act-bg, var(--c-brand-600)) !important;
-    box-shadow: 0 4px 14px var(--pill-act-s, rgba(37, 99, 235, 0.35)) !important;
-
-    .cat-count {
-      color: rgba(255, 255, 255, 0.9) !important;
+    &:focus {
+      border-color: #0f172a;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
     }
   }
 
-  /* 官方 12 大主題分類專屬識別分色（正常態精緻透亮・啟用態鮮明飽滿） */
-  &[data-cat='顧客滿意度'] {
-    --pill-c: #1d4ed8;
-    --pill-bg: #eff6ff;
-    --pill-b: #bfdbfe;
-    --pill-count: #3b82f6;
-    --pill-hover-bg: #dbeafe;
-    --pill-hover-b: #93c5fd;
-    --pill-hover-c: #1e40af;
-    --pill-act-bg: #1d4ed8;
-    --pill-act-s: rgba(29, 78, 216, 0.35);
+  .search-suffix {
+    position: absolute;
+    right: 1.2rem;
+    display: flex;
+    align-items: center;
+
+    .btn-clear-search {
+      background: transparent;
+      border: none;
+      color: var(--c-neutral-400);
+      cursor: pointer;
+      font-size: 1.4rem;
+      padding: 0.2rem;
+      line-height: 1;
+
+      &:hover {
+        color: var(--c-neutral-800);
+      }
+    }
+  }
+}
+
+.lobby-category-dropdown-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .dropdown-filter-icon {
+    position: absolute;
+    left: 1.2rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--c-neutral-400);
+    pointer-events: none;
   }
 
-  &[data-cat='產品體驗研究'] {
-    --pill-c: #6d28d9;
-    --pill-bg: #f5f3ff;
-    --pill-b: #ddd6fe;
-    --pill-count: #8b5cf6;
-    --pill-hover-bg: #ede9fe;
-    --pill-hover-b: #c4b5fd;
-    --pill-hover-c: #5b21b6;
-    --pill-act-bg: #6d28d9;
-    --pill-act-s: rgba(109, 40, 217, 0.35);
+  .lobby-category-select {
+    height: 4.2rem;
+    padding: 0 3.6rem 0 3.4rem;
+    font-size: 1.4rem;
+    background: #ffffff;
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-sm);
+    color: var(--c-neutral-800);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+
+    &:focus {
+      border-color: #0f172a;
+    }
   }
 
-  &[data-cat='市場商業調研'] {
-    --pill-c: #0369a1;
-    --pill-bg: #f0f9ff;
-    --pill-b: #bae6fd;
-    --pill-count: #0284c7;
-    --pill-hover-bg: #e0f2fe;
-    --pill-hover-b: #7dd3fc;
-    --pill-hover-c: #075985;
-    --pill-act-bg: #0284c7;
-    --pill-act-s: rgba(2, 132, 199, 0.35);
+  .dropdown-chevron-icon {
+    position: absolute;
+    right: 1.2rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    color: var(--c-neutral-400);
+    pointer-events: none;
+  }
+}
+
+.search-results-summary {
+  margin-left: auto;
+
+  .results-badge {
+    font-size: 1.25rem;
+    color: var(--c-neutral-600);
+
+    strong {
+      color: var(--c-neutral-900);
+    }
   }
 
-  &[data-cat='品牌行銷與推廣'] {
-    --pill-c: #4338ca;
-    --pill-bg: #eef2ff;
-    --pill-b: #c7d2fe;
-    --pill-count: #6366f1;
-    --pill-hover-bg: #e0e7ff;
-    --pill-hover-b: #a5b4fc;
-    --pill-hover-c: #3730a3;
-    --pill-act-bg: #4338ca;
-    --pill-act-s: rgba(67, 56, 202, 0.35);
-  }
-
-  &[data-cat='售後服務與支援'] {
-    --pill-c: #0e7490;
-    --pill-bg: #ecfeff;
-    --pill-b: #a5f3fc;
-    --pill-count: #0891b2;
-    --pill-hover-bg: #cffafe;
-    --pill-hover-b: #67e8f9;
-    --pill-hover-c: #155e75;
-    --pill-act-bg: #0891b2;
-    --pill-act-s: rgba(8, 145, 178, 0.35);
-  }
-
-  &[data-cat='員工與職場文化'] {
-    --pill-c: #0f766e;
-    --pill-bg: #f0fdfa;
-    --pill-b: #99f6e4;
-    --pill-count: #0d9488;
-    --pill-hover-bg: #ccfbf1;
-    --pill-hover-b: #5eead4;
-    --pill-hover-c: #115e59;
-    --pill-act-bg: #0d9488;
-    --pill-act-s: rgba(13, 148, 136, 0.35);
-  }
-
-  &[data-cat='活動與會後回饋'] {
-    --pill-c: #b45309;
-    --pill-bg: #fffbeb;
-    --pill-b: #fde68a;
-    --pill-count: #d97706;
-    --pill-hover-bg: #fef3c7;
-    --pill-hover-b: #fcd34d;
-    --pill-hover-c: #92400e;
-    --pill-act-bg: #d97706;
-    --pill-act-s: rgba(217, 119, 6, 0.35);
-  }
-
-  &[data-cat='教育與培訓評鑑'] {
-    --pill-c: #047857;
-    --pill-bg: #ecfdf5;
-    --pill-b: #a7f3d0;
-    --pill-count: #059669;
-    --pill-hover-bg: #d1fae5;
-    --pill-hover-b: #6ee7b7;
-    --pill-hover-c: #065f46;
-    --pill-act-bg: #059669;
-    --pill-act-s: rgba(5, 150, 105, 0.35);
-  }
-
-  &[data-cat='學術專題研究'] {
-    --pill-c: #334155;
-    --pill-bg: #f8fafc;
-    --pill-b: #cbd5e1;
-    --pill-count: #475569;
-    --pill-hover-bg: #f1f5f9;
-    --pill-hover-b: #94a3b8;
-    --pill-hover-c: #1e293b;
-    --pill-act-bg: #334155;
-    --pill-act-s: rgba(51, 65, 85, 0.35);
-  }
-
-  &[data-cat='健康與生活型態'] {
-    --pill-c: #be123c;
-    --pill-bg: #fff1f2;
-    --pill-b: #fecdd3;
-    --pill-count: #e11d48;
-    --pill-hover-bg: #ffe4e6;
-    --pill-hover-b: #fda4af;
-    --pill-hover-c: #9f1239;
-    --pill-act-bg: #e11d48;
-    --pill-act-s: rgba(225, 29, 72, 0.35);
-  }
-
-  &[data-cat='公共政策與民意'] {
-    --pill-c: #7e22ce;
-    --pill-bg: #faf5ff;
-    --pill-b: #e9d5ff;
-    --pill-count: #9333ea;
-    --pill-hover-bg: #f3e8ff;
-    --pill-hover-b: #d8b4fe;
-    --pill-hover-c: #6b21a8;
-    --pill-act-bg: #9333ea;
-    --pill-act-s: rgba(147, 51, 234, 0.35);
-  }
-
-  &[data-cat='社群互動與綜合'] {
-    --pill-c: #c2410c;
-    --pill-bg: #fff7ed;
-    --pill-b: #fed7aa;
-    --pill-count: #ea580c;
-    --pill-hover-bg: #ffedd5;
-    --pill-hover-b: #fdba74;
-    --pill-hover-c: #9a3412;
-    --pill-act-bg: #ea580c;
-    --pill-act-s: rgba(234, 88, 12, 0.35);
+  @media (max-width: 768px) {
+    margin-left: 0;
+    width: 100%;
   }
 }
 
 /* =====================================================
-   主要問卷內容列表
+   3. 問卷資料表格
    ===================================================== */
 .lobby-content {
-  padding-block: clamp(var(--sp-8), 6vw, var(--sp-16));
+  padding-block: var(--sp-8);
 }
 
-/* 空狀態與載入狀態 */
-.status-box {
-  background: #ffffff;
-  border: 1.5px solid var(--c-border);
-  border-radius: var(--r-2xl);
-  padding: clamp(var(--sp-10), 6vw, var(--sp-16));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: var(--sp-4);
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
-}
-
-.empty-icon-wrap {
-  width: 6.4rem;
-  height: 6.4rem;
-  border-radius: 50%;
-  background: var(--c-neutral-100);
-  color: var(--c-neutral-400);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  svg {
-    width: 3.2rem;
-    height: 3.2rem;
-  }
-}
-
-.empty-title {
-  font-size: 2rem;
-  font-weight: 750;
-  color: var(--c-neutral-900);
-  margin: 0;
-}
-
-.empty-desc {
-  font-size: 1.5rem;
-  color: var(--c-neutral-500);
-  margin: 0;
-  max-width: 48ch;
-}
-
-/* =====================================================
-   檢視模式一：表格樣式
-   ===================================================== */
 .lobby-table-card {
   background: #ffffff;
   border: 1px solid var(--c-border);
-  border-radius: var(--r-2xl);
-  box-shadow:
-    0 12px 32px -4px rgba(15, 23, 42, 0.06),
-    0 4px 12px rgba(0, 0, 0, 0.02);
+  border-radius: var(--r-sm);
+  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.03);
   overflow: hidden;
 }
 
 .table-wrapper {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
   width: 100%;
+  overflow-x: auto;
 }
 
-.survey-mat-table {
-  min-width: 0;
+.survey-neutral-table {
   width: 100%;
   border-collapse: collapse;
+
+  th.mat-mdc-header-cell {
+    background: var(--c-neutral-50);
+    color: var(--c-neutral-700);
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: 1.4rem 1.6rem;
+    border-bottom: 1px solid var(--c-border);
+    white-space: nowrap;
+  }
+
+  td.mat-mdc-cell {
+    padding: 1.6rem;
+    border-bottom: 1px solid var(--c-border);
+    color: var(--c-neutral-800);
+    font-size: 1.4rem;
+    vertical-align: middle;
+  }
+
+  tr.mat-mdc-row:hover {
+    background: #fdfdfc;
+  }
 }
 
-.th-id, .col-id { width: 7rem; min-width: 5rem; padding-left: var(--sp-5) !important; white-space: nowrap; }
-.th-title, .col-title { min-width: 18rem; width: auto; }
-.th-category, .col-category { width: 15rem; min-width: 12rem; white-space: nowrap; }
-.th-time, .col-time { width: 21rem; min-width: 17rem; white-space: nowrap; }
-.th-status, .col-status { width: 12rem; min-width: 10rem; white-space: nowrap; }
-.th-actions, .col-actions { width: 14rem; min-width: 12rem; text-align: right; padding-right: var(--sp-5) !important; white-space: nowrap; }
-
-.id-mono-chip {
+.id-badge {
   font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--c-neutral-600);
+  font-weight: 600;
+  color: var(--c-neutral-700);
   background: var(--c-neutral-100);
-  padding: 0.35rem 0.85rem;
-  border-radius: var(--r-sm);
   border: 1px solid var(--c-border);
-  display: inline-block;
-  white-space: nowrap;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--r-xs);
 }
 
 .title-cell-wrap {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  padding-block: 0.8rem;
+
+  .survey-title-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--c-neutral-900);
+    line-height: 1.35;
+  }
+
+  .survey-time-est {
+    font-size: 1.2rem;
+    color: var(--c-neutral-500);
+  }
 }
 
-.survey-title-text {
-  font-size: 1.6rem;
-  font-weight: 750;
-  color: var(--c-neutral-900);
-  line-height: 1.35;
-}
-
-.survey-time-est {
+.cat-chip {
   font-size: 1.25rem;
-  color: var(--c-neutral-400);
   font-weight: 500;
-}
-
-.cat-badge-chip {
-  display: inline-block;
-  font-size: 1.25rem;
-  font-weight: 700;
-  padding: 0.35rem 1rem;
-  border-radius: var(--r-full);
+  color: var(--c-neutral-700);
+  background: var(--c-neutral-100);
+  border: 1px solid var(--c-border);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--r-xs);
   white-space: nowrap;
-  letter-spacing: 0.02em;
-
-  /* 預設退場顏色 */
-  color: var(--c-brand-700);
-  background: var(--c-brand-50);
-  border: 1px solid var(--c-brand-200);
-
-  /* 官方 12 大主題專屬獨立識別色階（高對比、高辨識） */
-  &[data-cat='顧客滿意度'] {
-    background: #eff6ff;
-    color: #1d4ed8;
-    border-color: #bfdbfe;
-  }
-  &[data-cat='產品體驗研究'] {
-    background: #f5f3ff;
-    color: #6d28d9;
-    border-color: #ddd6fe;
-  }
-  &[data-cat='市場商業調研'] {
-    background: #f0f9ff;
-    color: #0369a1;
-    border-color: #bae6fd;
-  }
-  &[data-cat='品牌行銷與推廣'] {
-    background: #eef2ff;
-    color: #4338ca;
-    border-color: #c7d2fe;
-  }
-  &[data-cat='售後服務與支援'] {
-    background: #ecfeff;
-    color: #0e7490;
-    border-color: #a5f3fc;
-  }
-  &[data-cat='員工與職場文化'] {
-    background: #f0fdfa;
-    color: #0f766e;
-    border-color: #99f6e4;
-  }
-  &[data-cat='活動與會後回饋'] {
-    background: #fffbeb;
-    color: #b45309;
-    border-color: #fde68a;
-  }
-  &[data-cat='教育與培訓評鑑'] {
-    background: #ecfdf5;
-    color: #047857;
-    border-color: #a7f3d0;
-  }
-  &[data-cat='學術專題研究'] {
-    background: #f1f5f9;
-    color: #334155;
-    border-color: #cbd5e1;
-  }
-  &[data-cat='健康與生活型態'] {
-    background: #fff1f2;
-    color: #be123c;
-    border-color: #fecdd3;
-  }
-  &[data-cat='公共政策與民意'] {
-    background: #faf5ff;
-    color: #7e22ce;
-    border-color: #e9d5ff;
-  }
-  &[data-cat='社群互動與綜合'] {
-    background: #fff7ed;
-    color: #c2410c;
-    border-color: #fed7aa;
-  }
 }
 
 .time-range-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.35rem;
-  color: var(--c-neutral-600);
-
-  .calendar-mini-icon {
-    width: 1.6rem;
-    height: 1.6rem;
-    color: var(--c-neutral-400);
-    flex-shrink: 0;
-  }
+  font-size: 1.25rem;
+  color: var(--c-neutral-700);
+  white-space: nowrap;
+  font-family: var(--f-mono);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-.time-permanent-chip,
-.time-permanent {
+.time-unlimited-text {
+  font-size: 1.25rem;
+  color: var(--c-neutral-600);
+  font-weight: 600;
+  display: inline-block;
+}
+
+.time-permanent-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  font-style: normal;
-  color: #0369a1;
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  padding: 0.3rem 0.85rem;
-  border-radius: var(--r-full);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #0f172a;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--r-full, 9999px);
   white-space: nowrap;
 
-  .time-infinity-icon {
-    width: 1.4rem;
-    height: 1.4rem;
-    color: #0284c7;
-    flex-shrink: 0;
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
   }
 }
 
@@ -699,240 +391,319 @@
   align-items: center;
   gap: 0.6rem;
   font-size: 1.25rem;
-  font-weight: 700;
-  color: #15803d;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  padding: 0.35rem 0.9rem;
-  border-radius: var(--r-full);
+  font-weight: 600;
+  color: #065f46;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--r-xs, 2px);
+  white-space: nowrap;
+
+  .live-dot-green {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+  }
 }
 
-.live-dot-green {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
-}
-
-.btn-table-action {
+.btn-fill-survey {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  background: var(--c-brand-600);
+  padding: 0.7rem 1.4rem;
+  background: #0f172a;
   color: #ffffff !important;
-  font-size: 1.35rem;
-  font-weight: 700;
-  padding: 0.75rem 1.6rem;
-  border-radius: var(--r-full);
-  border: none;
+  font-size: 1.3rem;
+  font-weight: 600;
+  border-radius: var(--r-xs);
+  border: 1px solid #0f172a;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-  transition: all 0.15s ease;
-
-  &:hover {
-    background: var(--c-brand-700);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45);
-    transform: translateY(-1px);
-
-    .action-arrow-icon {
-      transform: translateX(3px);
-    }
-  }
+  white-space: nowrap;
+  transition: all var(--transition-fast);
 
   .action-arrow-icon {
     width: 1.4rem;
     height: 1.4rem;
-    transition: transform 0.15s ease;
+    transition: transform var(--transition-fast);
   }
-}
-
-.survey-mat-row {
-  transition: background 0.15s ease;
 
   &:hover {
-    background: #f8fbff !important;
+    background: #1e293b;
+    border-color: #1e293b;
+
+    .action-arrow-icon {
+      transform: translateX(2px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0f172a;
+    outline-offset: 2px;
   }
 }
 
 /* =====================================================
-   檢視模式二：行動版自適應卡片流
-   消除水平捲動，提供觸控友善卡片體驗
+   4. 行動端 RWD 零橫向拖曳自適應 (Mobile Card List Mode)
+      嚴格遵守 AGENTS-FRONT.md 規範：徹底杜絕橫向捲軸與拖曳，轉譯為獨立垂直卡片流
    ===================================================== */
-@media (max-width: 880px) {
+@media (max-width: 860px) {
   .lobby-table-card {
-    background: transparent !important;
     border: none !important;
+    background: transparent !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    overflow: visible !important;
   }
 
   .table-wrapper {
-    overflow-x: visible !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+    width: 100% !important;
   }
 
-  .survey-mat-table {
+  .survey-neutral-table {
     display: block !important;
     width: 100% !important;
     min-width: 0 !important;
+    border: none !important;
+    background: transparent !important;
 
+    /* 強制完全隱藏表頭，杜絕殘留表頭佔據空間 */
     thead,
-    .mat-mdc-header-row {
+    .mat-mdc-header-row,
+    th.mat-mdc-header-cell {
       display: none !important;
     }
 
+    /* 卡片清單垂直堆疊 */
     tbody {
       display: flex !important;
       flex-direction: column !important;
       gap: 1.4rem !important;
       width: 100% !important;
+      padding: 0 !important;
     }
 
-    .mat-mdc-row,
-    tr.survey-mat-row {
+    /* 每一列轉譯為獨立高質感卡片 */
+    tr.mat-mdc-row,
+    tr.survey-neutral-row {
       display: grid !important;
-      grid-template-columns: auto 1fr auto !important;
+      grid-template-columns: auto auto 1fr !important;
       align-items: center !important;
-      row-gap: 1.2rem !important;
+      row-gap: 1rem !important;
       column-gap: 0.8rem !important;
-      padding: 1.8rem !important;
+      padding: 1.6rem !important;
       background: #ffffff !important;
-      border: 1.5px solid var(--c-border) !important;
-      border-radius: var(--r-xl) !important;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+      border: 1px solid var(--c-border, #e2e8f0) !important;
+      border-radius: var(--r-md, 8px) !important;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+      width: 100% !important;
       height: auto !important;
       min-height: 0 !important;
       box-sizing: border-box !important;
-      width: 100% !important;
-      transition: all 0.2s ease !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 
       &:hover {
-        border-color: var(--c-brand-400) !important;
-        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08) !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07) !important;
         background: #ffffff !important;
       }
     }
 
-    .col-id {
-      grid-column: 1 !important;
-      grid-row: 1 !important;
-      width: auto !important;
-      min-width: 0 !important;
+    /* 儲存格依語意工整分配於卡片中 */
+    td.mat-mdc-cell {
       padding: 0 !important;
       border: none !important;
-      justify-self: start !important;
-    }
+      height: auto !important;
+      min-height: 0 !important;
+      background: transparent !important;
 
-    .col-category {
-      grid-column: 2 !important;
-      grid-row: 1 !important;
-      width: auto !important;
-      min-width: 0 !important;
-      padding: 0 !important;
-      border: none !important;
-      justify-self: start !important;
-    }
-
-    .col-status {
-      grid-column: 3 !important;
-      grid-row: 1 !important;
-      width: auto !important;
-      min-width: 0 !important;
-      padding: 0 !important;
-      border: none !important;
-      justify-self: end !important;
-    }
-
-    .col-title {
-      grid-column: 1 / -1 !important;
-      grid-row: 2 !important;
-      width: 100% !important;
-      min-width: 0 !important;
-      max-width: none !important;
-      padding: 0.2rem 0 !important;
-      border: none !important;
-
-      .title-cell-wrap {
-        padding: 0 !important;
-      }
-
-      .survey-title-text {
-        font-size: 1.65rem !important;
-        line-height: 1.4 !important;
-      }
-    }
-
-    .col-time {
-      grid-column: 1 / -1 !important;
-      grid-row: 3 !important;
-      width: 100% !important;
-      min-width: 0 !important;
-      padding: 0 !important;
-      border: none !important;
-
-      .time-range-wrap,
-      .time-permanent-chip {
-        font-size: 1.25rem !important;
-      }
-    }
-
-    .col-actions {
-      grid-column: 1 / -1 !important;
-      grid-row: 4 !important;
-      width: 100% !important;
-      min-width: 0 !important;
-      padding: 1.2rem 0 0 0 !important;
-      border: none !important;
-      border-top: 1px solid var(--c-border) !important;
-      text-align: left !important;
-
-      .btn-table-action {
-        width: 100% !important;
-        justify-content: center !important;
-        height: 4.2rem !important;
-        font-size: 1.5rem !important;
-      }
-    }
-  }
-
-  @media (max-width: 480px) {
-    .survey-mat-table {
-      .mat-mdc-row,
-      tr.survey-mat-row {
-        grid-template-columns: auto 1fr !important;
-      }
-      .col-id {
+      /* 第 1 列：編號 + 主題分類 + 開放狀態 */
+      &.col-id {
         grid-column: 1 !important;
         grid-row: 1 !important;
-      }
-      .col-category {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-      }
-      .col-status {
-        grid-column: 1 / -1 !important;
-        grid-row: 2 !important;
+        width: auto !important;
         justify-self: start !important;
       }
-      .col-title {
+
+      &.col-category {
+        grid-column: 2 / -1 !important;
+        grid-row: 1 !important;
+        width: auto !important;
+        justify-self: start !important;
+      }
+
+      /* 第 2 列：問卷主標題 (多行自適應折行，杜絕截斷) */
+      &.col-title {
+        grid-column: 1 / -1 !important;
+        grid-row: 2 !important;
+        width: 100% !important;
+        display: block !important;
+
+        .title-cell-wrap {
+          gap: 0.4rem;
+        }
+
+        .survey-title-text {
+          font-size: 1.55rem !important;
+          line-height: 1.4 !important;
+          white-space: normal !important;
+          overflow-wrap: break-word !important;
+        }
+
+        .survey-time-est {
+          font-size: 1.15rem !important;
+        }
+      }
+
+      /* 第 3 列：有效填答期間 */
+      &.col-time {
+        grid-column: 1 / -1 !important;
         grid-row: 3 !important;
+        width: 100% !important;
+        display: block !important;
+        padding-top: 0.2rem !important;
+
+        .time-range-wrap {
+          font-size: 1.2rem;
+          color: var(--c-neutral-600);
+        }
       }
-      .col-time {
+
+      /* 第 4 列：全寬操作按鈕 */
+      &.col-actions {
+        grid-column: 1 / -1 !important;
         grid-row: 4 !important;
-      }
-      .col-actions {
-        grid-row: 5 !important;
+        width: 100% !important;
+        margin-top: 0.6rem !important;
+
+        .btn-fill-survey {
+          width: 100% !important;
+          justify-content: center !important;
+          padding: 1.1rem 1.6rem !important;
+          font-size: 1.35rem !important;
+        }
       }
     }
   }
 
-  .lobby-table-card mat-paginator {
-    background: #ffffff !important;
-    border: 1px solid var(--c-border) !important;
-    border-radius: var(--r-xl) !important;
-    margin-top: 1.2rem !important;
+  mat-paginator {
+    background: #ffffff;
+    border: 1px solid var(--c-border, #e2e8f0);
+    border-radius: var(--r-md, 8px);
+    margin-top: 1.2rem;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+
+    ::ng-deep .mat-mdc-paginator-container {
+      padding: 0.8rem 1rem !important;
+      flex-wrap: wrap !important;
+      justify-content: center !important;
+      gap: 0.8rem !important;
+    }
+
+    ::ng-deep .mat-mdc-paginator-page-size {
+      margin-right: 0 !important;
+    }
   }
 }
 
+/* =====================================================
+   5. 載入與空狀態
+   ===================================================== */
+.status-box {
+  padding: clamp(4rem, 6vw, 6.4rem) 2rem;
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+}
 
+.spinner {
+  width: 3.2rem;
+  height: 3.2rem;
+  border: 2px solid var(--c-neutral-200);
+  border-top-color: #0f172a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.status-text {
+  font-size: 1.4rem;
+  color: var(--c-neutral-600);
+  margin: 0;
+}
+
+.empty-icon-wrap {
+  width: 4.8rem;
+  height: 4.8rem;
+  border-radius: var(--r-sm);
+  background: var(--c-neutral-50);
+  border: 1px solid var(--c-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-neutral-400);
+
+  svg {
+    width: 2.4rem;
+    height: 2.4rem;
+  }
+}
+
+.empty-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--c-neutral-900);
+  margin: 0;
+}
+
+.empty-desc {
+  font-size: 1.4rem;
+  color: var(--c-neutral-600);
+  margin: 0;
+  max-width: 44ch;
+}
+
+.server-error-box {
+  .empty-icon-wrap {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+
+  .btn-neutral-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-top: 0.8rem;
+  }
+}
+
+.btn-neutral-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 1.6rem;
+  background: #ffffff;
+  color: var(--c-neutral-800);
+  font-size: 1.35rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-border);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--c-neutral-50);
+  }
+}

@@ -1,22 +1,30 @@
-/* =====================================================
-   全域設計系統變數規範
-   定義全專案通用色彩、間距、排版、圓角與立體陰影層級
-   ===================================================== */
+/**
+ * ============================================================================
+ * 檔案名稱: variables.scss
+ * 所屬模組: Presentation Layer / Design Tokens
+ * 責任描述: 全域學術中性設計系統變數庫 (Academic Neutral Design Tokens)
+ *           定義紙本墨水色階、嚴謹網格間距、緊湊學術排版、精確收斂圓角與克制微陰影
+ * 聯動關係:
+ *   - 上游依賴: 無 (SSOT 全域設計基準點)
+ *   - 下游消費: styles.scss, common.scss 以及所有 Angular 前端 UI 組件
+ * 邊界處理: 保留所有既有變數別名，確保既有業務邏輯元件樣式平滑相容
+ * ============================================================================
+ */
 
 :root {
-  /* ── 品牌藍色階（主操作與互動高亮） ── */
-  --c-brand-50:  #eff6ff;
-  --c-brand-100: #dbeafe;
-  --c-brand-200: #bfdbfe;
-  --c-brand-300: #93c5fd;
-  --c-brand-400: #60a5fa;
-  --c-brand-500: #3b82f6;
-  --c-brand-600: #2563eb;  /* 主要操作色（對白底符合 AA 規範） */
-  --c-brand-700: #1d4ed8;  /* 懸停狀態色（對白底符合 AA 規範） */
-  --c-brand-800: #1e40af;  /* 加深強調色（對白底符合 AAA 規範） */
-  --c-brand-900: #1e3a8a;  /* 深層底色（對白底符合 AAA 規範） */
+  /* ── 1. 學術權威深色階 (深墨黑白中性色階，用於主操作、標題與高對比按鈕) ── */
+  --c-brand-50:  #f8fafc;
+  --c-brand-100: #f1f5f9;
+  --c-brand-200: #e2e8f0;
+  --c-brand-300: #cbd5e1;
+  --c-brand-400: #94a3b8;
+  --c-brand-500: #475569;  /* 次要中性板岩灰 */
+  --c-brand-600: #0f172a;  /* 主操作深墨黑 (黑白中性核心，對白底具備 16:1 超高對比度) */
+  --c-brand-700: #1e293b;  /* Hover 沉穩深墨 */
+  --c-brand-800: #020617;  /* Active 極深純黑 */
+  --c-brand-900: #000000;  /* 純黑 */
 
-  /* ── 品牌主色相容別名 ── */
+  /* 品牌主色相容別名 */
   --c-primary-50:  var(--c-brand-50);
   --c-primary-100: var(--c-brand-100);
   --c-primary-200: var(--c-brand-200);
@@ -28,60 +36,64 @@
   --c-primary-800: var(--c-brand-800);
   --c-primary-900: var(--c-brand-900);
 
-  /* ── 板岩中性灰色階（文字、邊框與中性底色） ── */
-  --c-neutral-50:  #f8fafc;
-  --c-neutral-100: #f1f5f9;
-  --c-neutral-200: #e2e8f0;
-  --c-neutral-300: #cbd5e1;
-  --c-neutral-400: #94a3b8;
-  --c-neutral-500: #64748b;  /* 輔助灰階（對白底符合 AA 規範） */
-  --c-neutral-600: #475569;  /* 次要文字（對白底符合 AA 規範） */
-  --c-neutral-700: #334155;  /* 主要內文（對白底符合 AAA 規範） */
-  --c-neutral-800: #1e293b;  /* 深色標題（對白底符合 AAA 規範） */
-  --c-neutral-900: #0f172a;  /* 極深文字（對白底符合 AAA 規範） */
+  /* ── 2. 中性紙張與墨水階層 (Paper & Archival Ink Scale) ── */
+  --c-neutral-25:  #fdfdfc;  /* 典藏紙張暖白底色 */
+  --c-neutral-50:  #f8f9fa;  /* 次要容器與表格交錯底色 */
+  --c-neutral-100: #f1f3f5;  /* 柔和面板底色 */
+  --c-neutral-200: #e5e7eb;  /* 細微分割線與結構邊框 (1px Precision Border) */
+  --c-neutral-300: #d1d5db;  /* 控制項邊框 */
+  --c-neutral-400: #9ca3af;  /* 佔位符與不可用狀態 */
+  --c-neutral-500: #6b7280;  /* 論文註腳、次要引用與中性標籤 */
+  --c-neutral-600: #4b5563;  /* 輔助段落說明文字 */
+  --c-neutral-700: #374151;  /* 主要內文正文 (對白底達 9:1 AAA) */
+  --c-neutral-800: #1f2937;  /* 章節子標題與結構節點 */
+  --c-neutral-900: #111827;  /* 核心主標題深墨色 (最高可讀性) */
 
-  /* ── 強調重點色系（微狀態與特色情境） ── */
-  --c-accent-amber:    #d97706;
-  --c-accent-amber-bg: #fef3c7;
-  --c-accent-amber-tx: #92400e;    /* 琥珀文字色（對白底符合 AAA 規範） */
+  /* ── 3. 學術克制標註色彩 (Restrained Scholarly Accents) ── */
+  /* 學術森林綠 (Peer-reviewed / Published / Complete) */
+  --c-accent-emerald:    #166534;
+  --c-accent-emerald-bg: #f0fdf4;
+  --c-accent-emerald-tx: #14532d;
 
-  --c-accent-emerald:    #059669;
-  --c-accent-emerald-bg: #ecfdf5;
-  --c-accent-emerald-tx: #065f46;  /* 翡翠文字色（對白底符合 AAA 規範） */
+  /* 學術琥珀赭石 (In Progress / Data Review) */
+  --c-accent-amber:    #b45309;
+  --c-accent-amber-bg: #fffbeb;
+  --c-accent-amber-tx: #78350f;
 
-  --c-accent-rose:    #e11d48;
-  --c-accent-rose-bg: #fff1f2;
-  --c-accent-rose-tx: #9f1239;
+  /* 學術磚紅 (Required / Audit Error / Closed) */
+  --c-accent-rose:    #991b1b;
+  --c-accent-rose-bg: #fef2f2;
+  --c-accent-rose-tx: #7f1d1d;
 
-  --c-accent-violet:    #7c3aed;
-  --c-accent-violet-bg: #f5f3ff;
-  --c-accent-violet-tx: #4c1d95;
+  /* 學術石青與紫藤 (Cross-sectional Category) */
+  --c-accent-violet:    #4338ca;
+  --c-accent-violet-bg: #eef2ff;
+  --c-accent-violet-tx: #312e81;
 
-  /* 相容舊版自訂色彩變數 */
-  --c-accent-coral:    #e11d48;
-  --c-accent-coral-bg: #fff1f2;
-  --c-accent-coral-tx: #9f1239;
-  --c-accent-cyan:     #0891b2;
-  --c-accent-indigo:   #6366f1;
+  --c-accent-coral:    var(--c-accent-rose);
+  --c-accent-coral-bg: var(--c-accent-rose-bg);
+  --c-accent-coral-tx: var(--c-accent-rose-tx);
+  --c-accent-cyan:     #0e7490;
+  --c-accent-indigo:   #3730a3;
 
-  /* ── 狀態語意色彩 ── */
-  --c-error:   #dc2626;  /* 錯誤狀態（符合 AA 規範） */
-  --c-success: #059669;  /* 成功狀態（符合 AA 規範） */
-  --c-warning: #d97706;  /* 警告狀態（符合 AA 規範） */
-  --c-info:    #2563eb;  /* 資訊狀態（符合 AA 規範） */
+  /* ── 4. 狀態語意色彩 ── */
+  --c-error:   #b91c1c;  /* 嚴肅磚紅 */
+  --c-success: #15803d;  /* 典雅林綠 */
+  --c-warning: #b45309;  /* 沉穩赭黃 */
+  --c-info:    #334155;  /* 沉穩板岩灰 */
 
-  /* ── 介面語意化別名 ── */
-  --c-bg:             #ffffff;
-  --c-surface:        #f8fafc;
-  --c-surface-alt:    #f1f5f9;
+  /* ── 5. 介面畫布語意化別名 ── */
+  --c-bg:             #fbfbfa;  /* 帶有微溫暖紙本質感的學術底色，徹底揮別刺眼螢光感 */
+  --c-surface:        #ffffff;  /* 內容卡片與閱讀畫布純白 */
+  --c-surface-alt:    #f8f9fa;  /* 次要資訊欄與清單表頭 */
   --c-text:           var(--c-neutral-900);
   --c-text-body:      var(--c-neutral-700);
   --c-text-muted:     var(--c-neutral-500);
-  --c-border:         #e2e8f0;
-  --c-border-muted:   #cbd5e1;
-  --c-border-strong:  #94a3b8;
+  --c-border:         #e5e7eb;  /* 乾淨、精準的 1px 學術邊界線 */
+  --c-border-muted:   #f1f3f5;
+  --c-border-strong:  #9ca3af;
 
-  /* ── 間距階層系統（基準 4px / 8px 遞增） ── */
+  /* ── 6. 間距階層系統 (8-Point Modular Grid) ── */
   --sp-1:  0.4rem;
   --sp-2:  0.8rem;
   --sp-3:  1.2rem;
@@ -96,64 +108,68 @@
   --sp-20: 8.0rem;
   --sp-24: 9.6rem;
 
-  /* ── 字型家族 ── */
-  --f-sans: 'Inter', 'Noto Sans TC', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --f-mono: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  /* ── 7. 字型排印家族 ── */
+  --f-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans TC', sans-serif;
+  --f-mono: ui-monospace, 'SF Mono', 'Roboto Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+  --f-serif: 'Newsreader', 'Georgia', 'Cambria', 'Times New Roman', serif;
 
-  /* ── 流程階段循序色彩（1 藍、2 紫、3 綠、4 琥珀） ── */
-  --step-1-color:  #2563eb;
+  /* ── 8. 流程階段循序色彩 (4 大合理語意主題色相: 藍、青、紫、金) ── */
+  --step-1-color:  #2563eb; /* 階段一 專業科技藍 */
   --step-1-bg:     #eff6ff;
   --step-1-border: #bfdbfe;
+  --step-1-text:   #1e40af;
 
-  --step-2-color:  #7c3aed;
-  --step-2-bg:     #f5f3ff;
-  --step-2-border: #ddd6fe;
+  --step-2-color:  #0d9488; /* 階段二 清新青玉綠 */
+  --step-2-bg:     #f0fdfa;
+  --step-2-border: #99f6e4;
+  --step-2-text:   #115e59;
 
-  --step-3-color:  #059669;
-  --step-3-bg:     #ecfdf5;
-  --step-3-border: #a7f3d0;
+  --step-3-color:  #7c3aed; /* 階段三 核心紫羅蘭 */
+  --step-3-bg:     #f5f3ff;
+  --step-3-border: #ddd6fe;
+  --step-3-text:   #5b21b6;
 
-  --step-4-color:  #d97706;
+  --step-4-color:  #d97706; /* 階段四 暖陽琥珀金 */
   --step-4-bg:     #fffbeb;
   --step-4-border: #fde68a;
+  --step-4-text:   #92400e;
 
-  /* ── 圓角半徑階層 ── */
-  --r-xs:   4px;
-  --r-sm:   6px;
-  --r-md:   10px;
-  --r-lg:   14px;
-  --r-xl:   20px;
-  --r-2xl:  28px;
+  /* ── 9. 精準克制之圓角階層 (收斂銳利，徹底去除巨大卡通泡泡角) ── */
+  --r-xs:   2px;
+  --r-sm:   4px;
+  --r-md:   6px;
+  --r-lg:   8px;
+  --r-xl:   12px;
+  --r-2xl:  16px;
   --r-full: 9999px;
 
-  /* ── 陰影層次階層 ── */
-  --shadow-xs:            0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-sm:            0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-md:            0 4px 8px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
-  --shadow-lg:            0 12px 24px -4px rgba(15, 23, 42, 0.10), 0 4px 8px -4px rgba(15, 23, 42, 0.05);
-  --shadow-xl:            0 24px 32px -8px rgba(15, 23, 42, 0.12), 0 8px 12px -6px rgba(15, 23, 42, 0.06);
-  --shadow-card:          0 1px 4px rgba(15, 23, 42, 0.04), 0 8px 20px -4px rgba(15, 23, 42, 0.06);
-  --shadow-card-hover:    0 4px 16px rgba(15, 23, 42, 0.08), 0 16px 28px -8px rgba(15, 23, 42, 0.08);
-  --shadow-card-elevated: 0 0 0 1px rgba(15, 23, 42, 0.05), 0 8px 24px -4px rgba(15, 23, 42, 0.10);
-  --shadow-brand:         0 4px 14px rgba(37, 99, 235, 0.28);
-  --shadow-brand-lg:      0 8px 24px rgba(37, 99, 235, 0.35);
-  --focus-ring:           0 0 0 3px rgba(37, 99, 235, 0.22);
+  /* ── 10. 克制極細微陰影階層 (以精準細線邊界搭配超柔環境擴散) ── */
+  --shadow-xs:            0 1px 2px rgba(17, 24, 39, 0.04);
+  --shadow-sm:            0 1px 3px rgba(17, 24, 39, 0.05), 0 1px 2px rgba(17, 24, 39, 0.03);
+  --shadow-md:            0 3px 6px -1px rgba(17, 24, 39, 0.06), 0 2px 4px -2px rgba(17, 24, 39, 0.04);
+  --shadow-lg:            0 8px 16px -4px rgba(17, 24, 39, 0.07), 0 4px 6px -2px rgba(17, 24, 39, 0.04);
+  --shadow-xl:            0 16px 24px -8px rgba(17, 24, 39, 0.08), 0 6px 10px -4px rgba(17, 24, 39, 0.04);
+  --shadow-card:          0 0 0 1px var(--c-border), 0 1px 3px rgba(17, 24, 39, 0.04);
+  --shadow-card-hover:    0 0 0 1px var(--c-brand-500), 0 4px 12px -2px rgba(17, 24, 39, 0.08);
+  --shadow-card-elevated: 0 0 0 1px var(--c-border), 0 8px 20px -4px rgba(17, 24, 39, 0.08);
+  --shadow-brand:         0 2px 6px rgba(15, 23, 42, 0.12);
+  --shadow-brand-lg:      0 4px 14px rgba(15, 23, 42, 0.16);
+  --focus-ring:           0 0 0 2px #ffffff, 0 0 0 4px #0f172a;
 
-  /* ── 轉場與動畫時間 ── */
-  --transition-fast: 0.15s ease;
-  --transition-base: 0.2s ease;
-  --transition-slow: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  /* ── 11. 轉場與動畫時間 ── */
+  --transition-fast: 0.12s ease-out;
+  --transition-base: 0.18s ease-out;
+  --transition-slow: 0.25s ease-out;
 
-  /* ── 版面容器配置 ── */
-  --container-max:    1200px;
-  --container-narrow: 840px;
-  --container-px:     clamp(2rem, 5.5vw, 3.6rem);
-  --header-h:         6.4rem;
+  /* ── 12. 版面容器配置 ── */
+  --container-max:    1240px;
+  --container-narrow: 860px;
+  --container-px:     clamp(2rem, 5.5vw, 4rem);
+  --header-h:         6.0rem;
 }
 
-/* 行動裝置內距自適應調整 */
 @media (max-width: 480px) {
   :root {
-    --container-px: 2.2rem;
+    --container-px: 2.0rem;
   }
 }

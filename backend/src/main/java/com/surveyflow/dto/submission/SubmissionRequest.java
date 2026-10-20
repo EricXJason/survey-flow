@@ -12,16 +12,19 @@
 
 package com.surveyflow.dto.submission;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,10 +36,11 @@ public class SubmissionRequest {
     /** 填答花費時間 (秒) */
     private Integer durationSeconds;
 
+    @Valid
     /** 受訪者基本輪廓 */
     private SubmissionBasicInfoDto basicInfo;
 
     /** 各題答案清單 */
     @Builder.Default
-    private List<SubmissionAnswerDto> answers = new ArrayList<>();
+    private List<@Valid SubmissionAnswerDto> answers = new ArrayList<>();
 }

@@ -36,12 +36,16 @@ export class DialogComponent {
     this.dialogService.dialogState$;
 
   /**
-   * 監聽鍵盤 ESC 按鍵事件 (window:keydown.escape)
+   * 監聽鍵盤 ESC 按鍵事件 (window:keydown)
    * 當使用者在對話框開啟期間按下 ESC，自動執行取消/關閉對話框，符合 WCAG 無障礙規範。
+   * @param event 鍵盤按鍵事件
    */
-  @HostListener('window:keydown.escape')
-  protected handleEscape(): void {
-    this.dialogService.cancel();
+  @HostListener('window:keydown', ['$event'])
+  protected handleEscape(event: KeyboardEvent): void {
+    if (event.key === 'Escape' || event.key === 'Esc') {
+      event.preventDefault();
+      this.dialogService.cancel();
+    }
   }
 
   /**

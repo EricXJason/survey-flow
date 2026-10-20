@@ -42,7 +42,16 @@ public class SubmissionBasicInfo {
     private String ageGroup;
 
     @Column(length = 20)
+    private String birthday;
+
+    @Column(name = "national_id", length = 20)
+    private String nationalId;
+
+    @Column(length = 20)
     private String phone;
+
+    @Column(name = "home_phone", length = 30)
+    private String homePhone;
 
     @Column(length = 100)
     private String email;
@@ -50,6 +59,33 @@ public class SubmissionBasicInfo {
     @Column(length = 50)
     private String industry;
 
+    @Column(name = "job_title", length = 50)
+    private String jobTitle;
+
+    @Column(length = 50)
+    private String department;
+
+    @Column(name = "employee_id", length = 50)
+    private String employeeId;
+
+    @Column(name = "academic_major", length = 50)
+    private String academicMajor;
+
+    @Column(name = "class_name", length = 50)
+    private String className;
+
+    @Column(name = "student_id", length = 50)
+    private String studentId;
+
+    @Column
+    private Double height;
+
+    @Column
+    private Double weight;
+
     @Column(length = 50)
     private String residence;
+
+    @Column(name = "registered_address", length = 200)
+    private String registeredAddress;
 }

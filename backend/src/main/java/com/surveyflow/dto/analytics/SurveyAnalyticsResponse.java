@@ -14,13 +14,15 @@ package com.surveyflow.dto.analytics;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,6 +30,12 @@ public class SurveyAnalyticsResponse {
 
     private Long surveyId;
     private String surveyTitle;
+    private String category;
+    private String authorUsername;
+    private Boolean isPublicToLobby;
+    private Boolean isOpen;
+    private String startDate;
+    private String endDate;
     private KpiDto kpi;
 
     @Builder.Default

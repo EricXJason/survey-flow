@@ -15,13 +15,15 @@ package com.surveyflow.dto.submission;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,6 +40,7 @@ public class SubmissionAnswerDto {
     private List<Long> selectedOptionIds = new ArrayList<>();
 
     /** 開放式簡答文字 */
+    @jakarta.validation.constraints.Size(max = 5000, message = "文字回答不得超過 5000 字元")
     private String textAnswer;
 
     /** 量表評分分數 (1-5 或 1-10) */

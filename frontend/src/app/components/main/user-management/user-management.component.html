@@ -174,31 +174,30 @@
             已停用 ({{ suspendedUsers() }})
           </button>
         </div>
-
-        <!-- 身分角色過濾下拉選單 -->
-        <div class="role-select-wrap">
-          <label for="role-filter-select" class="role-select-label">身分：</label>
-          <select
-            id="role-filter-select"
-            class="role-select"
-            [value]="roleFilter()"
-            (change)="onRoleSelectChange($event)"
-          >
-            <option value="all">全部身分角色</option>
-            <option value="employee">上班族</option>
-            <option value="student">學生</option>
-            <option value="teacher">教師</option>
-            <option value="researcher">研究人員</option>
-            <option value="retired">已退休</option>
-            <option value="admin">系統管理員</option>
-            <option value="other">其他</option>
-          </select>
-        </div>
       </div>
 
       <!-- 4. 會員清單表格卡片 -->
       <div class="table-card">
-        @if (filteredUsers().length === 0) {
+        @if (isLoading()) {
+          <div class="empty-search-state">
+            <p>正在載入全站會員資料，請稍候...</p>
+          </div>
+        } @else if (isServerUnavailable()) {
+          <div class="empty-search-state server-error-box" role="alert">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="32" height="32" style="color: #b91c1c; margin-bottom: 0.8rem;" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+              <line x1="6" y1="6" x2="6.01" y2="6"/>
+              <line x1="6" y1="18" x2="6.01" y2="18"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+            <h3 style="font-size: 1.6rem; font-weight: 700; color: #0f172a; margin: 0 0 0.6rem 0;">後端伺服器連線異常</h3>
+            <p style="margin-bottom: 1.2rem;">無法載入會員資料（8080 埠位）。請確認後端 Spring Boot 服務是否已啟動。</p>
+            <button type="button" class="btn btn-ghost btn-sm" (click)="loadUsers()">
+              重新嘗試連線
+            </button>
+          </div>
+        } @else if (filteredUsers().length === 0) {
           <div class="empty-search-state">
             <div class="empty-search-icon">🔍</div>
             <h3>查無符合條件的會員帳號</h3>
@@ -217,14 +216,17 @@
                 <td mat-cell *matCellDef="let user">
                   <div class="user-cell">
                     <div class="user-avatar" [class.avatar-admin]="user.role === 'admin'">
-                      {{ getUserInitial(user.name) }}
+                      {{ getUserInitial(user.username) }}
                     </div>
                     <div class="user-info">
                       <div class="user-name-line">
-                        <span class="user-fullname">{{ user.name }}</span>
-                        <span class="user-id-badge">{{ user.id }}</span>
+                        <span class="user-fullname">{{ user.username }}</span>
+                        <span class="user-id-badge">ID: {{ user.id }}</span>
                       </div>
-                      <span class="user-email">{{ user.email }}</span>
+                      <div class="user-subline">
+                        <span class="user-realname" title="真實姓名">{{ user.fullName }}</span>
+                        <span class="user-email-text">{{ user.email }}</span>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -263,7 +265,7 @@
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>帳號狀態</th>
                 <td mat-cell *matCellDef="let user">
-                  <div class="status-cell">
+                  <div class="status-cell" (click)="toggleUserStatus(user)" [title]="user.role === 'admin' ? '系統管理員不可停用' : '點擊快速切換啟用/凍結狀態'" [style.cursor]="user.role === 'admin' ? 'default' : 'pointer'">
                     @if (user.status === 'active') {
                       <span class="status-badge status-active">
                         <span class="dot"></span>
@@ -315,7 +317,7 @@
           <div class="paginator-wrap">
             <mat-paginator
               [pageSizeOptions]="[5, 10, 20]"
-              [pageSize]="10"
+              [pageSize]="5"
               showFirstLastButtons
               aria-label="選取會員清單分頁"
             >

@@ -81,6 +81,12 @@ public class AnalyticsService {
         return SurveyAnalyticsResponse.builder()
                 .surveyId(survey.getId())
                 .surveyTitle(survey.getTitle())
+                .category(survey.getCategory())
+                .authorUsername(survey.getCreator() != null ? survey.getCreator().getUsername() : "系統發起人")
+                .isPublicToLobby(survey.getIsPublicToLobby())
+                .isOpen(survey.getIsOpen())
+                .startDate(survey.getStartDate() != null ? survey.getStartDate().toLocalDate().toString() : null)
+                .endDate(survey.getEndDate() != null ? survey.getEndDate().toLocalDate().toString() : null)
                 .kpi(kpi)
                 .trends(trends)
                 .demographics(demographics)
@@ -157,18 +163,23 @@ public class AnalyticsService {
             SubmissionBasicInfo info = s.getBasicInfo();
             if (info == null) continue;
 
-            if (info.getGender() != null) {
-                genderMap.merge(info.getGender(), 1L, Long::sum);
+            if (info.getGender() != null && !info.getGender().trim().isEmpty()) {
+                genderMap.merge(info.getGender().trim(), 1L, Long::sum);
             }
-            if (info.getAgeGroup() != null) {
-                ageMap.merge(info.getAgeGroup(), 1L, Long::sum);
+            if (info.getAgeGroup() != null && !info.getAgeGroup().trim().isEmpty()) {
+                ageMap.merge(info.getAgeGroup().trim(), 1L, Long::sum);
             }
-            if (info.getIndustry() != null) {
-                industryMap.merge(info.getIndustry(), 1L, Long::sum);
+            if (info.getIndustry() != null && !info.getIndustry().trim().isEmpty()) {
+                industryMap.merge(info.getIndustry().trim(), 1L, Long::sum);
             }
-            if (info.getResidence() != null) {
-                residenceMap.merge(info.getResidence(), 1L, Long::sum);
+            if (info.getResidence() != null && !info.getResidence().trim().isEmpty()) {
+                residenceMap.merge(info.getResidence().trim(), 1L, Long::sum);
             }
+        }
+
+        // 若無任何有效的人口輪廓特徵（如完全匿名問卷或僅收集姓名/信箱），回傳 null 避免前端產生假圖表
+        if (genderMap.isEmpty() && ageMap.isEmpty() && industryMap.isEmpty() && residenceMap.isEmpty()) {
+            return null;
         }
 
         return DemographicsDto.builder()
@@ -192,7 +203,7 @@ public class AnalyticsService {
                     .questionText(q.getQuestionText())
                     .type(q.getType());
 
-            if (q.getType() == QuestionType.SINGLE || q.getType() == QuestionType.MULTI) {
+            if (q.getType() == QuestionType.SINGLE || q.getType() == QuestionType.MULTI || q.getType() == QuestionType.BOOLEAN) {
                 Map<String, Long> counts = new HashMap<>();
                 Map<String, Double> percentages = new HashMap<>();
 
@@ -204,13 +215,15 @@ public class AnalyticsService {
                 List<Map<String, Object>> rawCounts = answerRepository.countSelectionsByQuestionNative(q.getId());
                 long sumSelections = 0;
                 for (Map<String, Object> row : rawCounts) {
-                    Long optId = (Long) row.get("optionId");
-                    Long count = (Long) row.get("selectedCount");
+                    Long optId = getLong(getCaseInsensitive(row, "optionId"));
+                    Long count = getLong(getCaseInsensitive(row, "selectedCount"));
                     sumSelections += count;
 
-                    q.getOptions().stream().filter(o -> o.getId().equals(optId)).findFirst().ifPresent(o -> {
-                        counts.put(o.getOptionText(), count);
-                    });
+                    if (optId != null) {
+                        q.getOptions().stream().filter(o -> o.getId().equals(optId)).findFirst().ifPresent(o -> {
+                            counts.put(o.getOptionText(), count);
+                        });
+                    }
                 }
 
                 // 計算百分比
@@ -226,16 +239,112 @@ public class AnalyticsService {
 
             } else if (q.getType() == QuestionType.RATING) {
                 Map<String, Object> ratingStats = answerRepository.calculateRatingStatsNative(q.getId());
-                Double avg = (Double) ratingStats.get("avgRating");
-                Long count = (Long) ratingStats.get("totalCount");
+                Double avg = getDouble(getCaseInsensitive(ratingStats, "avgRating"));
+                Long count = getLong(getCaseInsensitive(ratingStats, "totalCount"));
+                long totalCount = count != null ? count : 0L;
 
-                builder.totalAnswers(count != null ? count : 0L)
-                        .averageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
+                int minR = q.getMinRating() != null ? q.getMinRating() : 1;
+                int maxR = q.getMaxRating() != null ? q.getMaxRating() : (avg != null && avg > 5.0 ? 10 : 5);
 
-            } else if (q.getType() == QuestionType.TEXT) {
-                List<String> feedbacks = answerRepository.findTextAnswersByQuestionNative(q.getId());
-                builder.totalAnswers((long) feedbacks.size())
-                        .textFeedbacks(feedbacks.stream().limit(20).collect(Collectors.toList()));
+                List<Map<String, Object>> rawDist = answerRepository.countRatingDistributionByQuestionNative(q.getId());
+                Map<Integer, Long> distMap = new TreeMap<>();
+                
+                // 動態判斷真實出現的分數範圍
+                for (Map<String, Object> row : rawDist) {
+                    Long rVal = getLong(getCaseInsensitive(row, "ratingValue"));
+                    if (rVal != null) {
+                        if (rVal < minR) minR = rVal.intValue();
+                        if (rVal > maxR) maxR = rVal.intValue();
+                    }
+                }
+                
+                // 初始化全區間為 0
+                for (int score = minR; score <= maxR; score++) {
+                    distMap.put(score, 0L);
+                }
+
+                List<Integer> allScores = new ArrayList<>();
+                long maxFrequency = 0L;
+                int modeScore = minR;
+                long detractorCount = 0L;
+                long passiveCount = 0L;
+                long promoterCount = 0L;
+
+                for (Map<String, Object> row : rawDist) {
+                    Long rVal = getLong(getCaseInsensitive(row, "ratingValue"));
+                    Long rCnt = getLong(getCaseInsensitive(row, "ratingCount"));
+                    if (rVal != null && rCnt != null) {
+                        int score = rVal.intValue();
+                        distMap.put(score, rCnt);
+                        for (int k = 0; k < rCnt; k++) {
+                            allScores.add(score);
+                        }
+                        if (rCnt > maxFrequency) {
+                            maxFrequency = rCnt;
+                            modeScore = score;
+                        }
+
+                        // NPS 分組計算
+                        if (maxR >= 10) {
+                            if (score <= 6) detractorCount += rCnt;
+                            else if (score <= 8) passiveCount += rCnt;
+                            else promoterCount += rCnt;
+                        } else {
+                            if (score <= 2) detractorCount += rCnt;
+                            else if (score == 3) passiveCount += rCnt;
+                            else promoterCount += rCnt;
+                        }
+                    }
+                }
+
+                // 計算中位數
+                Collections.sort(allScores);
+                double median = 0.0;
+                if (!allScores.isEmpty()) {
+                    int size = allScores.size();
+                    if (size % 2 == 1) {
+                        median = allScores.get(size / 2);
+                    } else {
+                        median = (allScores.get(size / 2 - 1) + allScores.get(size / 2)) / 2.0;
+                    }
+                }
+
+                // 計算標準差
+                double stdDev = 0.0;
+                if (totalCount > 1 && avg != null) {
+                    double sumSqDiff = 0.0;
+                    for (int score : allScores) {
+                        sumSqDiff += Math.pow(score - avg, 2);
+                    }
+                    stdDev = Math.round(Math.sqrt(sumSqDiff / totalCount) * 10.0) / 10.0;
+                }
+
+                // 計算該量表題之真實 NPS
+                int itemNps = 0;
+                if (totalCount > 0) {
+                    itemNps = (int) Math.round(((double) (promoterCount - detractorCount) / totalCount) * 100.0);
+                }
+
+                Map<String, Long> npsBreakdown = new HashMap<>();
+                npsBreakdown.put("detractor", detractorCount);
+                npsBreakdown.put("passive", passiveCount);
+                npsBreakdown.put("promoter", promoterCount);
+
+                builder.totalAnswers(totalCount)
+                        .averageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0)
+                        .minRating(minR)
+                        .maxRating(maxR)
+                        .ratingDistribution(distMap)
+                        .modeRating(modeScore)
+                        .medianRating(median)
+                        .standardDeviation(stdDev)
+                        .npsScore(itemNps)
+                        .npsBreakdown(npsBreakdown);
+
+            } else if (q.getType() == QuestionType.TEXT || q.getType() == QuestionType.TIME || q.getType() == QuestionType.DATE) {
+                List<Map<String, Object>> structuredFeedbacks = answerRepository.findStructuredTextAnswersByQuestionNative(q.getId());
+                builder.totalAnswers((long) structuredFeedbacks.size())
+                        .textFeedbacks(new ArrayList<>(structuredFeedbacks.stream().limit(100).collect(Collectors.toList())));
             }
 
             stats.add(builder.build());
@@ -254,11 +363,75 @@ public class AnalyticsService {
 
         if (ratingQ.isEmpty()) return 50; // 預設滿意基準值
 
-        Map<String, Object> stats = answerRepository.calculateRatingStatsNative(ratingQ.get().getId());
-        Double avg = (Double) stats.get("avgRating");
-        if (avg == null) return 50;
+        Long qId = ratingQ.get().getId();
+        List<Map<String, Object>> rawDist = answerRepository.countRatingDistributionByQuestionNative(qId);
+        long detractorCount = 0L;
+        long passiveCount = 0L;
+        long promoterCount = 0L;
+        long totalCount = 0L;
 
-        // 若 5 分制換算 NPS (4-5 分推薦, 3 分被動, 1-2 分貶損)
-        return (int) Math.round((avg / 5.0) * 100 - 30);
+        int maxR = ratingQ.get().getMaxRating() != null ? ratingQ.get().getMaxRating() : 5;
+
+        for (Map<String, Object> row : rawDist) {
+            Long rVal = getLong(getCaseInsensitive(row, "ratingValue"));
+            Long rCnt = getLong(getCaseInsensitive(row, "ratingCount"));
+            if (rVal != null && rCnt != null) {
+                int score = rVal.intValue();
+                totalCount += rCnt;
+                if (score > maxR) maxR = score;
+
+                if (maxR >= 10) {
+                    if (score <= 6) detractorCount += rCnt;
+                    else if (score <= 8) passiveCount += rCnt;
+                    else promoterCount += rCnt;
+                } else {
+                    if (score <= 2) detractorCount += rCnt;
+                    else if (score == 3) passiveCount += rCnt;
+                    else promoterCount += rCnt;
+                }
+            }
+        }
+
+        if (totalCount == 0) return 50;
+        return (int) Math.round(((double) (promoterCount - detractorCount) / totalCount) * 100.0);
+    }
+
+    /**
+     * 不區分大小寫自 Map 讀取屬性值，相容不同資料庫驅動欄位別名慣例
+     */
+    private Object getCaseInsensitive(Map<String, Object> map, String key) {
+        if (map == null || key == null) return null;
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if (key.equalsIgnoreCase(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 安全轉型為 Double，防止 BigDecimal / Double / Long 之 ClassCastException
+     */
+    private Double getDouble(Object val) {
+        if (val == null) return null;
+        if (val instanceof Number) return ((Number) val).doubleValue();
+        try {
+            return Double.valueOf(val.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * 安全轉型為 Long，防止 BigInteger / Integer / Long 之 ClassCastException
+     */
+    private Long getLong(Object val) {
+        if (val == null) return 0L;
+        if (val instanceof Number) return ((Number) val).longValue();
+        try {
+            return Long.valueOf(val.toString());
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
     }
 }

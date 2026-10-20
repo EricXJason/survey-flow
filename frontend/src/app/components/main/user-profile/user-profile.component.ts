@@ -27,7 +27,12 @@ import { ValidationService } from '../../../@services/validation.service';
 import { UserStateService } from '../../../@services/user-state.service';
 import { UserEmitterService } from '../../../@services/user-emitter.service';
 import { DialogService, DialogData } from '../../../@services/dialog.service';
-import { AccountModifyProfilePayload } from '../../../@interfaces/account-model';
+import { ApiClientService } from '../../../@services/api-client.service';
+import {
+  AccountModifyProfilePayload,
+  CAREER_OPTIONS,
+  CAREER_LABEL_MAP,
+} from '../../../@interfaces/account-model';
 
 /**
  * 個人資料編輯組件 (UserProfileComponent)
@@ -41,8 +46,13 @@ import { AccountModifyProfilePayload } from '../../../@interfaces/account-model'
   imports: [ReactiveFormsModule],
 })
 export class UserProfileComponent implements OnInit {
+  /** 全域標準職業選項清單 */
+  public readonly careerOptions = CAREER_OPTIONS;
+
   /** 路由導航服務 */
   private readonly _router = inject(Router);
+  /** API 客戶端服務 */
+  private readonly _apiClient = inject(ApiClientService);
   /** 響應式表單建構服務 */
   private readonly _formBuilder = inject(FormBuilder);
   /** 格式防呆檢核服務 */
@@ -103,7 +113,7 @@ export class UserProfileComponent implements OnInit {
 
   /**
    * 初始化個人資料表單群組
-   * 帳號與 Email 為不可變更欄位 (disabled: true)，其他基本欄位配置相應格式驗證器。
+   * 帳號與 Email 為系統唯一/綁定不可變更欄位 (disabled: true)，身分證字號與出生日期為法定綁定唯讀欄位 (readonly: true)，其他欄位配置相應格式驗證器。
    * @returns FormGroup 個人資料表單物件
    */
   private formBuilderGroupInit(): FormGroup {
@@ -197,6 +207,33 @@ export class UserProfileComponent implements OnInit {
    */
   private loadUserProfile(): void {
     const profile = this._userState.userProfile();
+    this.applyProfileToForm(profile);
+
+    // 向後端請求最新資料
+    this._apiClient.get<any>('/api/user/profile').subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          const remote = res.data;
+          const updatedProfile = {
+            ...profile,
+            name: remote.name || profile.name,
+            phone: remote.phone || profile.phone,
+            nationalId: remote.nationalId || profile.nationalId,
+            gender: remote.gender || profile.gender,
+            birthday: remote.birthday || profile.birthday,
+            role: remote.identity || profile.role,
+          };
+          this._userState.setIdentity(updatedProfile);
+          this.applyProfileToForm(updatedProfile);
+        }
+      },
+    });
+  }
+
+  /**
+   * 將個人檔案結構套用至表單
+   */
+  private applyProfileToForm(profile: any): void {
     let accountGender = profile.gender;
     if (accountGender === '男') {
       accountGender = 'male';
@@ -205,37 +242,60 @@ export class UserProfileComponent implements OnInit {
     } else if (accountGender === '其他') {
       accountGender = 'other';
     }
-
     if (!accountGender) {
       accountGender = 'male';
-      this._userState.setIdentity({
-        ...profile,
-        gender: 'male',
-      });
     }
 
-    // 身分職業值對應字典（確保相容中文稱謂與英文代碼）
     const roleMap: Record<string, string> = {
       student: 'student',
       teacher: 'teacher',
       researcher: 'researcher',
+      it_engineer: 'it_engineer',
+      semiconductor: 'semiconductor',
       employee: 'employee',
+      finance: 'finance',
+      marketing: 'marketing',
+      executive: 'executive',
+      healthcare: 'healthcare',
+      legal_pro: 'legal_pro',
+      civil_service: 'civil_service',
+      retail_service: 'retail_service',
+      hospitality: 'hospitality',
+      freelancer: 'freelancer',
+      creator: 'creator',
+      homemaker: 'homemaker',
       retired: 'retired',
+      seeking: 'seeking',
       other: 'other',
       '學生': 'student',
       '教師': 'teacher',
       '研究人員': 'researcher',
+      '軟體工程師': 'it_engineer',
+      '資訊科技': 'it_engineer',
+      '半導體工程師': 'semiconductor',
       '上班族': 'employee',
+      '金融保險': 'finance',
+      '行銷公關': 'marketing',
+      '企業主管': 'executive',
+      '醫療人員': 'healthcare',
+      '專門職業': 'legal_pro',
+      '公務人員': 'civil_service',
+      '零售電商': 'retail_service',
+      '餐飲觀光': 'hospitality',
+      '自由工作者': 'freelancer',
+      '自媒體創作者': 'creator',
+      '家庭主理人': 'homemaker',
       '已退休': 'retired',
+      '待業轉換中': 'seeking',
       '其他': 'other',
       '一般會員': 'employee',
       '管理員': 'researcher',
     };
 
-    let accountRole = profile.role ? roleMap[profile.role] || 'employee' : 'employee';
+    let accountRole = profile.role ? roleMap[profile.role] || (this.careerOptions.some(c => c.value === profile.role) ? profile.role : 'employee') : 'employee';
 
     this.formBuilderGroup.patchValue({
-      username: profile.userName,
+      username: profile.userName || profile.name,
       email: profile.email,
       name: profile.name,
       nationalId: profile.nationalId,

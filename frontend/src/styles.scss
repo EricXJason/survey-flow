@@ -25,6 +25,7 @@
    2. 根元素與視窗標準 (Root & Viewport Baseline)
    -------------------------------------------------------------------------- */
 html { /* 選取 HTML 根節點，奠定全站字級換算基準與視窗全域滾動標準 */
+  color-scheme: light; /* 強制瀏覽器表單控制項以標準淺色模式渲染，徹底消除暗黑模式下未選取 radio 顯示為黑實心圓之缺陷 */
   font-size: 62.5%; /* 基準字級設為 62.5%（預設 16px * 62.5% = 10px），使 1rem 精準等於 10px，極大幅簡化 rem 計算且保留無障礙系統縮放 */
   scroll-behavior: smooth; /* 頁面內錨點跳轉與滾動時啟用平滑滑動過渡，提供現代流暢的視覺體驗 */
   -webkit-text-size-adjust: 100%; /* 防止 iOS Safari 等 WebKit 核心行動裝置在橫向翻轉螢幕時非預期自動放大字體 */
@@ -38,11 +39,11 @@ html { /* 選取 HTML 根節點，奠定全站字級換算基準與視窗全域�
    -------------------------------------------------------------------------- */
 body { /* 選取頁面主體 BODY，定義預設字型堆疊、底色、行高與字體抗鋸齒標準 */
   min-height: 100vh; /* 確保主體高度至少撐滿一個完整視窗高度，避免內容過短時頁尾悬空 */
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans TC', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'; /* 採用作業系統原生無襯線字型堆疊，兼顧各作業系統最佳渲染且零網路延遲 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, 'Noto Sans TC', Helvetica, Arial, sans-serif; /* 採用作業系統原生無襯線字型堆疊，兼顧學術期刊排版風格最佳渲染 */
   font-size: 1.6rem; /* 預設內文字級設為 1.6rem（等同 16px），符合現代主流網頁標準易讀性階層 */
-  line-height: 1.6; /* 內文行高比例設為 1.6 倍，給予充足的行距呼吸感，大幅降低長文閱讀疲勞度 */
-  color: #1e293b; /* 設定預設文字顏色為深灰色階（#1e293b），相較純黑更顯柔和且兼具 AAA 級高對比易讀性 */
-  background-color: #ffffff; /* 設定頁面預設背景為乾淨純白底色（#ffffff） */
+  line-height: 1.65; /* 內文行高比例設為 1.65 倍，給予充足的行距呼吸感，大幅降低學術長文閱讀疲勞度 */
+  color: #1f2937; /* 設定預設文字顏色為深墨灰階（#1f2937），兼具 AAA 級最高對比易讀性 */
+  background-color: #fbfbfa; /* 設定頁面預設背景為溫潤典藏紙張底色（#fbfbfa），去除刺眼死白 */
   -webkit-font-smoothing: antialiased; /* 啟用 macOS / WebKit 核心次像素平滑渲染，使中英文字體筆畫更為纖細清晰 */
   -moz-osx-font-smoothing: grayscale; /* 啟用 macOS Firefox 灰階抗鋸齒渲染，維持跨瀏覽器字重視覺粗細一致 */
   text-rendering: optimizeLegibility; /* 啟用字型引擎的最佳可讀性渲染模式，自動處理字元間距微調與連字效果 */
@@ -117,12 +118,12 @@ pre { /* 預先格式化程式碼區塊容器 */
    5. 超連結與按鈕原生預設 (Hyperlinks & Buttons)
    -------------------------------------------------------------------------- */
 a { /* 超連結錨點標籤 */
-  color: #2563eb; /* 預設採用標準藍色（#2563eb），提供鮮明可識別且符合 WCAG AA 規範的互動色彩指引 */
+  color: #0f172a; /* 預設採用深墨黑（#0f172a），提供純淨黑白質感且達 AAA 級超高對比度 */
   text-decoration: none; /* 預設移除原生底線，保持頁面乾淨俐落的現代簡約視覺感 */
   transition: color 0.15s ease; /* 色彩變化加入 0.15 秒平滑過渡動畫，提升操作細膩度 */
 
   &:hover { /* 滑鼠懸停於超連結上的互動狀態 */
-    color: #1e40af; /* 懸停時切換至加深藍色（#1e40af），給予使用者明確的視覺點擊反饋 */
+    color: #000000; /* 懸停時切換至純黑（#000000），給予使用者明確的視覺點擊反饋 */
     text-decoration: underline; /* 懸停時恢復下劃線提示，符合 WCAG 網頁無障礙操作識別標準 */
   }
 }
@@ -179,10 +180,65 @@ button { /* 點擊按鈕標籤 */
   color: inherit; /* 強制繼承當前文本色彩設定 */
 }
 
-input[type="checkbox"], /* 原生方型複選方塊 */
-input[type="radio"] { /* 原生圓形單選按鈕 */
-  accent-color: #2563eb; /* 統一瀏覽器原生勾選框與單選鈕的選取強調色為標準藍色（#2563eb） */
-  cursor: pointer; /* 滑鼠懸停於選項上時顯示手型指標，提升可點選的操作暗示 */
+/* 瀏覽器帳密自動填入 (Autofill) 純白底與深墨文字鎖定，杜絕暗黑模式藍灰底色 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input[type="checkbox"] { /* 原生方型複選方塊 */
+  accent-color: #0f172a; /* 統一瀏覽器原生勾選框的選取強調色為深墨黑（#0f172a） */
+  cursor: pointer;
+}
+
+input[type="radio"] { /* 純 CSS 自訂現代中性單選按鈕，杜絕原生暗黑渲染黑圓 */
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  background-color: #ffffff;
+  margin: 0;
+  display: inline-grid;
+  place-content: center;
+  vertical-align: middle;
+  cursor: pointer;
+  transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+
+  &::before {
+    content: "";
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: 0.12s transform ease-in-out;
+    background-color: #0f172a;
+  }
+
+  &:checked {
+    border-color: #0f172a;
+    background-color: #ffffff;
+
+    &::before {
+      transform: scale(1);
+    }
+  }
+
+  &:hover:not(:disabled) {
+    border-color: #64748b;
+  }
+
+  &:disabled {
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+  }
 }
 
 textarea { /* 多行文字輸入區域標籤 */
@@ -193,7 +249,7 @@ textarea { /* 多行文字輸入區域標籤 */
    9. 無障礙可見焦點標準 (WCAG 2.4.7 Focus Visible Baseline)
    -------------------------------------------------------------------------- */
 :focus-visible { /* 鍵盤 Tab 導航選中元素之無障礙焦點狀態偽類 */
-  outline: 2px solid #3b82f6; /* 當鍵盤導航選中元素時，顯示清晰醒目的 2px 藍色外框（#3b82f6），符合 WCAG 2.4.7 可見焦點規範 */
+  outline: 2px solid #0f172a; /* 當鍵盤導航選中元素時，顯示清晰醒目的 2px 深墨黑外框（#0f172a），符合 WCAG 2.4.7 可見焦點規範 */
   outline-offset: 2px; /* 外框向外擴展偏移 2px，避免聚焦外框遮擋按鈕本身的圓角、邊框或內部文字 */
 }
 

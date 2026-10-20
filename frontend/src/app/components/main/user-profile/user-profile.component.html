@@ -1,31 +1,37 @@
 <div class="page-auth">
   <div class="form-card profile-card">
     <header class="auth-header">
-      <span class="auth-badge">帳號設定</span>
-      <h1 class="auth-title">會員個人資料維護</h1>
-      <p class="auth-subtitle">檢視並更新您的個人基本資訊與登入安全設定</p>
+      <span class="auth-badge">帳號中心</span>
+      <h1 class="auth-title">個人資料維護</h1>
+      <p class="auth-subtitle">檢視並更新您的帳號基本資料與安全設定</p>
     </header>
 
     <form [formGroup]="formBuilderGroup" (ngSubmit)="checkProfileData()" novalidate>
-      <!-- 系統帳號固定資訊區塊 -->
-      <div class="form-section-title">
-        <span>系統帳號資訊</span>
-        <span class="section-tag">不可修改</span>
+      <!-- 1. 系統帳號固定資訊區塊 -->
+      <div class="form-section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">系統帳號資訊</h2>
+          <span class="section-badge-muted">已驗證不可修改</span>
+        </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="prof-username">會員帳號</label>
-          <div class="readonly-input-wrap">
+          <div class="label-row">
+            <label for="prof-username" class="field-label">會員帳號</label>
+          </div>
+          <div class="input-with-lock">
             <input
               id="prof-username"
               type="text"
               formControlName="username"
               placeholder="系統帳號"
               readonly
+              class="field-readonly"
+              aria-readonly="true"
             />
             <span class="lock-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
@@ -34,17 +40,21 @@
         </div>
 
         <div class="form-group">
-          <label for="prof-email">綁定電子信箱</label>
-          <div class="readonly-input-wrap">
+          <div class="label-row">
+            <label for="prof-email" class="field-label">綁定電子信箱</label>
+          </div>
+          <div class="input-with-lock">
             <input
               id="prof-email"
               type="email"
               formControlName="email"
               placeholder="綁定信箱"
               readonly
+              class="field-readonly"
+              aria-readonly="true"
             />
             <span class="lock-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
@@ -53,21 +63,27 @@
         </div>
       </div>
 
-      <!-- 變更登入密碼區塊 -->
-      <div class="form-section-title">
-        <span>安全與密碼</span>
+      <!-- 2. 安全與密碼區塊 -->
+      <div class="form-section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">安全與密碼</h2>
+        </div>
       </div>
 
       <div class="password-toggle-bar">
         <button
           type="button"
-          class="btn btn-secondary btn-sm"
+          class="btn-toggle-pwd"
+          [class.active]="isPasswordChangeExpanded"
           (click)="togglePasswordChange()"
         >
-          {{ isPasswordChangeExpanded ? "取消變更密碼" : "變更登入密碼" }}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" class="key-icon" aria-hidden="true">
+            <path d="M21 2l-2 2m-1.5 1.5L16 7l-1.5-1.5L13 7l-1.5-1.5L10 7M7 10a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"></path>
+          </svg>
+          <span>{{ isPasswordChangeExpanded ? "取消變更密碼" : "變更登入密碼" }}</span>
         </button>
         <span class="toggle-hint">
-          {{ isPasswordChangeExpanded ? "填寫新密碼後點擊「儲存修改」生效" : "若無需變更密碼請保留原狀" }}
+          {{ isPasswordChangeExpanded ? "填寫新密碼後點擊下方「儲存個人資料修改」生效" : "若無需變更密碼請保留原狀即可" }}
         </span>
       </div>
 
@@ -75,7 +91,9 @@
         <div class="password-expand-box">
           <div class="form-row">
             <div class="form-group">
-              <label for="prof-new-password">設定新密碼 <span class="required-star">*</span></label>
+              <div class="label-row">
+                <label for="prof-new-password" class="field-label">設定新密碼 <span class="required-star">*</span></label>
+              </div>
               <input
                 id="prof-new-password"
                 type="password"
@@ -99,7 +117,9 @@
             </div>
 
             <div class="form-group">
-              <label for="prof-confirm-password">確認新密碼 <span class="required-star">*</span></label>
+              <div class="label-row">
+                <label for="prof-confirm-password" class="field-label">確認新密碼 <span class="required-star">*</span></label>
+              </div>
               <input
                 id="prof-confirm-password"
                 type="password"
@@ -127,14 +147,18 @@
         </div>
       }
 
-      <!-- 基本個人資料區塊 -->
-      <div class="form-section-title">
-        <span>基本個人資料</span>
+      <!-- 3. 基本個人資料區塊 -->
+      <div class="form-section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">基本個人資料</h2>
+        </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="prof-name">真實姓名 <span class="required-star">*</span></label>
+          <div class="label-row">
+            <label for="prof-name" class="field-label">真實姓名 <span class="required-star">*</span></label>
+          </div>
           <input
             id="prof-name"
             type="text"
@@ -156,30 +180,36 @@
         </div>
 
         <div class="form-group">
-          <label for="prof-national-id">身分證字號 <span class="required-star">*</span></label>
-          <input
-            id="prof-national-id"
-            type="text"
-            formControlName="nationalId"
-            maxlength="10"
-            placeholder="例如：A123456789"
-            [attr.aria-invalid]="formBuilderGroup.get('nationalId')?.invalid && formBuilderGroup.get('nationalId')?.touched"
-            aria-describedby="prof-natid-err"
-          />
-          @if (
-            formBuilderGroup.get("nationalId")?.invalid &&
-            formBuilderGroup.get("nationalId")?.touched
-          ) {
-            <span id="prof-natid-err" class="field-error" role="alert">
-              請輸入格式正確的中華民國身分證字號
+          <div class="label-row">
+            <label for="prof-national-id" class="field-label">身分證字號</label>
+            <span class="label-badge">已綁定不可修改</span>
+          </div>
+          <div class="input-with-lock">
+            <input
+              id="prof-national-id"
+              type="text"
+              formControlName="nationalId"
+              maxlength="10"
+              readonly
+              class="field-readonly"
+              placeholder="例如：A123456789"
+              aria-readonly="true"
+            />
+            <span class="lock-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
             </span>
-          }
+          </div>
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="prof-phone">手機號碼 <span class="required-star">*</span></label>
+          <div class="label-row">
+            <label for="prof-phone" class="field-label">手機號碼 <span class="required-star">*</span></label>
+          </div>
           <input
             id="prof-phone"
             type="tel"
@@ -201,43 +231,51 @@
         </div>
 
         <div class="form-group">
-          <label for="prof-birthday">出生日期 <span class="required-star">*</span></label>
-          <input
-            id="prof-birthday"
-            type="date"
-            formControlName="birthday"
-            min="1900-01-01"
-            [max]="maxBirthday"
-            [attr.aria-invalid]="formBuilderGroup.get('birthday')?.invalid && formBuilderGroup.get('birthday')?.touched"
-            aria-describedby="prof-birth-err"
-          />
-          @if (
-            formBuilderGroup.get("birthday")?.invalid &&
-            formBuilderGroup.get("birthday")?.touched
-          ) {
-            <span id="prof-birth-err" class="field-error" role="alert">
-              請選擇出生日期
+          <div class="label-row">
+            <label for="prof-birthday" class="field-label">出生日期</label>
+            <span class="label-badge">已綁定不可修改</span>
+          </div>
+          <div class="input-with-lock">
+            <input
+              id="prof-birthday"
+              type="date"
+              formControlName="birthday"
+              readonly
+              class="field-readonly"
+              aria-readonly="true"
+            />
+            <span class="lock-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
             </span>
-          }
+          </div>
         </div>
       </div>
 
-      <div class="form-row">
+      <!-- 生理性別與身分職業：同列完美高度等高對齊 -->
+      <div class="form-row form-row-aligned">
         <div class="form-group">
           <fieldset class="radio-fieldset">
-            <legend class="fieldset-legend">生理性別 <span class="required-star">*</span></legend>
-            <div class="radio-group" role="radiogroup">
-              <label class="radio-label">
-                <input type="radio" value="male" formControlName="gender" />
-                <span>男</span>
+            <div class="label-row">
+              <legend class="field-label">生理性別 <span class="required-star">*</span></legend>
+            </div>
+            <div class="segmented-control" role="radiogroup" aria-label="生理性別選項">
+              <label class="segmented-option" [class.selected]="formBuilderGroup.get('gender')?.value === 'male'">
+                <input type="radio" value="male" formControlName="gender" class="sr-only" />
+                <span class="opt-indicator" aria-hidden="true"></span>
+                <span class="opt-label">男</span>
               </label>
-              <label class="radio-label">
-                <input type="radio" value="female" formControlName="gender" />
-                <span>女</span>
+              <label class="segmented-option" [class.selected]="formBuilderGroup.get('gender')?.value === 'female'">
+                <input type="radio" value="female" formControlName="gender" class="sr-only" />
+                <span class="opt-indicator" aria-hidden="true"></span>
+                <span class="opt-label">女</span>
               </label>
-              <label class="radio-label">
-                <input type="radio" value="other" formControlName="gender" />
-                <span>其他</span>
+              <label class="segmented-option" [class.selected]="formBuilderGroup.get('gender')?.value === 'other'">
+                <input type="radio" value="other" formControlName="gender" class="sr-only" />
+                <span class="opt-indicator" aria-hidden="true"></span>
+                <span class="opt-label">其他</span>
               </label>
             </div>
           </fieldset>
@@ -250,21 +288,28 @@
         </div>
 
         <div class="form-group">
-          <label for="prof-role">身分職業 <span class="required-star">*</span></label>
-          <select
-            id="prof-role"
-            formControlName="role"
-            [attr.aria-invalid]="formBuilderGroup.get('role')?.invalid && formBuilderGroup.get('role')?.touched"
-            aria-describedby="prof-role-err"
-          >
-            <option value="" disabled selected>請選擇身分職業</option>
-            <option value="student">學生</option>
-            <option value="teacher">教師</option>
-            <option value="researcher">研究人員</option>
-            <option value="employee">上班族</option>
-            <option value="retired">已退休</option>
-            <option value="other">其他</option>
-          </select>
+          <div class="label-row">
+            <label for="prof-role" class="field-label">身分職業 <span class="required-star">*</span></label>
+          </div>
+          <div class="select-input-wrap">
+            <select
+              id="prof-role"
+              formControlName="role"
+              class="custom-select"
+              [attr.aria-invalid]="formBuilderGroup.get('role')?.invalid && formBuilderGroup.get('role')?.touched"
+              aria-describedby="prof-role-err"
+            >
+              <option value="" disabled selected>請選擇身分職業</option>
+              @for (c of careerOptions; track c.value) {
+                <option [value]="c.value">{{ c.label }}</option>
+              }
+            </select>
+            <span class="select-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </div>
           @if (
             formBuilderGroup.get("role")?.invalid &&
             formBuilderGroup.get("role")?.touched

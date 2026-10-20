@@ -13,7 +13,6 @@
 package com.surveyflow.service;
 
 import com.surveyflow.common.enums.RoleType;
-import com.surveyflow.common.enums.SurveyStatus;
 import com.surveyflow.dto.survey.SurveyCreateRequest;
 import com.surveyflow.dto.survey.SurveyResponse;
 import com.surveyflow.entity.Survey;
@@ -78,7 +77,8 @@ class SurveyServiceTest {
                 .creator(owner)
                 .title("2026 顧客滿意度調研")
                 .category("顧客滿意度")
-                .status(SurveyStatus.PUBLISHED)
+                .isOpen(true)
+                .isPublicToLobby(true)
                 .startDate(LocalDateTime.now().minusDays(1))
                 .endDate(LocalDateTime.now().plusDays(7))
                 .viewCount(10)

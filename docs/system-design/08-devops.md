@@ -1,16 +1,18 @@
 # 08. 容器建置與維運指標 (DevOps & Build Pipeline)
 
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
-> **運行環境**: Node.js 24.x, Angular CLI 19.x  
-> **更新日期**: 2026-10-06  
+> **運行環境**: Node.js 24.18.0, Angular CLI 19.0.5, Java 21.0.12, Spring Boot 4.1.1, MySQL 8.0.36  
+> **更新日期**: 2026-10-15  
 
 ---
 
 ## 1. 本地開發與構建管線
 
 ### 1.1 前置需求
-- **Node.js**: `v20.x` 或 `v24.x` (LTS 推薦)
-- **套件管理器**: `pnpm` 或 `npm`
+- **Node.js**: `24.18.0`
+- **Java JDK**: `21.0.12`
+- **MySQL**: `8.0.36`
+- **套件管理器**: `pnpm` 或 `npm 10.8.2`
 
 ### 1.2 核心指令集
 ```bash

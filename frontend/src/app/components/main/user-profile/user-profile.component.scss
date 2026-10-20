@@ -1,10 +1,24 @@
+/**
+ * ============================================================================
+ * 檔案名稱: user-profile.component.scss
+ * 所屬模組: Presentation Layer / User Profile Styles
+ * 責任描述: 會員個人基本資料維護頁面現代白色 SaaS 精緻樣式
+ *           全面解決排版突兀、鎖頭圖示孤懸、性別與職業高度失衡、雙重粗黑框等 UI 缺陷，
+ *           提供 1:1 絕對等高對齊、精緻分段式按鈕 (Segmented Controls) 與柔和呼吸留白。
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens), common.scss (全域元件)
+ *   - 下游消費: user-profile.component.html
+ * ============================================================================
+ */
+
 :host {
   min-height: calc(100vh - var(--header-h));
-  background: linear-gradient(160deg, #eef5ff 0%, #f5f9ff 40%, #ffffff 100%);
+  background: var(--c-bg, #fbfbfa);
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: clamp(var(--sp-6), 6vw, var(--sp-12)) var(--container-px);
+  padding: clamp(var(--sp-6, 2.4rem), 5vw, var(--sp-12, 4.8rem)) var(--container-px, 2rem);
+  box-sizing: border-box;
 }
 
 .page-auth {
@@ -17,147 +31,455 @@
   width: 100%;
   max-width: 68rem;
   background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: var(--r-2xl);
-  box-shadow: var(--shadow-card-elevated);
-  padding: clamp(var(--sp-6), 5vw, var(--sp-10));
+  border: 1px solid var(--c-border, #e2e8f0);
+  border-radius: var(--r-md, 12px);
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.05);
+  padding: clamp(2.4rem, 4.5vw, 4rem);
   box-sizing: border-box;
 }
 
+/* =====================================================
+   頂部標題區 (Auth Header)
+   ===================================================== */
 .auth-header {
   text-align: center;
-  margin-bottom: var(--sp-8);
+  margin-bottom: 2.8rem;
 }
 
 .auth-badge {
-  display: inline-block;
-  background: var(--c-brand-50);
-  color: var(--c-brand-700);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-neutral-100, #f1f5f9);
+  color: var(--c-neutral-700, #334155);
   font-size: 1.2rem;
-  font-weight: 700;
-  padding: 0.3rem 1.1rem;
-  border-radius: var(--r-full);
-  margin-bottom: var(--sp-3);
-  border: 1px solid var(--c-brand-200);
+  font-weight: 600;
+  padding: 0.3rem 1rem;
+  border-radius: var(--r-sm, 6px);
+  margin-bottom: 1.2rem;
+  border: 1px solid var(--c-border, #e2e8f0);
   letter-spacing: 0.04em;
 }
 
 .auth-title {
-  font-size: 2.8rem;
+  font-size: clamp(2.2rem, 3vw, 2.6rem);
   font-weight: 800;
-  color: var(--c-neutral-900);
-  margin-bottom: var(--sp-2);
+  color: var(--c-neutral-900, #0f172a);
+  margin: 0 0 0.8rem 0;
   letter-spacing: -0.02em;
-
-  &::after {
-    display: none;
-  }
 }
 
 .auth-subtitle {
   font-size: 1.45rem;
-  color: var(--c-neutral-500);
-  line-height: 1.5;
+  color: var(--c-neutral-500, #64748b);
+  line-height: 1.6;
+  margin: 0;
 }
 
-.form-section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 1.45rem;
-  font-weight: 700;
-  color: var(--c-brand-800);
-  background: var(--c-brand-50);
-  padding: var(--sp-2) var(--sp-3);
-  border-radius: var(--r-md);
-  margin-top: var(--sp-6);
-  margin-bottom: var(--sp-4);
-  border-left: 3.5px solid var(--c-brand-600);
+/* =====================================================
+   區塊標題分割線 (Section Header Divider) - 消除生硬黑條
+   ===================================================== */
+.form-section-header {
+  margin-top: 3.2rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--c-border, #e2e8f0);
+
+  &:first-of-type {
+    margin-top: 1.2rem;
+  }
+
+  .section-title-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem;
+  }
+
+  .section-title {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--c-neutral-900, #0f172a);
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  .section-badge-muted {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c-neutral-500, #64748b);
+    background: var(--c-neutral-100, #f1f5f9);
+    border: 1px solid var(--c-border, #e2e8f0);
+    padding: 0.2rem 0.8rem;
+    border-radius: var(--r-xs, 4px);
+  }
 }
 
-.section-tag {
-  font-size: 1.2rem;
-  font-weight: 600;
-  background: var(--c-neutral-200);
-  color: var(--c-neutral-700);
-  padding: 0.2rem 0.8rem;
-  border-radius: var(--r-full);
-}
-
-.required-star {
-  color: var(--c-error);
-  font-weight: 700;
-  margin-left: 2px;
-}
-
+/* =====================================================
+   表單網格與欄位結構
+   ===================================================== */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-4);
+  gap: 2rem;
+  margin-bottom: 1.8rem;
 
   @media (max-width: 640px) {
     grid-template-columns: 1fr;
-    gap: 0;
+    gap: 1.6rem;
+    margin-bottom: 1.6rem;
   }
 }
 
-.readonly-input-wrap {
-  position: relative;
+.form-group {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
 
-  input {
-    background: var(--c-neutral-50);
-    color: var(--c-neutral-600);
-    border-color: var(--c-neutral-200);
-    cursor: not-allowed;
-    padding-right: var(--sp-8);
-  }
+  input:not([type="checkbox"]):not([type="radio"]) {
+    width: 100%;
+    height: 4.8rem;
+    padding: 0 1.4rem;
+    font-size: 1.45rem;
+    font-weight: 500;
+    color: var(--c-neutral-900, #0f172a);
+    background: #ffffff;
+    border: 1.5px solid var(--c-border, #e2e8f0);
+    border-radius: var(--r-sm, 6px);
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
 
-  .lock-icon {
-    position: absolute;
-    right: var(--sp-3);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--c-neutral-400);
-    pointer-events: none;
-    line-height: 1;
+    &::placeholder {
+      color: var(--c-neutral-400, #94a3b8);
+      font-weight: 400;
+    }
 
-    svg {
-      display: block;
-      width: 1.4rem;
-      height: 1.4rem;
+    &:hover:not(:disabled):not(:focus):not([readonly]) {
+      border-color: var(--c-neutral-400, #94a3b8);
+    }
+
+    &:focus:not([readonly]) {
+      border-color: #0f172a;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+    }
+
+    &[aria-invalid="true"] {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
     }
   }
 }
 
+/* 標籤列 (對稱高度與基線) */
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  min-height: 2.2rem;
+  margin-bottom: 0.7rem;
+
+  .field-label {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--c-neutral-800, #1e293b);
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .required-star {
+    color: #ef4444;
+    font-size: 1.3rem;
+    line-height: 1;
+    font-weight: 700;
+  }
+
+  .label-badge {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--c-neutral-500, #64748b);
+    background: var(--c-neutral-100, #f1f5f9);
+    border: 1px solid var(--c-border, #e2e8f0);
+    padding: 0.15rem 0.7rem;
+    border-radius: var(--r-xs, 4px);
+    line-height: 1.4;
+  }
+}
+
+/* =====================================================
+   唯讀輸入框與鎖頭圖示 (解決鎖頭掉出問題)
+   ===================================================== */
+.input-with-lock {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  input.field-readonly {
+    width: 100%;
+    height: 4.8rem;
+    padding-left: 1.4rem;
+    padding-right: 4rem !important;
+    font-size: 1.45rem;
+    color: #64748b !important;
+    background: #f8fafc !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: var(--r-sm, 6px);
+    cursor: not-allowed;
+    font-weight: 500;
+    box-sizing: border-box;
+
+    &[type="date"] {
+      pointer-events: none;
+      &::-webkit-calendar-picker-indicator {
+        display: none !important;
+      }
+    }
+  }
+
+  .lock-icon {
+    position: absolute;
+    right: 1.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    pointer-events: none;
+  }
+}
+
+/* =====================================================
+   生理性別分段式按鈕 (Segmented Controls) - 徹底解決突兀
+   與右側身分職業 Select 達到 1:1 絕對等高 4.8rem
+   ===================================================== */
+.radio-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.segmented-control {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem;
+  width: 100%;
+  height: 4.8rem; /* 嚴格 4.8rem 與右側 Select 絕對齊平 */
+  box-sizing: border-box;
+}
+
+.segmented-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  height: 100%;
+  padding: 0 0.8rem;
+  background: #ffffff;
+  border: 1.5px solid var(--c-border, #e2e8f0);
+  border-radius: var(--r-sm, 6px);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+
+  .opt-indicator {
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--c-neutral-400, #94a3b8);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+
+    &::after {
+      content: "";
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 50%;
+      background: #ffffff;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.2s ease;
+    }
+  }
+
+  .opt-label {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--c-neutral-700, #334155);
+    user-select: none;
+  }
+
+  &:hover {
+    border-color: var(--c-neutral-400, #94a3b8);
+    background: var(--c-neutral-50, #f8fafc);
+  }
+
+  &.selected {
+    background: #0f172a;
+    border-color: #0f172a;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+
+    .opt-indicator {
+      border-color: #ffffff;
+      background: #0f172a;
+
+      &::after {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .opt-label {
+      color: #ffffff;
+    }
+  }
+}
+
+/* =====================================================
+   身分職業下拉選單 (自訂 SVG 箭頭、去除雙重粗黑線)
+   ===================================================== */
+.select-input-wrap {
+  position: relative;
+  width: 100%;
+  height: 4.8rem;
+  box-sizing: border-box;
+
+  select.custom-select {
+    width: 100%;
+    height: 100%;
+    padding: 0 3.8rem 0 1.4rem;
+    font-size: 1.45rem;
+    font-weight: 500;
+    color: var(--c-neutral-900, #0f172a);
+    background: #ffffff;
+    border: 1.5px solid var(--c-border, #e2e8f0);
+    border-radius: var(--r-sm, 6px);
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+
+    &:hover:not(:disabled):not(:focus) {
+      border-color: var(--c-neutral-400, #94a3b8);
+    }
+
+    &:focus {
+      border-color: #0f172a !important;
+      outline: none !important;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08) !important;
+    }
+
+    &[aria-invalid="true"] {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    }
+  }
+
+  .select-arrow {
+    position: absolute;
+    right: 1.4rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--c-neutral-500, #64748b);
+    pointer-events: none;
+    transition: transform 0.2s ease;
+  }
+}
+
+/* =====================================================
+   安全與密碼切換條與展開面板
+   ===================================================== */
 .password-toggle-bar {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
-  margin-bottom: var(--sp-4);
+  gap: 1.4rem;
+  margin-bottom: 1.8rem;
   flex-wrap: wrap;
+}
+
+.btn-toggle-pwd {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 3.6rem;
+  padding: 0 1.4rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--c-neutral-700, #334155);
+  background: #ffffff;
+  border: 1.5px solid var(--c-border, #e2e8f0);
+  border-radius: var(--r-sm, 6px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  .key-icon {
+    color: var(--c-neutral-500, #64748b);
+    transition: color 0.2s ease;
+  }
+
+  &:hover {
+    background: var(--c-neutral-50, #f8fafc);
+    border-color: var(--c-neutral-400, #94a3b8);
+    color: var(--c-neutral-900, #0f172a);
+
+    .key-icon {
+      color: #0f172a;
+    }
+  }
+
+  &.active {
+    background: var(--c-neutral-100, #f1f5f9);
+    border-color: var(--c-neutral-300, #cbd5e1);
+    color: var(--c-neutral-900, #0f172a);
+  }
 }
 
 .toggle-hint {
   font-size: 1.3rem;
-  color: var(--c-neutral-500);
+  color: var(--c-neutral-500, #64748b);
 }
 
 .password-expand-box {
-  background: var(--c-neutral-50);
-  border: 1px solid var(--c-brand-200);
-  border-radius: var(--r-lg);
-  padding: var(--sp-4);
-  margin-bottom: var(--sp-4);
-  animation: boxExpand 0.2s ease;
+  background: var(--c-neutral-50, #f8fafc);
+  border: 1px solid var(--c-border, #e2e8f0);
+  border-radius: var(--r-md, 8px);
+  padding: 2rem 2rem 0.4rem 2rem;
+  margin-bottom: 2rem;
+  animation: boxExpand 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes boxExpand {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
@@ -165,56 +487,59 @@
   }
 }
 
-/* 單選欄位群組 */
-.radio-fieldset {
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-
-.fieldset-legend {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--c-neutral-700);
-  margin-bottom: var(--sp-2);
-}
-
-.radio-group {
-  display: flex;
-  gap: var(--sp-6);
-  align-items: center;
-  padding-top: var(--sp-1);
-}
-
-.radio-label {
+/* =====================================================
+   錯誤提示訊息
+   ===================================================== */
+.field-error {
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
-  cursor: pointer;
-  font-size: 1.45rem;
-  color: var(--c-neutral-700);
+  font-size: 1.25rem;
   font-weight: 500;
-  transition: color 0.15s ease;
-
-  input[type="radio"] {
-    accent-color: var(--c-brand-600);
-    width: 1.6rem;
-    height: 1.6rem;
-    cursor: pointer;
-  }
-
-  &:hover {
-    color: var(--c-neutral-900);
-  }
+  color: #dc2626;
+  margin-top: 0.5rem;
+  line-height: 1.4;
 }
 
+/* =====================================================
+   底部動作按鈕
+   ===================================================== */
 .profile-actions {
-  margin-top: var(--sp-8);
+  margin-top: 3.2rem;
+  padding-top: 2.4rem;
+  border-top: 1px solid var(--c-border, #e2e8f0);
 }
 
 .btn-block {
   width: 100%;
-  padding: 1.25rem var(--sp-4);
-  font-size: 1.6rem;
-  font-weight: 700;
+  height: 4.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.55rem;
+  font-weight: 600;
+  border-radius: var(--r-sm, 6px);
+  cursor: pointer;
+  background: #0f172a;
+  border: 1.5px solid #0f172a;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
+  transition: all var(--transition-fast, 0.15s ease);
+
+  &:hover {
+    background: #1e293b;
+    border-color: #1e293b;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.2);
+  }
+
+  &:active {
+    background: #020617;
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0f172a;
+    outline-offset: 2px;
+  }
 }

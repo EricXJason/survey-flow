@@ -22,6 +22,13 @@
   box-sizing: border-box;
 }
 
+/* 全域頁面章節通用容器：提供充裕頂底流體呼吸留白，避免貼緊頂部導航 */
+.section {
+  width: 100%;
+  padding-block: clamp(3.6rem, 5vw, 6rem);
+  box-sizing: border-box;
+}
+
 /* 認證頁通用版面容器 */
 .page-auth {
   display: flex;
@@ -166,7 +173,7 @@
 /* 下拉選單原生箭頭覆寫 */
 select.form-control {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%232563eb' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%230f172a' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
   background-position: right 1.2rem center;
   background-repeat: no-repeat;
   background-size: 1.6em 1.6em;
@@ -221,7 +228,11 @@ select.form-control {
   text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--transition-fast);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease;
   box-sizing: border-box;
 
   &:focus-visible {
@@ -237,8 +248,54 @@ select.form-control {
     transform: none !important;
   }
 
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.12);
+  }
+
   &:active:not(:disabled) {
-    transform: translateY(1px);
+    transform: translateY(0) scale(0.97);
+  }
+
+  /* 按鈕內部圖示全域防破版嚴格鎖定 (18px) */
+  .btn-icon,
+  svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    max-width: 1.8rem;
+    max-height: 1.8rem;
+    flex-shrink: 0;
+  }
+}
+
+/* 主視覺 Hero 按鈕相容別名 */
+.btn-hero-primary {
+  @extend .btn;
+  background-color: var(--c-brand-600);
+  color: #ffffff !important;
+  border-color: var(--c-brand-600);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+
+  &:hover:not(:disabled) {
+    background-color: var(--c-brand-700);
+    border-color: var(--c-brand-700);
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
+  }
+}
+
+.btn-hero-outline {
+  @extend .btn;
+  background-color: #ffffff;
+  color: var(--c-neutral-800) !important;
+  border-color: var(--c-border);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  &:hover:not(:disabled) {
+    background-color: var(--c-neutral-100);
+    border-color: var(--c-neutral-400);
+    color: var(--c-neutral-900) !important;
   }
 }
 
@@ -314,14 +371,14 @@ select.form-control {
   padding: 0.8rem 1.8rem;
   border-radius: var(--r-md);
   border: 1px solid var(--c-brand-600);
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
   transition: all var(--transition-fast);
 
   &:hover {
     background: var(--c-brand-700);
     border-color: var(--c-brand-700);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
   }
 }
 
@@ -615,11 +672,29 @@ select.form-control {
   .mat-mdc-paginator-page-size-select {
     margin: 0 !important;
 
+    // [Why]: 隱藏 MDC 內建 notched-outline 與疊加層，消除與 select-trigger 重疊的雙重邊框
+    .mdc-notched-outline,
+    .mat-mdc-form-field-focus-overlay,
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none !important;
+    }
+
+    .mat-mdc-text-field-wrapper {
+      padding: 0 !important;
+      background: transparent !important;
+    }
+
+    .mat-mdc-form-field-infix {
+      padding: 0 !important;
+      min-height: unset !important;
+      width: auto !important;
+    }
+
     .mat-mdc-select-trigger {
-      min-height: 3.8rem !important;
-      min-width: 7.6rem !important;
+      min-height: 3.6rem !important;
+      min-width: 7.2rem !important;
       padding: 0.4rem 1rem !important;
-      border: 1.5px solid var(--c-border-strong) !important;
+      border: 1px solid var(--c-border-strong) !important;
       border-radius: var(--r-md) !important;
       background: #ffffff !important;
       display: inline-flex !important;
@@ -636,7 +711,7 @@ select.form-control {
       &:focus,
       &[aria-expanded="true"] {
         border-color: var(--c-brand-600) !important;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08) !important;
       }
     }
 
@@ -744,5 +819,91 @@ select.form-control {
 
   .no-print {
     display: none !important;
+  }
+}
+
+/* =====================================================
+   全域分類與屬性徽章語意色彩系統 (Semantic Attribute Badges)
+   在黑白極簡基底下，賦予分類與屬性高可讀性、清晰區隔之專屬調色
+   ===================================================== */
+.cat-chip,
+.cat-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--r-xs, 2px);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  box-sizing: border-box;
+  transition: all var(--transition-fast, 0.15s ease);
+
+  // 預設樣式 (中性板岩灰)
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+
+  // 學術研究 / 論文 / 教育調研 (沉穩靛藍)
+  &[data-cat*="學術"],
+  &[data-cat*="教育"],
+  &[data-cat*="研究"],
+  &[data-cat*="論文"] {
+    background: #eef2ff !important;
+    color: #4338ca !important;
+    border-color: #c7d2fe !important;
+  }
+
+  // 滿意度調查 / 客戶滿意 / 服務反饋 (翡翠翠綠)
+  &[data-cat*="滿意"],
+  &[data-cat*="服務"],
+  &[data-cat*="反饋"],
+  &[data-cat*="體驗"] {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    border-color: #a7f3d0 !important;
+  }
+
+  // 市場調查 / 商業 / 行銷趨勢 (琥珀金橙)
+  &[data-cat*="市場"],
+  &[data-cat*="行銷"],
+  &[data-cat*="商業"],
+  &[data-cat*="消費"] {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+    border-color: #fde68a !important;
+  }
+
+  // 產品評測 / 科技軟體 / 系統回饋 (科技天藍)
+  &[data-cat*="產品"],
+  &[data-cat*="科技"],
+  &[data-cat*="軟體"],
+  &[data-cat*="系統"] {
+    background: #f0f9ff !important;
+    color: #0369a1 !important;
+    border-color: #bae6fd !important;
+  }
+
+  // 人事行政 / 人資 / 組織職場 (典雅紫)
+  &[data-cat*="人事"],
+  &[data-cat*="人資"],
+  &[data-cat*="行政"],
+  &[data-cat*="組織"],
+  &[data-cat*="員工"] {
+    background: #f5f3ff !important;
+    color: #6d28d9 !important;
+    border-color: #ddd6fe !important;
+  }
+
+  // 生活休閒 / 娛樂 / 心理情感 (珊瑚玫瑰)
+  &[data-cat*="生活"],
+  &[data-cat*="休閒"],
+  &[data-cat*="娛樂"],
+  &[data-cat*="心理"],
+  &[data-cat*="日常"] {
+    background: #fff1f2 !important;
+    color: #be123c !important;
+    border-color: #fecdd3 !important;
   }
 }

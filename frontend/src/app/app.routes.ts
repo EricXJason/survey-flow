@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { CanDeactivateFn, Routes } from '@angular/router';
+import { CanActivateFn, CanDeactivateFn, Routes } from '@angular/router';
 import { Observable } from 'rxjs';
 import { HomeComponent } from './components/main/home/home.component';
 import { LobbyComponent } from './components/main/lobby/lobby.component';
@@ -24,6 +24,7 @@ import { ForgetPasswordComponent } from './components/main/forget-password/forge
 import { RegisterComponent } from './components/main/register/register.component';
 import { ResetPasswordComponent } from './components/main/reset-password/reset-password.component';
 import { UserProfileComponent } from './components/main/user-profile/user-profile.component';
+import { NotFoundComponent } from './components/main/not-found/not-found.component';
 
 /**
  * 具備離開前確認能力之組件介面 (CanComponentDeactivate)
@@ -31,6 +32,11 @@ import { UserProfileComponent } from './components/main/user-profile/user-profil
 export interface CanComponentDeactivate {
   canDeactivate: () => Observable<boolean> | Promise<boolean> | boolean;
 }
+
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { UserStateService } from './@services/user-state.service';
+import { DialogService } from './@services/dialog.service';
 
 /**
  * 路由離開守衛 (CanDeactivate Guard)
@@ -42,6 +48,27 @@ export const canDeactivateGuard: CanDeactivateFn<CanComponentDeactivate> = (
   component: CanComponentDeactivate,
 ) => {
   return component?.canDeactivate ? component.canDeactivate() : true;
+};
+
+/**
+ * 會員登入守衛 (Auth Guard)
+ * 嚴格阻斷未登入之訪客進入問卷設計器與管理後台，未登入者僅允許填答與瀏覽大廳
+ */
+export const authGuard: CanActivateFn = () => {
+  const userState = inject(UserStateService);
+  const router = inject(Router);
+  const dialogService = inject(DialogService);
+
+  if (userState.isLoggedIn()) {
+    return true;
+  }
+
+  dialogService.showDialog({
+    title: '請先登入會員',
+    message: '您目前為訪客身分，必須先登入會員帳號方可發起或設計問卷。',
+    mode: 'errorMode',
+  });
+  return router.createUrlTree(['/log-in']);
 };
 
 export const routes: Routes = [
@@ -60,20 +87,25 @@ export const routes: Routes = [
   {
     path: 'survey-design',
     component: SurveyDesignComponent,
+    canActivate: [authGuard],
     canDeactivate: [canDeactivateGuard],
   },
   {
     path: 'survey-management',
     component: SurveyManagementComponent,
+    canActivate: [authGuard],
   },
   {
     path: 'user-management',
     component: UserManagementComponent,
+    canActivate: [authGuard],
   },
   {
     path: 'user-profile',
     component: UserProfileComponent,
+    canActivate: [authGuard],
     canDeactivate: [canDeactivateGuard],
   },
-  { path: '**', redirectTo: '/home' },
+  { path: 'not-found', component: NotFoundComponent },
+  { path: '**', component: NotFoundComponent },
 ];

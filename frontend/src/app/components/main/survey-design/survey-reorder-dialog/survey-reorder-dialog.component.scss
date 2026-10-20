@@ -15,9 +15,8 @@
 .modal-container {
   position: relative;
   background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-top: 5px solid #2563eb;
-  border-radius: var(--r-2xl);
+  border: 1px solid var(--c-border, #e2e8f0);
+  border-radius: var(--r-sm, 4px);
   padding: clamp(var(--sp-6), 5vw, var(--sp-8));
   width: 100%;
   max-width: 52rem;
@@ -43,7 +42,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--r-full);
+  border-radius: var(--r-xs, 2px);
   color: var(--c-neutral-400);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -54,8 +53,8 @@
   }
 
   &:hover {
-    background-color: #eff6ff;
-    color: #1d4ed8;
+    background-color: var(--c-neutral-100, #f1f5f9);
+    color: var(--c-neutral-900, #0f172a);
 
     svg {
       transform: rotate(90deg);
@@ -80,14 +79,14 @@
   width: 4.4rem;
   height: 4.4rem;
   border-radius: var(--r-full);
-  background-color: #eff6ff;
-  border: 1.5px solid #bfdbfe;
-  color: #1d4ed8;
+  background-color: var(--c-neutral-100, #f1f5f9);
+  border: 1px solid var(--c-border, #e2e8f0);
+  color: #0f172a;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
 .modal-title-group {
@@ -102,12 +101,12 @@
   align-items: center;
   width: fit-content;
   font-size: 1.15rem;
-  font-weight: 750;
+  font-weight: 700;
   padding: 0.2rem 0.8rem;
   border-radius: var(--r-full);
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background-color: var(--c-neutral-100, #f1f5f9);
+  color: var(--c-neutral-700, #334155);
+  border: 1px solid var(--c-border, #e2e8f0);
   letter-spacing: 0.04em;
   line-height: 1.3;
 }

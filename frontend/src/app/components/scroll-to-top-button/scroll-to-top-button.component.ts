@@ -11,15 +11,15 @@
  * ============================================================================
  */
 
-import { Component } from '@angular/core';
+import { Component, HostListener, OnInit, signal } from '@angular/core';
 import { UtilityService } from '../../@services/utility.service';
 
 /**
  * 獨立通用置頂按鈕組件 (ScrollToTopButtonComponent)
  * 
  * 特點：
- * 1. 永久固定於畫面右下角 (Fixed Position)。
- * 2. 純圖示無文字設計 (Icon-only)，具備高通用性，可直接移植至未來任何專案。
+ * 1. 於視窗最上方時隱藏不見，向下捲動非最上方時動態平滑浮現。
+ * 2. 純圖示無文字設計 (Icon-only)，具備高通用性與絲滑漸層動效。
  * 3. 點擊直接調用 UtilityService.scrollToTopSmooth() 實現平滑捲動回頂。
  * 4. 具備深色毛玻璃質感、微光動效及 WCAG 鍵盤無障礙焦點。
  */
@@ -29,7 +29,34 @@ import { UtilityService } from '../../@services/utility.service';
   templateUrl: './scroll-to-top-button.component.html',
   styleUrl: './scroll-to-top-button.component.scss',
 })
-export class ScrollToTopButtonComponent {
+export class ScrollToTopButtonComponent implements OnInit {
+  /** 控制按鈕是否顯示的響應式信號 (離開頂端才顯示) */
+  public readonly isVisible = signal<boolean>(false);
+
+  /**
+   * 生命週期初始化，防呆檢查當前初始滾動位置
+   */
+  public ngOnInit(): void {
+    this._checkScrollPosition();
+  }
+
+  /**
+   * 監聽瀏覽器全域捲動事件 (window:scroll)
+   * 判定視窗是否已離開最上方 (捲動超過 200px 即顯示)
+   */
+  @HostListener('window:scroll')
+  protected onWindowScroll(): void {
+    this._checkScrollPosition();
+  }
+
+  /**
+   * 檢查當前視窗 Y 軸捲動偏移量
+   */
+  private _checkScrollPosition(): void {
+    const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    this.isVisible.set(scrollY > 200);
+  }
+
   /**
    * 點擊按鈕平滑捲動至頂端（直接調用 UtilityService 靜態方法）
    */

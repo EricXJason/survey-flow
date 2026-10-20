@@ -82,10 +82,14 @@ export interface QuestionAnalyticsItem {
   type: string;
   /** 題目描述文字 */
   description: string;
+  /** 題目描述相容欄位 */
+  questionText?: string;
   /** 是否為必填題目 */
   isRequired: boolean;
   /** 有效作答人次 */
   totalAnswerCount: number;
+  /** 有效作答人次相容欄位 */
+  totalResponses?: number;
   /** 未作答（跳過）人次 */
   skippedCount?: number;
   /** 答題率（有效作答 / 總樣本，0-100） */

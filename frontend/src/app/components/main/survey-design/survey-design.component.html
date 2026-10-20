@@ -57,8 +57,14 @@
           </div>
           <div class="card-header-content">
             <div class="card-header-top">
-              <span class="stage-pill">階段 01</span>
-              <span class="stage-badge-req">必填核心</span>
+              <span class="stage-pill stage-pill-1">
+                <span class="stage-prefix">階段</span>
+                <strong class="stage-number">01</strong>
+              </span>
+              <span class="stage-attr-badge stage-attr-1">
+                <span class="attr-dot" aria-hidden="true"></span>
+                <span>必填核心</span>
+              </span>
             </div>
             <h2 class="card-title">問卷核心資訊</h2>
             <p class="card-subtitle">設定問卷的主題標題、主題分類範疇以及前言填答指引說明</p>
@@ -135,13 +141,7 @@
                   ></textarea>
                   @if (
                     formBuilderGroup.get("description")?.invalid &&
-                    formBuilderGroup.get("description")?.touched
-                  ) {
-                    <span class="field-error">問卷說明內容不可為空</span>
-                  }
-                  @if (
-                    !formBuilderGroup.get("description")?.value &&
-                    formBuilderGroup.get("hasDescription")?.touched
+                    (formBuilderGroup.get("description")?.touched || formBuilderGroup.get("hasDescription")?.touched)
                   ) {
                     <span class="field-error">問卷說明內容不可為空</span>
                   }
@@ -218,8 +218,14 @@
           </div>
           <div class="card-header-content">
             <div class="card-header-top">
-              <span class="stage-pill stage-pill-indigo">階段 02</span>
-              <span class="stage-badge-opt">彈性配置</span>
+              <span class="stage-pill stage-pill-2">
+                <span class="stage-prefix">階段</span>
+                <strong class="stage-number">02</strong>
+              </span>
+              <span class="stage-attr-badge stage-attr-2">
+                <span class="attr-dot" aria-hidden="true"></span>
+                <span>彈性配置</span>
+              </span>
             </div>
             <h2 class="card-title">受訪者身分與背景資料</h2>
             <p class="card-subtitle">設定是否於問卷開頭向受訪者蒐集基本資料，依五大維度彈性勾選</p>
@@ -349,13 +355,31 @@
       <!-- 階段三：問卷題目設計與邏輯 -->
       <section class="stage-questions-card" id="stage-questions">
         <div class="questions-section-header">
-          <div class="qs-header-info">
-            <div class="card-header-top">
-              <span class="stage-pill stage-pill-emerald">階段 03</span>
-              <span class="stage-badge-req">題目核心</span>
+          <div class="qs-header-left">
+            <div class="card-header-icon questions-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
             </div>
-            <h2 class="qs-title">問卷題目設計與邏輯</h2>
-            <p class="qs-subtitle">編輯題目內容、題型選項、防呆限制與條件跳題解鎖（目前共 {{ questionArray.length }} 題）</p>
+            <div class="qs-header-info">
+              <div class="card-header-top">
+                <span class="stage-pill stage-pill-3">
+                  <span class="stage-prefix">階段</span>
+                  <strong class="stage-number">03</strong>
+                </span>
+                <span class="stage-attr-badge stage-attr-3">
+                  <span class="attr-dot" aria-hidden="true"></span>
+                  <span>題目核心</span>
+                </span>
+              </div>
+              <h2 class="qs-title">問卷題目設計與邏輯</h2>
+              <p class="qs-subtitle">編輯題目內容、題型選項、防呆限制與條件跳題解鎖（目前共 {{ questionArray.length }} 題）</p>
+            </div>
           </div>
           <div class="qs-header-actions">
             @if (questionArray.length > 1) {
@@ -401,7 +425,7 @@
               <div class="q-badge-group">
                 <span class="q-index-badge">第 {{ (qIndex + 1).toString().padStart(2, '0') }} 題</span>
                 @if (control.get("type")?.value) {
-                  <span class="q-type-badge">
+                  <span [class]="'q-type-badge q-type-' + (control.get('type')?.value || '')">
                     @switch (control.get("type")?.value) {
                       @case ("t/f") { 是非題 }
                       @case ("text") { 簡答題 }
@@ -856,7 +880,39 @@
               </div>
             }
           </div>
+
+          <!-- 題目與題目之間的快捷插入條 (僅於非最後一題時呈現) -->
+          @if (qIndex < questionArray.length - 1) {
+            <div class="question-insert-divider">
+              <div class="divider-line"></div>
+              <button
+                type="button"
+                class="btn-insert-between"
+                (click)="insertQuestionAt(qIndex + 1)"
+                title="在第 {{ qIndex + 1 }} 題與第 {{ qIndex + 2 }} 題之間插入新問題"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>在此處插入問題</span>
+              </button>
+              <div class="divider-line"></div>
+            </div>
+          }
         }
+
+        <!-- 題目清單底部大按鈕 -->
+        <div class="questions-bottom-actions">
+          <button type="button" class="btn-add-question-bottom" (click)="addQuestion()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <span>+ 新增問題至問卷末尾</span>
+          </button>
+        </div>
       </div>
     </section>
 
@@ -871,8 +927,14 @@
           </div>
           <div class="card-header-content">
             <div class="card-header-top">
-              <span class="stage-pill stage-pill-amber">階段 04</span>
-              <span class="stage-badge-opt">發布控管</span>
+              <span class="stage-pill stage-pill-4">
+                <span class="stage-prefix">階段</span>
+                <strong class="stage-number">04</strong>
+              </span>
+              <span class="stage-attr-badge stage-attr-4">
+                <span class="attr-dot" aria-hidden="true"></span>
+                <span>發布控管</span>
+              </span>
             </div>
             <h2 class="card-title">發布規範與時程控管</h2>
             <p class="card-subtitle">設定問卷的公開屬性與填答開放期限</p>
