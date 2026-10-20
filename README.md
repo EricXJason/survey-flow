@@ -1,11 +1,11 @@
 # SurveyFlow | 企業級問卷調查與智慧數據分析系統
 
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
-> **專案定位**: 企業級全端問卷引擎與數據視覺化分析平台。支援動態題目編排、多層級作答防護、統計圖表即時聚合與權限控管。  
+> **專案定位**: 企業級全端問卷引擎與數據視覺化分析平台。支援動態題目編排、條件跳題解鎖、多層級作答防護、統計圖表即時聚合與權限控管。  
 > **語言與執行環境版本**:
-> - **前端 (Frontend)**: Node.js 20.x / Angular 19.x / TypeScript 5.6
-> - **後端 (Backend)**: Java 21 / Spring Boot 3.4.x / Spring Security 6.x
-> - **持久化資料庫 (Database)**: MySQL 8.0+
+> - **前端 (Frontend)**: Node.js 24.18.0 / Angular 19.0.0 / TypeScript 5.6.2 / Angular CDK 19.2.19
+> - **後端 (Backend)**: Java 21.0.12 / Spring Boot 4.1.1 / Spring Security 6.x / JJWT 0.12.6
+> - **持久化資料庫 (Database)**: MySQL 8.0.36
 
 ---
 
@@ -13,14 +13,16 @@
 
 SurveyFlow 採**前後端完全解耦架構**，前端與後端分別專注於極致的互動體驗與嚴謹的資料安全：
 
-- **單一真實資料源 (SSOT)**: 前後端資料契約以標準 RESTful API 與 JSON Schema 保持一致，狀態流轉單向可追溯。
-- **領域驅動與分層架構 (DDD & Layered Architecture)**:
-  - **後端**: 嚴格遵守 `Controller ➔ Service ➔ Repository ➔ Entity` 物理隔離，DTO 作為外部資料傳輸介質，防止實體洩漏。
-  - **前端**: 採用 Angular 核心 Signals 反應式狀態流，搭配依賴注入 (DI) 與模組化 Service 負責資料與檢驗。
-- **無狀態認證與防護 (Stateless Security)**:
+- **單一真實資料源 (SSOT)**: 全系統資料模型、狀態定義、常數列舉（如 `CAREER_OPTIONS`）、業務設定與驗證規則，具備唯一真實來源，跨端透過標準 RESTful API 與強型別 DTO 傳輸。
+- **領域驅動與分層隔離 (DDD & Layered Architecture)**:
+  - **後端**: 嚴格遵守 `Controller ➔ Service ➔ Repository ➔ Entity` 物理隔離，DTO 作為外部資料傳輸介質，防止資料庫實體洩漏。
+  - **前端**: 採用 Angular 核心 Signals 反應式狀態流，搭配依賴注入 (DI) 與模組化 Service 負責資料與防呆檢核。
+- **無狀態認證與企業級資安 (Stateless Security)**:
   - 雙 Token 認證（Access Token 15 分鐘 + Refresh Token 7 天旋轉機制）。
-  - 密碼採用國際資安標準 **Argon2id** 雜湊加密。
+  - 密碼採用國際資安標準 **Argon2id** 雜湊演算法加密。
   - API 統一回傳格式與全域例外攔截機制（`GlobalExceptionHandler`）。
+- **零橫向拖曳 RWD 與 WCAG 2.2 無障礙相容**:
+  - 表格卡片化流體適應，在各式行動裝置螢幕下保證零破版、免橫向滾動。
 
 ---
 
@@ -28,10 +30,11 @@ SurveyFlow 採**前後端完全解耦架構**，前端與後端分別專注於�
 
 | 模組分類 | 功能特色 | 規格說明 |
 | :--- | :--- | :--- |
-| **問卷設計器** | 視覺化動態題目編排 | 支援單選題、多選題、簡答題、評分題；支援拖曳排序、即時預覽與驗證規則設定。 |
-| **受訪者作答引擎** | 響應式表單與防呆檢驗 | 支援前置基本資料收集、必填驗證、時間限制倒數、作答進度即時反饋。 |
-| **統計與數據分析** | 多維度聚合圖表 | 即時題型統計分佈（長條圖、圓餅圖、平均評分）、作答者趨勢與名冊匯出。 |
-| **會員與權限控管** | 角色與多租戶隔離 | 問卷建立者僅能存取其所屬問卷與作答紀錄；提供密碼重設與個人設定管理。 |
+| **問卷大廳** | 公開問卷瀏覽與快速作答 | 支援類別篩選、關鍵字全文搜尋、分頁控制（預設每頁 5 筆）與真實全域編號標註。 |
+| **問卷設計器** | 視覺化動態題目編排 | 支援是非題、簡答題、單選題、複選題、評分題（5點/10點/NPS）、日期與時間題；支援條件跳題解鎖、拖曳重排。 |
+| **受訪者作答引擎** | 響應式表單與防呆檢驗 | 支援受訪者多維度基本資料收集（姓名、年齡、手機、身分證字號雙向演算法）、時效倒數限制與即時作答進度。 |
+| **統計與數據分析** | 多維度聚合圖表與數據洞察 | 提供 KPI 總覽指標卡、題目統計分佈（長條圖/百分比）、受訪者人口統計學分析與作答明細總表。 |
+| **會員與後台管理** | 角色授權與多租戶隔離 | 一般會員（`ROLE_USER`）專屬問卷管理與數據查看；系統管理員（`ROLE_ADMIN`）全站會員帳號審查與封鎖狀態管控。 |
 
 ---
 
@@ -45,7 +48,7 @@ flowchart LR
     User["受訪者/會員"]:::hudCard -->|"登入 / 填答"| WebUI["Angular 前端"]:::hudCard
     WebUI -->|"RESTful API / JWT"| Gateway["Spring Boot 後端"]:::hudCard
     Gateway -->|"驗證與商務邏輯"| BizService["問卷服務層"]:::hudCard
-    BizService -->|"JPA / 讀寫"| DB[("MySQL 8.0 資料庫")]:::hudCard
+    BizService -->|"JPA / 讀寫"| DB[("MySQL 8.0.36 資料庫")]:::hudCard
 ```
 
 ---
@@ -76,15 +79,25 @@ erDiagram
         bigint user_id FK "建立者"
         varchar title "問卷標題"
         text description "問卷說明"
-        varchar status "狀態(DRAFT/PUBLISHED/CLOSED)"
+        varchar category "分類"
+        boolean is_published "發布狀態"
         datetime start_date "開始時間"
         datetime end_date "結束時間"
+    }
+
+    survey_basic_info_configs {
+        bigint id PK "設定識別碼"
+        bigint survey_id FK "所屬問卷"
+        boolean collect_basic_info "是否收集基本資料"
+        boolean require_name "姓名必填"
+        boolean require_phone "手機必填"
     }
 
     survey_questions {
         bigint id PK "題目識別碼"
         bigint survey_id FK "所屬問卷"
-        varchar type "題型(SINGLE/MULTI/TEXT/RATING)"
+        varchar question_code "題目代碼"
+        varchar type "題型(BOOLEAN/SINGLE/MULTI/TEXT/RATING)"
         varchar question_text "題目標題"
         boolean is_required "是否必填"
         int sort_order "排序"
@@ -95,12 +108,29 @@ erDiagram
         bigint question_id FK "所屬題目"
         varchar option_text "選項文字"
         int sort_order "排序"
+        varchar trigger_question_uid "條件跳題解鎖目標"
     }
 
     submissions {
         bigint id PK "填答識別碼"
         bigint survey_id FK "所屬問卷"
         datetime submitted_at "提交時間"
+    }
+
+    submission_basic_infos {
+        bigint id PK "填答者個資識別碼"
+        bigint submission_id FK "所屬填答"
+        varchar respondent_name "受訪者姓名"
+        varchar respondent_phone "受訪者手機"
+        varchar respondent_email "受訪者信箱"
+    }
+
+    submission_answers {
+        bigint id PK "回答識別碼"
+        bigint submission_id FK "所屬填答"
+        bigint question_id FK "所屬問題"
+        bigint option_id FK "選取選項"
+        text text_answer "文字回答"
     }
 ```
 
@@ -110,27 +140,25 @@ erDiagram
 
 ```text
 survey-flow/
-├── AGENTS.md                  # 全域 AI Agent 核心中樞協定
-├── AGENTS-GIT.md              # 全域 Git 版本控制協定
-├── AGENTS-FRONT.md            # 前端工程與 Angular 規範
-├── AGENTS-BACK.md             # 後端工程與 Spring Boot 規範
 ├── README.md                  # 專案總覽與全端整合指南
 ├── .gitignore                 # 統整全端忽略檔
 ├── docs/                      # 規格與文檔庫
-│   ├── change-log.md          # 輕量修訂歷程
+│   ├── change-log.md          # 輕量修訂歷程 (常駐置頂)
 │   ├── check-list.md          # 功能驗收清單
-│   └── system-design/         # 系統架構規格書 (01-08)
+│   └── system-design/         # 系統架構規格書 (01-10)
 ├── frontend/                  # Angular 19 前端工程
 │   ├── src/app/               # 頁面與核心元件
-│   │   ├── @components/       # 通用共用元件
-│   │   ├── @pages/            # 路由頁面 (首頁、問卷設計、作答、統計)
-│   │   ├── @services/         # API 服務與資料流
-│   │   └── datas/             # 本地靜態結構契約 (Mock Data)
+│   │   ├── @interfaces/       # 領域模型與型別契約 (SSOT)
+│   │   ├── @services/         # API 服務與響應式資料流
+│   │   └── components/        # 功能視圖與版面配置組件
+│   │       ├── header/        # 全域頂部導航
+│   │       ├── footer/        # 全域頁尾
+│   │       └── main/          # 主業務視圖 (首頁、大廳、設計器、填答器、分析管理)
 │   ├── package.json           # 前端依賴配置
 │   └── angular.json           # Angular CLI 設定
-└── backend/                   # Spring Boot 3.4 後端工程 (規劃與建置中)
-    ├── src/main/java/         # Java 原始碼 (Controller, Service, Repository, Entity)
-    ├── src/main/resources/    # 設定檔與 DDL 腳本 (application.yml, schema.sql)
+└── backend/                   # Spring Boot 4.1.1 後端工程
+    ├── src/main/java/         # Java 原始碼 (Controller, Service, Repository, Entity, Security)
+    ├── src/main/resources/    # 設定檔與 DDL/DML 腳本 (application.properties, schema.sql, data.sql)
     └── pom.xml                # Maven 依賴配置
 ```
 
@@ -154,13 +182,13 @@ survey-flow/
    # 或執行 ng serve，預設運行於 http://localhost:4200
    ```
 
-### 6.2 後端啟動 (即將上線)
+### 6.2 後端啟動
 
-1. 確認本機 MySQL 8.0 伺服器啟動於 `localhost:3306`。
-2. 匯入基礎資料庫 Schema（參見 `docs/system-design/05-specs-database.md`）。
-3. 進入後端目錄並啟動：
+1. 確認本機 MySQL 8.0 伺服器啟動於 `localhost:3306`（資料庫名稱 `survey_flow`）。
+2. 匯入基礎資料庫 Schema 與預設種子資料（`backend/src/main/resources/database/schema.sql` 與 `data.sql`）。
+3. 進入後端目錄並編譯啟動：
    ```bash
    cd backend
-   mvn spring-boot:run
+   ./mvnw spring-boot:run
    # 預設運行於 http://localhost:8080
    ```
