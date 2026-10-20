@@ -3,6 +3,22 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-20 18:20] - 核心協定架構修正：解除 ModelMapper 與 CRUD 排序強制限制、零信任雙 Token 體系落地、Git 生產發布防污染防中斷重構
+
+- **改動原因**: 使用者精闢指出四大架構缺陷：ModelMapper 不應強制、CRUD 物理排序不應強制、24小時單一JWT違背零信任架構且存在無法吊銷之嚴重資安破口、push到master 在中間分支提交 README 隱含未驗收代碼偷渡與中斷懸空風險
+- **具體內容**:
+  - **映射與方法組織彈性化**:
+    - `AGENTS-BACK.md`: 解除 ModelMapper 強制要求，改為彈性選用適配方案（MapStruct、Record、工廠方法等），嚴禁 Controller 裸露散落 set/get
+    - `AGENTS.md` & `AGENTS-BACK.md`: 徹底移除 CRUD 強制物理排序條款，改為業務內聚與邏輯主從自然組織原則
+  - **零信任雙 Token 資安體系落地**:
+    - `AGENTS-BACK.md` & `docs/system-design/09-security.md`: 全面廢止 24 小時單一憑證，確立業界標準短效 Access Token (15分鐘) + 長效 Refresh Token (7天, HttpOnly/Secure/SameSite=Strict Cookie)
+    - 導入 Refresh Token 單次輪替機制 (RTR) 防禦重放攻擊，以及登出/凍結時以 Redis JTI 黑名單實現 $O(1)$ 微秒級主動即時吊銷 (Active Revocation)
+  - **Git 生產發布管線防中斷與防污染重構**:
+    - `AGENTS-GIT.md` §3.4: 發布前嚴格執行 `Pre-flight Contamination Check`，偵測到 development 存在未經當前沙盒驗收之提交時強制就地阻斷
+    - 將 README.md 逆向生成移至 `feature` 沙盒內部完成並原子提交，杜絕在主幹分支切換中途因網路或超時中斷導致工作區懸空
+    - 建立全域失敗自愈保護 (Fail-Safe Trap)，任一步驟異常自動觸發原子回滾至沙盒原點，主幹毫髮無損
+- **影響範圍**: [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md)、[`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md)、[`AGENTS-GIT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-GIT.md)、[`docs/system-design/09-security.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/09-security.md)、[`docs/change-log.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/change-log.md)
+
 ## [2026-10-20 18:12] - 協定優化：四個 AGENTS 檔案全面去重、消除資安矛盾與納入 Security 規格書
 
 - **改動原因**: 使用者要求 doc 內明確具備 security 安全方面規劃設計，四個 MD 檔案嚴禁重複敘述或不合理設計，並確保極高閱讀效率、低 Token 與嚴格準確落實度

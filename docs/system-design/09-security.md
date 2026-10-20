@@ -1,7 +1,7 @@
 # 09 - 全端資安防護、認證授權、加密與資料脫敏規格書
 
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
-> **更新日期**: 2026-10-15  
+> **更新日期**: 2026-10-20  
 > **文件定位**: 規範 SurveyFlow 系統全域之認證授權架構、OWASP Top 10 防禦、機敏資料脫敏加密與 API 防護機制。可直接作為技術架構審查與資安簡報之核心章節。
 
 ---
@@ -14,7 +14,7 @@ SurveyFlow 實施多層縱深防禦，確保受訪者資料、問卷設定與後
 %%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent' }}}%%
 flowchart LR
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
-    Client["前端客戶端<br/>HTTPS + 記憶體Token"] -->|"CORS + RateLimit"| Gateway["Spring Security Filter<br/>JWT 驗證與過濾網關"]
+    Client["前端客戶端<br/>HTTPS + 記憶體Token + HttpOnly Cookie"] -->|"CORS + RateLimit"| Gateway["Spring Security Filter<br/>短效 JWT + Redis 黑名單校驗"]
     Gateway -->|"RBAC 角色校驗"| Controller["業務控制器層<br/>@PreAuthorize 攔截"]
     Controller -->|"參數化防禦 SQLi"| DB[("MySQL 資料庫<br/>Argon2id 雜湊 + 欄位脫敏")]
     class Client,Gateway,Controller,DB hudCard;
@@ -22,45 +22,51 @@ flowchart LR
 
 ---
 
-## 2. 身份認證與單一高安全憑證架構 (Single-Token Stateless Architecture)
+## 2. 身份認證與零信任雙 Token 架構 (Zero-Trust Dual-Token Architecture)
 
 ### 2.1 現代高強度密碼雜湊 (Argon2id)
-系統放棄已顯陳舊的 MD5/SHA-256 與易遭 GPU 加速破解之純 bcrypt，全面採用密碼學界最高標準 **Argon2id** 演算法：
+系統全面採用密碼學界抗 GPU/ASIC 暴力破解之最高標準 **Argon2id** 演算法：
 - **雜湊規格**: `type: argon2id`, `memory: 4096 KB (4MB)`, `iterations: 3`, `parallelism: 1`。
-- **儲存格式**: 包含隨機 Salt 與微秒級時鐘延展，徹底防禦彩虹表與 ASIC 暴力破解。
+- **儲存格式**: 包含密碼學隨機 Salt 與微秒級時鐘延展，徹底防禦彩虹表與離線碰撞。
 - **配置外部化 (OCP)**: 演算法記憶體、迭代次數與鹽值長度均自 `application.properties` 注入，支援未來依伺服器算力無痛調校。
 
-### 2.2 簡約直覺且安全之單一 JWT 憑證架構 (Single Token Pattern)
-為兼顧**極高安全性**與**直覺簡約、易懂易維護**之架構原則，系統揚棄繁瑣之雙 Token 旋轉機制，全面導入業界標準之**單一高安全 JWT 憑證**：
-- **設計哲學**:
-  - **一張 Token 閉環運行**: 會員登入成功後，後端僅簽發唯一一張高強度 JWT 憑證（`token`），前端保存於會話存儲（`sessionStorage`），所有 API 請求均隨 Header 帶入：`Authorization: Bearer <TOKEN>`。
-  - **純無狀態 (Stateless)**: 後端免去資料庫維護 Refresh Token 表之頻繁讀寫開銷，節省 I/O 資源，天然支援水平擴展與負載平衡（Load Balancing）。
-- **資安防護規範**:
-  - **簽署規格**: 強制採用 **HMAC-SHA256 (`HS256`)** 密鑰對稱簽署，密鑰長度強制 $\ge 256$ bits，杜絕弱金鑰暴力碰撞。
-  - **精準時效控管**: 預設有效時限為 **24 小時**（86,400,000 毫秒），兼顧使用者日常填答/管理之流暢體驗，並在合理時間窗口後自動過期強制重新認證。
-  - **防偽宣告 (Claims)**: Token 內部負載僅包含最低限度之業務授權標識（`sub: username`, `role: ROLE_USER | ROLE_ADMIN`），絕不存放密碼或個人隱私資料。
-  - **登出機制**: 客戶端主動銷毀 `sessionStorage` 憑證即刻完成登出，後端記錄登出審計日誌。
+### 2.2 零信任雙 Token 輪替與主動吊銷體系 (Dual-Token Pattern & RTR)
+貫徹**零信任架構（Zero Trust - Never Trust, Always Verify）**，徹底消除單一長效 Token 外洩無法吊銷之嚴重資安破口：
+
+- **雙 Token 職責分離**:
+  - **短效 Access Token (15 分鐘)**:
+    - 簽署規格：**HMAC-SHA256 (`HS256`)**，密鑰長度 >= 256 bits。
+    - 傳輸與存儲：前端存於記憶體，隨 API 請求 Header 帶入：`Authorization: Bearer <ACCESS_TOKEN>`。
+    - 最小威脅窗口：即使遭遇中間人監聽或客戶端暫態外洩，憑證亦於極短時間內失效。
+  - **長效 Refresh Token (7 天)**:
+    - 存儲保護：**強制注入 `HttpOnly`, `Secure`, `SameSite=Strict` Cookie**，JavaScript 程式碼完全無法讀取，徹底免疫 XSS 憑證竊取攻擊。
+    - 專用端點：僅限 `/api/auth/refresh` 與 `/api/auth/logout` 讀取校驗。
+- **單次輪替防重放 (Refresh Token Rotation, RTR)**:
+  - 客戶端每次調用 `/api/auth/refresh` 換發時，伺服端**即刻廢除當前 Refresh Token**，並同步簽發「新 Access Token + 新 Refresh Token」。
+  - **重放攻擊偵測 (Replay Attack Detection)**: 若系統偵測到已被作廢的舊 Refresh Token 再次嘗試換發，判定憑證已遭竊取，系統立即啟動阻斷，**強制吊銷該使用者名下全數活躍 Token**，要求重新密碼認證。
+- **主動吊銷與 Redis 黑名單 (Active Revocation via Redis JTI Blacklist)**:
+  - 每個 Access Token 注入唯一識別碼（`jti: UUID`）。
+  - 當使用者主動登出、變更密碼或管理員強制凍結帳號時，後端將該 `jti` 寫入 Redis 黑名單，TTL 設定為該 Token 剩餘有效秒數。
+  - 過濾器驗證簽名有效後，以 O(1) 時間比對 Redis 黑名單，若存在則直接拒絕（401 Unauthorized），達成**無狀態高效驗證與即時吊銷之完美兼備**。
 
 ### 2.3 外部化組態管理與開放封閉原則 (OCP Configuration Center)
-為確保系統未來部署於 Docker、Kubernetes 或 AWS/GCP 雲端時無須重新修改程式碼，全系統所有資安與網路環境參數強制**100% 外部化**至 `application.properties`，並全面支援系統環境變數覆寫機制：
-- **JWT 密鑰與時效**: `${JWT_SECRET:...}`, `${JWT_EXPIRATION_MS:86400000}`。
+全系統所有資安與網路環境參數強制**100% 外部化**至 `application.properties`，支援系統環境變數覆寫：
+- **JWT 密鑰與時效**: `${JWT_SECRET:...}`, `${JWT_ACCESS_EXPIRATION_MS:900000}` (15分鐘), `${JWT_REFRESH_EXPIRATION_MS:604800000}` (7天)。
 - **CORS 跨來源來源與標頭**: `${CORS_ALLOWED_ORIGINS:...}`, `${CORS_ALLOWED_METHODS:...}`, `${CORS_MAX_AGE_SECONDS:3600}`。
 - **Argon2id 加密參數**: `${ARGON2_MEMORY:4096}`, `${ARGON2_ITERATIONS:3}`, `${ARGON2_SALT_LENGTH:16}`。
-- **資料庫與連線池**: `${SPRING_DATASOURCE_URL:...}`, `${SPRING_DATASOURCE_USERNAME:...}`, `${HIKARI_MAX_POOL_SIZE:10}`。
-- **預設管理員與測試帳密**: `${APP_ADMIN_USERNAME:...}`, `${APP_ADMIN_PASSWORD:...}`。
+- **Redis 快取與黑名單**: `${SPRING_DATA_REDIS_HOST:localhost}`, `${SPRING_DATA_REDIS_PORT:6379}`。
 
-### 2.4 極簡易學：Security 模組四大核心類別與工作時序 (The 4-Core Security Architecture)
+### 2.4 Security 模組核心架構與零信任認證時序
 
-為降低學習門檻、去除不必要的冗餘樣板代碼，後端安全核心 (`com.surveyflow.security`) 全面收斂為**四大高內聚核心類別**。初學者與架構審查者只需理解這 4 個類別，即可 100% 掌握 Spring Security 6+ 與 JWT 實戰精髓：
-
-| 核心類別 | 責任與架構角色 | 核心方法與關鍵邏輯 | 學習與實作要點 |
+| 核心類別 / 模組 | 責任與架構角色 | 核心方法與關鍵邏輯 | 學習與實作要點 |
 | :--- | :--- | :--- | :--- |
-| **`SecurityConfig.java`** | **安全配置唯一真實來源 (SSOT)**<br/>配置過濾鏈、密碼雜湊器與 CORS 規則 | `securityFilterChain()`<br/>`passwordEncoder()` (Argon2id)<br/>`authenticationProvider()`<br/>`corsConfigurationSource()` | 將 `PasswordEncoder` 直接收斂於此，消除外部零碎 Config 檔案，兼顧零循環依賴與清晰度。 |
-| **`JwtAuthenticationFilter.java`** | **HTTP 請求攔截器 (OncePerRequest)**<br/>每次請求解析 Bearer 權杖並注入安全上下文 | `doFilterInternal()`<br/>`extractJwtFromRequest()` | 繼承 `OncePerRequestFilter`，提取標頭 `Authorization: Bearer <TOKEN>`，驗證有效即注入 `SecurityContextHolder`。 |
-| **`TokenProvider.java`** | **密碼學 JWT 簽發與檢驗工具**<br/>基於 JJWT 0.12+ 實現對稱簽章與聲明校驗 | `generateToken()`<br/>`getUsernameFromToken()`<br/>`validateToken()` | 採用 `Keys.hmacShaKeyFor` 生成 256-bit 金鑰，免除過時或陳舊之雙 Token 旋轉樣板，精準純粹。 |
-| **`CustomUserDetailsService.java`** | **使用者資料庫權限橋接配接器**<br/>實作 Spring Security 原生載入介面 | `loadUserByUsername()` | 依據 `username` 查詢 MySQL `users` 表，轉換為帶有 `ROLE_USER` / `ROLE_ADMIN` 的 Spring 原生 `UserDetails`。 |
+| **`SecurityConfig.java`** | **安全配置唯一真實來源 (SSOT)**<br/>過濾鏈、密碼雜湊器與 CORS 規則 | `securityFilterChain()`<br/>`passwordEncoder()` (Argon2id)<br/>`corsConfigurationSource()` | 配置短效 Access Token 攔截與公開/私有路由分流。 |
+| **`JwtAuthenticationFilter.java`** | **HTTP 請求攔截器 (OncePerRequest)**<br/>解析 Bearer Token 並檢驗 Redis 吊銷黑名單 | `doFilterInternal()`<br/>`isTokenBlacklisted(jti)` | 提取標頭 Token，校驗簽章與 Redis 黑名單，通過後注入 `SecurityContextHolder`。 |
+| **`TokenProvider.java`** | **JWT 簽發、RTR 輪替與校驗工具**<br/>基於 JJWT 實現雙 Token 簽章與 Claims 解構 | `generateAccessToken()`<br/>`generateRefreshToken()`<br/>`validateToken()` | 簽發包含 JTI 之短效 Access Token 與 HttpOnly Cookie 之 Refresh Token。 |
+| **`TokenRevocationService.java`** | **憑證主動吊銷服務 (Redis 整合)**<br/>管理登出與異常事件黑名單 | `revokeToken(jti, remainingTtl)`<br/>`isRevoked(jti)` | 透過 Redis 高速 Key-Value 存儲 JTI 黑名單，實現微秒級主動吊銷。 |
+| **`CustomUserDetailsService.java`** | **使用者資料庫權限橋接配接器**<br/>實作 Spring Security 原生載入介面 | `loadUserByUsername()` | 依據 `username` 查詢 MySQL `users` 表，轉換為帶有 RBAC 角色之 `UserDetails`。 |
 
-#### 認證授權全生命週期時序圖 (Authentication & Authorization Flow)
+#### 認證授權與雙 Token 輪替全生命週期時序圖 (Zero-Trust Lifecycle)
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent' }}}%%
@@ -68,33 +74,35 @@ sequenceDiagram
     autonumber
     actor Client as 前端客戶端
     participant Filter as JwtAuthenticationFilter
-    participant Security as SecurityConfig / Provider
+    participant Auth as AuthController / Security
     participant Token as TokenProvider
-    participant UserDS as CustomUserDetailsService
+    participant Revoke as TokenRevocationService (Redis)
     participant DB as MySQL 資料庫
 
-    Note over Client, DB: 階段一：會員登入簽發 JWT (Authentication)
-    Client->>Security: POST /api/auth/login (username, password)
-    Security->>UserDS: loadUserByUsername(username)
-    UserDS->>DB: findByUsername(username)
-    DB-->>UserDS: User 實體 (含 passwordHash)
-    UserDS-->>Security: UserDetails 實例
-    Security->>Security: Argon2id 比對密碼雜湊
-    Security->>Token: generateToken(username, role)
-    Token-->>Security: 簽發 24h 高強度 JWT
-    Security-->>Client: 回傳 { token: "eyJ..." } (保存至 sessionStorage)
+    Note over Client, DB: 階段一：會員登入簽發雙 Token (Authentication)
+    Client->>Auth: POST /api/public/login (帳號, 密碼)
+    Auth->>DB: 查詢使用者與 Argon2id 密碼驗證
+    Auth->>Token: 簽發 AccessToken (15m, 帶JTI) + RefreshToken (7d)
+    Auth-->>Client: Response Body: { accessToken } + Set-Cookie: refreshToken (HttpOnly)
 
-    Note over Client, DB: 階段二：受保護 API 請求攔截與授權 (Authorization)
-    Client->>Filter: GET /api/user/surveys (Header: Bearer eyJ...)
-    Filter->>Token: validateToken(jwt)
-    Token-->>Filter: true (簽名有效未過期)
-    Filter->>Token: getUsernameFromToken(jwt)
-    Token-->>Filter: "testuser"
-    Filter->>UserDS: loadUserByUsername("testuser")
-    UserDS-->>Filter: UserDetails (含 ROLE_USER 權限)
+    Note over Client, DB: 階段二：受保護 API 請求攔截與黑名單校驗 (Authorization)
+    Client->>Filter: GET /api/user/surveys (Header: Bearer <AccessToken>)
+    Filter->>Token: validateToken(accessToken)
+    Filter->>Revoke: isRevoked(jti)
+    Revoke-->>Filter: false (未被吊銷)
     Filter->>Filter: SecurityContextHolder 注入 Authentication
-    Filter->>Security: 通過 SecurityFilterChain 放行
-    Security-->>Client: 200 OK 業務資料回應
+    Filter-->>Client: 200 OK 業務資料回應
+
+    Note over Client, DB: 階段三：短效憑證過期，無感輪替換發 (RTR Rotation)
+    Client->>Auth: POST /api/public/refresh (隨帶 HttpOnly Cookie: refreshToken)
+    Auth->>Token: 校驗 RefreshToken 並偵測重放攻擊
+    Auth->>Token: 簽發新 AccessToken + 新 RefreshToken (作廢舊 RefreshToken)
+    Auth-->>Client: Response Body: { newAccessToken } + Set-Cookie: newRefreshToken
+
+    Note over Client, DB: 階段四：主動登出即時吊銷 (Active Revocation)
+    Client->>Auth: POST /api/user/logout (Header: Bearer <AccessToken>)
+    Auth->>Revoke: revokeToken(jti, remainingTtl)
+    Auth-->>Client: 清除 HttpOnly Cookie + 200 OK (後續持該 Token 請求立即被拒)
 ```
 
 ---
