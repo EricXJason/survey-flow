@@ -3,6 +3,17 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-21 13:30] - 協定調整：Git 初始化協議重構（優先 SSH、次要 HTTPS、初次 link 移除 MCP）
+
+- **改動原因**: 依據使用者指示，重構 Git 版控遠端協議規範，確立優先使用 SSH、次要降級走 HTTPS (HTTP)，並在初次 link / 初始化時徹底移除 MCP 建庫與配置引導邏輯，回歸純 Git CLI 敏捷操作
+- **具體內容**:
+  - **`AGENTS-GIT.md` 規範精準重構**:
+    - **遠端協議策略確立**: §0 指令矩陣與 §1.2 明確規範遠端協議順位：優先順位檢驗 SSH 金鑰連線（`ssh -T git@github.com`）並綁定 SSH URL；若連線不通或指定 HTTP，次要順位平滑降級走 HTTPS (HTTP) URL，絕不卡死流程
+    - **初次 link 徹底移除 MCP**: 刪除 §1.2 中原先要求「優先透過 GitHub MCP 建立遠端同名庫」、「引導使用者配置 GitHub MCP Token」等強依賴邏輯，改為透過純 Git CLI 綁定遠端 URL，使初始化過程極度輕量、獨立且敏捷
+    - **GitHub MCP 建議範圍解耦**: §5 之 GitHub MCP 賦能建議僅保留於日常 PR 審查、Issue 追蹤或 Release 標籤發布等高階協作行為，不再介入初次本地初始化與遠端綁定
+  - **`docs/check-list.md`**: 對齊安全認證核心項目描述為零信任雙 Token 體系（含 RTR 與 JTI 即時吊銷）
+- **影響範圍**: [`AGENTS-GIT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-GIT.md)、[`docs/check-list.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/check-list.md)、[`docs/change-log.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/change-log.md)
+
 ## [2026-10-21 13:25] - 專案功能落地：全端零信任雙 Token 體系實作、RTR 輪替與 JTI 即時吊銷整合
 
 - **改動原因**: 依據使用者指示與系統架構安全規範，將前後端實體程式碼全面改用雙 Token（短效 Access Token + 長效 Refresh Token），並確保專案運行、測試與構建完全正常

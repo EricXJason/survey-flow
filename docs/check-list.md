@@ -33,7 +33,7 @@
 - [x] **未來全端 Java Spring Boot API 規範對齊**: 於 API 規格書定義 `GET /api/surveys/{surveyId}/analytics` 端點與 Spring Security 權限防護（`@PreAuthorize` 管理員或擁有者），提供全端接軌 DTO。
 - [x] **Spring Boot 4.1.1 基礎架構骨架 (Java 21 + Maven)**: 配置 `pom.xml`，整合 Spring Web, Spring Data JPA, Spring Security, MySQL Connector, Validation, Lombok，並通過編譯測試。
 - [x] **設定檔格式標準化**: 將設定檔完全轉換為標準 `application.properties`，支援 MySQL HikariCP 連線池、SQL DDL 初始化模式與 JWT 參數。
-- [x] **安全認證核心 (Argon2id + 單一高安全 JWT 憑證架構)**: 實作四大高內聚核心類別（`SecurityConfig`, `JwtAuthenticationFilter`, `TokenProvider`, `CustomUserDetailsService`），將 PasswordEncoder 收納於 SecurityConfig，去除多餘樣板，實現極簡易學、高內聚與零循環依賴。
+- [x] **安全認證核心 (Argon2id + 零信任雙 Token 憑證架構)**: 實作高內聚核心類別（`SecurityConfig`, `JwtAuthenticationFilter`, `TokenProvider`, `CustomUserDetailsService`），整合 `TokenRevocationService` 支援 15m Access Token + 7d Refresh Token 與 RTR 輪替吊銷，實現極簡易學、高內聚與零循環依賴。
 - [x] **API 路由階層分流架構 (Admin / Public / Member)**:
   - [x] **公開端點 (`/api/public/**`)**: 註冊、登入、Token 換發、大廳公開分頁檢索 (`/api/public/surveys/lobby`)、公開問卷填答取得與受訪者填答提交 (`/api/public/submissions`)。
   - [x] **管理員專用端點 (`/api/admin/**`)**: 嚴格受 `@PreAuthorize("hasRole('ADMIN')")` 防護，提供全站會員名冊、狀態變更、強制下架問卷與全站營運 KPI (`/api/admin/analytics/overview`)。
