@@ -75,7 +75,7 @@ public class AdminController {
      * @param status 新狀態
      * @return 操作結果
      */
-    @PatchMapping("/users/{userId}/status")
+    @PutMapping("/users/{userId}/status")
     public ResponseEntity<ApiResponse<Void>> updateUserStatus(
             @PathVariable Long userId,
             @RequestParam String status) {

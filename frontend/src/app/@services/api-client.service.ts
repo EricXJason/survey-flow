@@ -96,16 +96,6 @@ export class ApiClientService {
   }
 
   /**
-   * PATCH 請求封裝
-   */
-  public patch<T>(endpoint: string, body?: unknown): Observable<ApiResponse<T>> {
-    return this.http.patch<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, body ?? {}, {
-      headers: this.getHeaders(),
-      withCredentials: true,
-    });
-  }
-
-  /**
    * DELETE 請求封裝
    */
   public delete<T>(endpoint: string): Observable<ApiResponse<T>> {

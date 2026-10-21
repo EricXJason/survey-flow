@@ -548,7 +548,7 @@ export class UserEmitterService {
   }
 
   /**
-   * 執行問卷可填寫日期時間區間、大廳公開性與即時填寫狀態更新 (連線後端 PATCH /api/user/surveys/{id}/settings)
+   * 執行問卷可填寫日期時間區間、大廳公開性與即時填寫狀態更新 (連線後端 PUT /api/user/surveys/{id}/settings)
    * @param surveyId 目標問卷 ID
    * @param settings 時限與發布設定載荷
    * @param onSuccessCallback 更新成功回呼
@@ -568,7 +568,7 @@ export class UserEmitterService {
       ? `/api/user/surveys/${surveyId}/settings`
       : `/api/user/surveys/${numericId}/settings`;
 
-    this._apiClient.patch<any>(endpoint, settings).subscribe({
+    this._apiClient.put<any>(endpoint, settings).subscribe({
       next: () => {
         const noticeData: DialogData = {
           title: '設定更新成功',

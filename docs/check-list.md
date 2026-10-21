@@ -59,7 +59,7 @@
   - [x] **前後端 DTO Validation 與 Database Constraint 完全對齊**: 登入長度、問卷建立與填答回答明細之 `@Valid`、`@Size`、`@NotBlank` 與資料庫欄位 100% 對齊無衝突。
   - [x] **真實測試數據持久化**: 建立 4 筆 `testuser` 問卷（3 筆公開 + 1 筆私人）與 40 筆真實作答記錄（191 筆題型回答明細），支援數據分析儀表板真實查詢。
   - [x] **問卷上傳不可溯及修改題目規範**: 上傳發布後鎖定問卷題目結構，避免修改既有題項導致既有回覆資料失真或關聯錯亂。
-  - [x] **問卷雙維度狀態與時程 API (`PATCH /api/user/surveys/{id}/settings`)**:
+  - [x] **問卷雙維度狀態與時程 API (`PUT /api/user/surveys/{id}/settings`)**:
     - [x] 維度一：是否公開至問卷大廳（`PUBLISHED` vs `UNPUBLISHED`）。
     - [x] 維度二：開放填答時段判定（由 `startDate` 與 `endDate` 決定，過期或未達時程自動攔截）。
   - [x] **會員身分證字號不可竄改性 (`identityCard` 唯讀鎖定)**: 前端個人檔案頁面將身分證號鎖定為唯讀狀態，後端 `UserService.updateProfile` 徹底移除身分證號更新賦值，確保實名綁定無漏洞。
@@ -80,7 +80,7 @@
     - [x] `UserCredentialSynchronizer` 實作字元集校正防禦，確保使用者全名於資料庫與前端 Header 100% 正確顯示為臺灣繁體中文。
   - [x] **管理員會員名冊與狀態管理 API**:
     - [x] `GET /api/admin/users`: 取得全站會員清單與統計數據。
-    - [x] `PATCH /api/admin/users/{userId}/status`: 即時切換會員啟用/凍結狀態。
+    - [x] `PUT /api/admin/users/{userId}/status`: 即時切換會員啟用/凍結狀態。
     - [x] `DELETE /api/admin/users/{userId}`: 管理員安全移除會員帳號（受系統管理員保護機制防護）。
   - [x] **會員個人資料與密碼維護 API (一對一 SRP 分層架構)**:
     - [x] `GET /api/user/profile`: 讀取當前會員真實個資。

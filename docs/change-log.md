@@ -3,6 +3,29 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-21 13:40] - 規範確立與專案重構：強制限定 HTTP 四大動詞 (POST, GET, PUT, DELETE)，全面肅清 PATCH
+
+- **改動原因**: 依據使用者指示，確立全系統與本專案 HTTP 通訊動詞唯一性規範（僅允許 `POST`, `GET`, `PUT`, `DELETE`，嚴格禁止 `PATCH` 與非標準動詞），所有更新操作一律統一採用 `PUT`，徹底消除前後端動詞分歧與相容性問題
+- **具體內容**:
+  - **核心協定與文檔矩陣全量落地**:
+    - **`AGENTS.md` §3**: 寫入「RESTful HTTP 通訊動詞規範」，明訂全端永遠僅限使用 `POST`, `GET`, `PUT`, `DELETE`，嚴格禁止 `PATCH`
+    - **`AGENTS-BACK.md` §1**: 寫入後端端點 HTTP 四大動詞鐵律，局部更新與狀態切換一律統一採用 `PUT`，CORS Preflight 由底層框架處理，Controller 嚴禁手動宣告 OPTIONS
+    - **`AGENTS-FRONT.md` §2**: 寫入前端通訊 HTTP 四大動詞鐵律，禁止前端呼叫或封裝 PATCH，所有更新一律調用 `PUT`
+    - **`docs/system-design/04-specs-api.md`**: 建立第 0 節「HTTP 通訊方法鐵律 (HTTP Method Invariants)」表格與統一更新原則
+    - **`docs/check-list.md`**: 將問卷雙維度時程設定與管理員切換會員狀態端點描述由 `PATCH` 更正為 `PUT`
+  - **後端專案代碼肅清與更新**:
+    - **`SurveyController.java`**: 問卷時限與設定更新端點由 `@PatchMapping` 重構為 `@PutMapping({"/api/user/surveys/{id}/settings", "/api/surveys/{id}/settings"})`
+    - **`AdminController.java`**: 會員啟用/凍結狀態切換端點由 `@PatchMapping` 重構為 `@PutMapping("/users/{userId}/status")`
+    - **`SecurityConfig.java` & `application.properties`**: CORS 允許動詞清單移除 `PATCH`，鎖定為 `GET,POST,PUT,DELETE,OPTIONS`
+  - **前端專案代碼肅清與更新**:
+    - **`api-client.service.ts`**: 徹底移除 `patch` 方法，HTTP Client 僅公開且僅支援 `get`, `post`, `put`, `delete`
+    - **`user-emitter.service.ts`**: 問卷時限與發布設定更新方法全面改為調用 `this._apiClient.put`
+    - **`user-management.component.ts`**: 會員啟用/凍結狀態切換全面改為調用 `this._apiClient.put`
+  - **品質與構建驗證**:
+    - 後端 16/16 自動化單元測試全數 PASS (`./mvnw clean test`)
+    - 前端 Angular 0 錯誤構建打包成功 (`npm run build`)
+- **影響範圍**: [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md)、[`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md)、[`AGENTS-FRONT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-FRONT.md)、[`docs/system-design/04-specs-api.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/04-specs-api.md)、[`docs/check-list.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/check-list.md)、[`docs/change-log.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/change-log.md)、[`SurveyController.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/controller/SurveyController.java)、[`AdminController.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/controller/AdminController.java)、[`SecurityConfig.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/security/SecurityConfig.java)、[`application.properties`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/application.properties)、[`api-client.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/api-client.service.ts)、[`user-emitter.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/user-emitter.service.ts)、[`user-management.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/user-management/user-management.component.ts)
+
 ## [2026-10-21 13:30] - 協定調整：Git 初始化協議重構（優先 SSH、次要 HTTPS、初次 link 移除 MCP）
 
 - **改動原因**: 依據使用者指示，重構 Git 版控遠端協議規範，確立優先使用 SSH、次要降級走 HTTPS (HTTP)，並在初次 link / 初始化時徹底移除 MCP 建庫與配置引導邏輯，回歸純 Git CLI 敏捷操作
