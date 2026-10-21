@@ -3,6 +3,26 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-21 13:25] - 專案功能落地：全端零信任雙 Token 體系實作、RTR 輪替與 JTI 即時吊銷整合
+
+- **改動原因**: 依據使用者指示與系統架構安全規範，將前後端實體程式碼全面改用雙 Token（短效 Access Token + 長效 Refresh Token），並確保專案運行、測試與構建完全正常
+- **具體內容**:
+  - **後端安全認證層重構**:
+    - **`TokenProvider.java`**: 實作 `generateAccessToken` (15分鐘短效，含 JTI、角色聲明) 與 `generateRefreshToken` (7天長效，含 JTI、token_type="refresh")，支援 JTI 提取、過期時間計算與類型校驗
+    - **`TokenRevocationService.java`**: 全新建立零信任 JTI 黑名單服務，支援以 $O(1)$ 微秒級即時吊銷 Access Token，並維護 Refresh Token 單次輪替 (RTR) 狀態表，具備重放攻擊偵測與定時清理過期憑證能力
+    - **`JwtAuthenticationFilter.java`**: 注入 `TokenRevocationService`，攔截請求時即時檢驗 JTI 吊銷狀態，並阻斷誤用 Refresh Token 存取業務 API 之憑證混淆行為
+    - **`AuthService.java`**: 登入與註冊全面簽發雙 Token；實作 `refreshToken` 業務支援 RTR 輪替換發全新雙 Token，並於登出時將 Access Token JTI 寫入黑名單主動吊銷
+    - **`AuthController.java`**: 支援同時透過 HttpOnly Cookie 與 Body 回傳雙 Token，刷新端點雙軌相容 Cookie 與 JSON Payload
+    - **`SecurityConfig.java`**: 開放 CORS `setAllowCredentials(true)` 與 `Set-Cookie` 標頭，支援安全 Cookie 跨來源傳遞
+    - **`application.properties`**: 組態正式切換至 `jwt.access-token-expiration-ms=900000` (15m) 與 `jwt.refresh-token-expiration-ms=604800000` (7d)
+  - **前端客戶端與會話對接**:
+    - **`api-client.service.ts`**: 所有 HTTP 請求啟用 `withCredentials: true`，支援 HttpOnly Cookie 自動攜帶，並擴充 `refreshAuthToken` 換發方法
+    - **`user-emitter.service.ts`**: 登入成功自動同步保存 `SURVEY_ACCESS_TOKEN` 與 `SURVEY_REFRESH_TOKEN`，登出時全量清理
+  - **自動化測試擴充與構建驗證**:
+    - **`AuthServiceTest.java`**: 擴充雙 Token 簽發、RTR 輪替成功、作廢 Token 重放攻擊攔截與攜帶 Bearer Token 登出吊銷單元測試
+    - **0 錯誤驗證**: 後端 16/16 單元測試全數 PASS，前端 `npm run build` 0 錯誤打包成功
+- **影響範圍**: `TokenProvider.java`、`TokenRevocationService.java`、`JwtAuthenticationFilter.java`、`AuthService.java`、`AuthController.java`、`SecurityConfig.java`、`application.properties`、`api-client.service.ts`、`user-emitter.service.ts`、`AuthServiceTest.java`、`docs/change-log.md`
+
 ## [2026-10-20 18:20] - 核心協定架構修正：解除 ModelMapper 與 CRUD 排序強制限制、零信任雙 Token 體系落地、Git 生產發布防污染防中斷重構
 
 - **改動原因**: 使用者精闢指出四大架構缺陷：ModelMapper 不應強制、CRUD 物理排序不應強制、24小時單一JWT違背零信任架構且存在無法吊銷之嚴重資安破口、push到master 在中間分支提交 README 隱含未驗收代碼偷渡與中斷懸空風險

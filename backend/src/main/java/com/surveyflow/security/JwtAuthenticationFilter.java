@@ -2,12 +2,12 @@
  * ============================================================================
  * 檔案名稱: JwtAuthenticationFilter.java
  * 所屬模組: Security 安全認證模組
- * 責任描述: 攔截每個 HTTP 請求，提取 Authorization 標頭中之 Bearer JWT 權杖並驗證上下文身分
+ * 責任描述: 攔截每個 HTTP 請求，提取 Authorization 標頭中之 Bearer JWT 權杖，檢驗有效性、JTI 吊銷黑名單與 Token 類型，注入安全上下文
  * 架構分層: Security / Filter Layer
  * 聯動關係:
- *   - 上游依賴: TokenProvider, CustomUserDetailsService
+ *   - 上游依賴: TokenProvider, TokenRevocationService, CustomUserDetailsService
  *   - 下游消費: SecurityContextHolder, SecurityConfig
- * 邊界處理: 若 Token 缺失或無效，則放行讓後續 SecurityFilterChain 決定是否需要認證
+ * 邊界處理: 若 Token 缺失、過期、遭黑名單吊銷或為 RefreshToken，則不注入認證上下文，由後續過濾鏈阻斷
  * ============================================================================
  */
 
@@ -35,6 +35,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenProvider tokenProvider;
+    private final TokenRevocationService tokenRevocationService;
     private final CustomUserDetailsService userDetailsService;
 
     @Override
@@ -45,14 +46,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = extractJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromToken(jwt);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                String jti = tokenProvider.getJtiFromToken(jwt);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                // 1. 檢查是否遭主動吊銷 (黑名單檢核)
+                if (tokenRevocationService.isRevoked(jti)) {
+                    log.warn("拒絕存取: 當前 JWT 憑證已被主動吊銷! jti={}", jti);
+                } else if (tokenProvider.isRefreshToken(jwt)) {
+                    // 2. 防範憑證類型混淆：Refresh Token 不得直接作為業務 API 存取憑證
+                    log.warn("拒絕存取: 偵測到以 Refresh Token 嘗試調用業務 API! jti={}", jti);
+                } else {
+                    String username = tokenProvider.getUsernameFromToken(jwt);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         } catch (Exception ex) {
             log.error("無法於 Security 上下文建立使用者認證: {}", ex.getMessage());

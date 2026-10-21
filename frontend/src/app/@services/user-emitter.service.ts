@@ -66,8 +66,11 @@ export class UserEmitterService {
       next: (res) => {
         if (res && res.success && res.data) {
           const data = res.data;
-          // 保存單一 JWT 授權憑證至會話儲存空間
-          sessionStorage.setItem('SURVEY_ACCESS_TOKEN', data.token || data.accessToken);
+          // 保存零信任雙 Token 授權憑證至會話儲存空間
+          sessionStorage.setItem('SURVEY_ACCESS_TOKEN', data.accessToken || data.token);
+          if (data.refreshToken) {
+            sessionStorage.setItem('SURVEY_REFRESH_TOKEN', data.refreshToken);
+          }
 
           const targetProfile: UserProfileData = {
             id: String(data.userId),
@@ -178,6 +181,7 @@ export class UserEmitterService {
       });
 
       sessionStorage.removeItem('SURVEY_ACCESS_TOKEN');
+      sessionStorage.removeItem('SURVEY_REFRESH_TOKEN');
       this._userState.resetToGuest();
       this._router.navigateByUrl('/lobby');
     });

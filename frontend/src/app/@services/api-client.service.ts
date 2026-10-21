@@ -2,12 +2,12 @@
  * ============================================================================
  * 檔案名稱: api-client.service.ts
  * 所屬模組: 網路通訊服務模組 (HTTP API Client Module)
- * 責任描述: 負責前端與 Spring Boot 後端 (http://localhost:8080) 進行 RESTful 通訊，封裝單一 JWT Token 認證、全域請求頭與標準回應轉換。
+ * 責任描述: 負責前端與 Spring Boot 後端 (http://localhost:8080) 進行 RESTful 通訊，封裝零信任雙 Token 認證 (Bearer Access Token + HttpOnly Refresh Token Cookie)、全域請求頭與標準回應轉換。
  * 架構分層: Service Layer / Network Infrastructure Layer
  * 聯動關係:
  *   - 上游依賴: @angular/common/http (HttpClient), ./user-state.service
  *   - 下游消費: SurveyGetterService, SurveyAnalyticsService, UserEmitterService
- * 邊界處理: 內建網路超時與斷線防呆，當後端未啟動時提供優雅降級回退能力
+ * 邊界處理: 內建 withCredentials: true 支援跨域憑證 Cookie 自動傳遞，支援 Refresh Token 換發
  * ============================================================================
  */
 
@@ -51,11 +51,27 @@ export class ApiClientService {
   }
 
   /**
+   * 執行長效 Refresh Token 換發新雙 Token (支援 Cookie 與本地備份)
+   */
+  public refreshAuthToken(): Observable<ApiResponse<any>> {
+    const storedRefreshToken = sessionStorage.getItem('SURVEY_REFRESH_TOKEN') || '';
+    return this.http.post<ApiResponse<any>>(
+      `${this.baseUrl}/api/public/auth/refresh`,
+      { refreshToken: storedRefreshToken },
+      {
+        headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+        withCredentials: true,
+      }
+    );
+  }
+
+  /**
    * GET 請求封裝
    */
   public get<T>(endpoint: string): Observable<ApiResponse<T>> {
     return this.http.get<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, {
       headers: this.getHeaders(),
+      withCredentials: true,
     });
   }
 
@@ -65,6 +81,7 @@ export class ApiClientService {
   public post<T>(endpoint: string, body: unknown): Observable<ApiResponse<T>> {
     return this.http.post<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, body, {
       headers: this.getHeaders(),
+      withCredentials: true,
     });
   }
 
@@ -74,6 +91,7 @@ export class ApiClientService {
   public put<T>(endpoint: string, body: unknown): Observable<ApiResponse<T>> {
     return this.http.put<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, body, {
       headers: this.getHeaders(),
+      withCredentials: true,
     });
   }
 
@@ -83,6 +101,7 @@ export class ApiClientService {
   public patch<T>(endpoint: string, body?: unknown): Observable<ApiResponse<T>> {
     return this.http.patch<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, body ?? {}, {
       headers: this.getHeaders(),
+      withCredentials: true,
     });
   }
 
@@ -92,6 +111,7 @@ export class ApiClientService {
   public delete<T>(endpoint: string): Observable<ApiResponse<T>> {
     return this.http.delete<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, {
       headers: this.getHeaders(),
+      withCredentials: true,
     });
   }
 }

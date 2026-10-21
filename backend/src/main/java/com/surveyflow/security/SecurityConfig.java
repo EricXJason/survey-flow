@@ -148,8 +148,8 @@ public class SecurityConfig {
         List<String> headers = Arrays.stream(allowedHeaders.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
         configuration.setAllowedHeaders(headers);
 
-        configuration.setExposedHeaders(List.of("Authorization"));
-        configuration.setAllowCredentials(false);
+        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
+        configuration.setAllowCredentials(true);
         configuration.setMaxAge(maxAgeSeconds);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

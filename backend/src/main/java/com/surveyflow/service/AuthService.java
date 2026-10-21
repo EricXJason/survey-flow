@@ -2,12 +2,12 @@
  * ============================================================================
  * 檔案名稱: AuthService.java
  * 所屬模組: Service 業務邏輯層 - 認證模組
- * 責任描述: 處理會員註冊 (Argon2id 密碼雜湊)、身分登入校驗、JWT 單一高安全 Token 簽發與無狀態驗證
+ * 責任描述: 負責會員註冊 (Argon2id 密碼雜湊)、身分登入校驗、零信任雙 Token (短效 Access Token + 長效 Refresh Token) 簽發、RTR 輪替與主動吊銷
  * 架構分層: Business Logic / Service Layer
  * 聯動關係:
- *   - 上游依賴: UserRepository, PasswordEncoder, TokenProvider
+ *   - 上游依賴: UserRepository, PasswordEncoder, TokenProvider, TokenRevocationService
  *   - 下游消費: AuthController
- * 邊界處理: 密碼校驗失敗時拋出 BadCredentialsException，使用者重複註冊時拋出 IllegalArgumentException
+ * 邊界處理: 密碼校驗失敗拋出 BadCredentialsException；Token 異常或重放攻擊拋出 BadCredentialsException/IllegalArgumentException
  * ============================================================================
  */
 
@@ -23,12 +23,14 @@ import com.surveyflow.dto.auth.ResetPasswordRequest;
 import com.surveyflow.entity.User;
 import com.surveyflow.repository.UserRepository;
 import com.surveyflow.security.TokenProvider;
+import com.surveyflow.security.TokenRevocationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -38,11 +40,12 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
+    private final TokenRevocationService tokenRevocationService;
 
     /**
      * 處理新會員註冊業務
      * @param request 註冊參數
-     * @return 註冊成功後直接簽發之 AuthResponse
+     * @return 註冊成功後簽發之雙 Token 與會員概要
      */
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -70,13 +73,13 @@ public class AuthService {
         user = userRepository.save(user);
         log.info("新會員註冊成功: username={}, email={}", user.getUsername(), user.getEmail());
 
-        return createAuthResponse(user);
+        return createDualTokenAuthResponse(user);
     }
 
     /**
      * 處理會員登入驗證
      * @param request 登入請求
-     * @return 登入成功之 AuthResponse
+     * @return 登入成功之雙 Token 與會員概要
      */
     @Transactional
     public AuthResponse login(LoginRequest request) {
@@ -92,35 +95,93 @@ public class AuthService {
         }
 
         log.info("會員登入成功: username={}", user.getUsername());
-        return createAuthResponse(user);
+        return createDualTokenAuthResponse(user);
     }
 
     /**
-     * 透過現有有效 Token 續約或重新核發單一 Token (簡化架構相容端點)
-     * @param request 刷新請求
-     * @return 重新簽發之 AuthResponse
+     * 透過長效 Refresh Token 輪替換發新 Access Token 與新 Refresh Token (RTR 機制)
+     * @param request 包含 refreshToken 之請求物件
+     * @param cookieRefreshToken 從 HttpOnly Cookie 提取之 Refresh Token (可為空)
+     * @return 輪替簽發後之全新雙 Token 物件
      */
     @Transactional(readOnly = true)
-    public AuthResponse refreshToken(RefreshTokenRequest request) {
-        String tokenStr = request.getRefreshToken();
+    public AuthResponse refreshToken(RefreshTokenRequest request, String cookieRefreshToken) {
+        String tokenStr = (request != null && StringUtils.hasText(request.getRefreshToken()))
+                ? request.getRefreshToken().trim()
+                : cookieRefreshToken;
+
+        if (!StringUtils.hasText(tokenStr)) {
+            throw new BadCredentialsException("缺少 Refresh Token 憑證，請重新登入");
+        }
+
         if (!tokenProvider.validateToken(tokenStr)) {
-            throw new IllegalArgumentException("憑證無效或已過期，請重新登入");
+            throw new BadCredentialsException("Refresh Token 憑證無效或已過期，請重新登入");
+        }
+
+        if (!tokenProvider.isRefreshToken(tokenStr)) {
+            throw new BadCredentialsException("憑證類型錯誤，非有效之 Refresh Token");
         }
 
         String username = tokenProvider.getUsernameFromToken(tokenStr);
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("查無所屬使用者"));
+        String oldJti = tokenProvider.getJtiFromToken(tokenStr);
+        long remainingTtl = tokenProvider.getRemainingTtlMs(tokenStr);
 
-        return createAuthResponse(user);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("查無所屬會員資料"));
+
+        if (!"ACTIVE".equals(user.getStatus())) {
+            throw new IllegalArgumentException("該帳號已被凍結或停用");
+        }
+
+        // 簽發新雙 Token
+        String newAccessToken = tokenProvider.generateAccessToken(user.getUsername(), user.getRole().name());
+        String newRefreshToken = tokenProvider.generateRefreshToken(user.getUsername());
+        String newRefreshJti = tokenProvider.getJtiFromToken(newRefreshToken);
+
+        // 執行 RTR 單次輪替防重放保護
+        boolean rotated = tokenRevocationService.rotateRefreshToken(oldJti, newRefreshJti, username, remainingTtl);
+        if (!rotated) {
+            throw new BadCredentialsException("偵測到異常重放攻擊或已作廢之 Refresh Token，系統已安全阻斷，請重新登入");
+        }
+
+        log.info("Refresh Token 輪替成功 (RTR): username={}, newRefreshJti={}", username, newRefreshJti);
+
+        return AuthResponse.builder()
+                .token(newAccessToken)
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .tokenType("Bearer")
+                .userId(user.getId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .build();
     }
 
     /**
-     * 處理會員主動登出 (無狀態 JWT 由客戶端丟棄，後端記錄審計日誌)
+     * 處理會員主動登出 (將當前 Access Token 加入黑名單即刻吊銷)
+     * @param username 當前登入帳號
+     * @param bearerToken 當前持有的 Bearer Access Token 字串 (若有)
+     */
+    @Transactional
+    public void logout(String username, String bearerToken) {
+        if (StringUtils.hasText(bearerToken)) {
+            String token = bearerToken.startsWith("Bearer ") ? bearerToken.substring(7).trim() : bearerToken.trim();
+            String jti = tokenProvider.getJtiFromToken(token);
+            long remainingTtl = tokenProvider.getRemainingTtlMs(token);
+            tokenRevocationService.revokeToken(jti, remainingTtl);
+        }
+        log.info("會員已主動安全登出: username={}", username);
+    }
+
+    /**
+     * 處理會員登出多載 (相容無 Token 參數呼叫)
      * @param username 當前登入帳號
      */
     @Transactional
     public void logout(String username) {
-        log.info("會員已成功登出 (無狀態會話終止): username={}", username);
+        logout(username, null);
     }
 
     /**
@@ -157,15 +218,20 @@ public class AuthService {
     }
 
     /**
-     * 內部簽發單一高安全 JWT Token 並封裝回傳物件
+     * 內部簽發零信任雙 Token (短效 Access Token + 長效 Refresh Token) 並封裝回傳物件
      */
-    private AuthResponse createAuthResponse(User user) {
-        String token = tokenProvider.generateToken(user.getUsername(), user.getRole().name());
+    private AuthResponse createDualTokenAuthResponse(User user) {
+        String accessToken = tokenProvider.generateAccessToken(user.getUsername(), user.getRole().name());
+        String refreshToken = tokenProvider.generateRefreshToken(user.getUsername());
+        String refreshJti = tokenProvider.getJtiFromToken(refreshToken);
+
+        // 註冊有效 Refresh Token 至狀態管理服務
+        tokenRevocationService.registerRefreshToken(refreshJti, user.getUsername());
 
         return AuthResponse.builder()
-                .token(token)
-                .accessToken(token)      // 向下相容既有讀取
-                .refreshToken(token)     // 向下相容
+                .token(accessToken)             // 向下相容單一讀取端點
+                .accessToken(accessToken)       // 短效存取權杖 (15 分鐘)
+                .refreshToken(refreshToken)     // 長效更新權杖 (7 天)
                 .tokenType("Bearer")
                 .userId(user.getId())
                 .username(user.getUsername())
