@@ -3,6 +3,16 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-21 13:45] - 協定優化：四個 AGENTS MD 邊界精準劃分、徹底掃除重複敘述與 Token 開銷極致化
+
+- **改動原因**: 依據使用者指示，嚴格檢視四個 MD 檔案（`AGENTS.md`、`AGENTS-GIT.md`、`AGENTS-FRONT.md`、`AGENTS-BACK.md`），徹底消除重疊與重複敘述，確保職責邊界明確、低 Token 開銷、易於完整理解並具備嚴格可執行性
+- **具體內容**:
+  - **`AGENTS.md` (全域中樞)**: 維持最高唯一真實源（SSOT），專注全域指令、軟體工程底線 (SOLID/Clean Code)、全端四大動詞、雙軌文檔與 Tech HUD Mermaid 標準
+  - **`AGENTS-BACK.md` (後端特化)**: 消除內部重複出現之 DIP 構造器注入與分層敘述；將 HTTP 通訊動詞與 MCP 建議改為繼承總中樞，專注 Java/Spring Boot 工程規範、SQL 集中歸檔、快取防禦與零信任雙 Token 參數
+  - **`AGENTS-FRONT.md` (前端特化)**: 消除與總中樞重複之動詞與 MCP 文字，專注 pnpm 協定、前端命名慣例、抗排版崩潰防禦與戰術直角 UI 規範
+  - **`AGENTS-GIT.md` (版控特化)**: 消除與總中樞重複之原子 Commit 與實體常駐文字，改為繼承式簡明條款；MCP 建議回歸繼承，專注純 Git CLI 拓撲、防撞 Rebase 與原子發布流動
+- **影響範圍**: [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md)、[`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md)、[`AGENTS-FRONT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-FRONT.md)、[`AGENTS-GIT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-GIT.md)、[`docs/change-log.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/change-log.md)
+
 ## [2026-10-21 13:40] - 規範確立與專案重構：強制限定 HTTP 四大動詞 (POST, GET, PUT, DELETE)，全面肅清 PATCH
 
 - **改動原因**: 依據使用者指示，確立全系統與本專案 HTTP 通訊動詞唯一性規範（僅允許 `POST`, `GET`, `PUT`, `DELETE`，嚴格禁止 `PATCH` 與非標準動詞），所有更新操作一律統一採用 `PUT`，徹底消除前後端動詞分歧與相容性問題
