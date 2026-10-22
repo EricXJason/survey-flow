@@ -484,31 +484,33 @@
                     <div class="tf-options-row" role="radiogroup" [attr.aria-label]="q.description">
                       <label
                         class="option-pill-label opt-yes"
-                        [class.selected]="runnerFormGroup.get(q.uid)?.value === 'true'"
+                        [class.selected]="runnerFormGroup.get(q.uid)?.value === 'true' || runnerFormGroup.get(q.uid)?.value === (q.options?.[0] || 'true')"
                         (click)="selectTfOption(q.uid, 'true')"
                       >
                         <input
                           type="radio"
-                          [formControlName]="q.uid"
-                          [name]="'tf_radio_' + q.uid"
+                          [attr.name]="'tf_radio_' + q.uid"
                           [value]="'true'"
-                          [checked]="runnerFormGroup.get(q.uid)?.value === 'true'"
+                          [checked]="runnerFormGroup.get(q.uid)?.value === 'true' || runnerFormGroup.get(q.uid)?.value === (q.options?.[0] || 'true')"
+                          (click)="$event.stopPropagation()"
+                          (change)="selectTfOption(q.uid, 'true')"
                         />
-                        <span>是</span>
+                        <span>{{ q.options?.[0] || '是' }}</span>
                       </label>
                       <label
                         class="option-pill-label opt-no"
-                        [class.selected]="runnerFormGroup.get(q.uid)?.value === 'false'"
+                        [class.selected]="runnerFormGroup.get(q.uid)?.value === 'false' || runnerFormGroup.get(q.uid)?.value === (q.options?.[1] || 'false')"
                         (click)="selectTfOption(q.uid, 'false')"
                       >
                         <input
                           type="radio"
-                          [formControlName]="q.uid"
-                          [name]="'tf_radio_' + q.uid"
+                          [attr.name]="'tf_radio_' + q.uid"
                           [value]="'false'"
-                          [checked]="runnerFormGroup.get(q.uid)?.value === 'false'"
+                          [checked]="runnerFormGroup.get(q.uid)?.value === 'false' || runnerFormGroup.get(q.uid)?.value === (q.options?.[1] || 'false')"
+                          (click)="$event.stopPropagation()"
+                          (change)="selectTfOption(q.uid, 'false')"
                         />
-                        <span>否</span>
+                        <span>{{ q.options?.[1] || '否' }}</span>
                       </label>
                     </div>
                   }
@@ -523,14 +525,20 @@
                   }
 
                   @case ("radio") {
-                    <div class="choice-options-list">
+                    <div class="choice-options-list" role="radiogroup" [attr.aria-label]="q.description">
                       @for (opt of q.options; track $index) {
-                        <label class="choice-option-label" [class.selected]="runnerFormGroup.get(q.uid)?.value === opt">
+                        <label
+                          class="choice-option-label"
+                          [class.selected]="runnerFormGroup.get(q.uid)?.value === opt"
+                          (click)="selectRadioOption(q.uid, opt)"
+                        >
                           <input
                             type="radio"
-                            [formControlName]="q.uid"
-                            [name]="q.uid"
+                            [attr.name]="'radio_' + q.uid"
                             [value]="opt"
+                            [checked]="runnerFormGroup.get(q.uid)?.value === opt"
+                            (click)="$event.stopPropagation()"
+                            (change)="selectRadioOption(q.uid, opt)"
                           />
                           <span class="choice-text">{{ opt }}</span>
                         </label>
@@ -541,12 +549,13 @@
                   @case ("multiRadio") {
                     <div class="choice-options-list">
                       @for (opt of q.options; track $index) {
-                        <label class="choice-option-label">
+                        <label class="choice-option-label" [class.selected]="isMultiRadioChecked(q.uid, opt)">
                           <input
                             type="checkbox"
                             [value]="opt"
                             [disabled]="isPreview"
                             [checked]="isMultiRadioChecked(q.uid, opt)"
+                            (click)="$event.stopPropagation()"
                             (change)="onMultiRadioChange(q.uid, opt, $event)"
                           />
                           <span class="choice-text">{{ opt }}</span>
@@ -556,7 +565,7 @@
                   }
 
                   @case ("scale") {
-                    <div class="scale-options-wrap">
+                    <div class="scale-options-wrap" role="radiogroup" [attr.aria-label]="q.description">
                       @for (scaleOpt of getScaleOptions(q); track $index) {
                         <label
                           class="scale-option-pill"
@@ -565,9 +574,11 @@
                         >
                           <input
                             type="radio"
-                            [formControlName]="q.uid"
-                            [name]="q.uid"
+                            [attr.name]="'scale_' + q.uid"
                             [value]="scaleOpt"
+                            [checked]="runnerFormGroup.get(q.uid)?.value === scaleOpt"
+                            (click)="$event.stopPropagation()"
+                            (change)="selectScaleOption(q.uid, scaleOpt)"
                           />
                           <span class="scale-text">{{ scaleOpt }}</span>
                         </label>
@@ -580,8 +591,10 @@
                       type="time"
                       class="field-input field-input-time"
                       [formControlName]="q.uid"
-                      [min]="q.hasTimeLimit ? q.minTime : null"
-                      [max]="q.hasTimeLimit ? q.maxTime : null"
+                      [attr.min]="q.hasTimeLimit && q.minTime ? q.minTime : null"
+                      [attr.max]="q.hasTimeLimit && q.maxTime ? q.maxTime : null"
+                      (change)="onDateTimeChange(q.uid, $event)"
+                      (input)="onDateTimeChange(q.uid, $event)"
                     />
                   }
 
@@ -590,8 +603,10 @@
                       type="date"
                       class="field-input field-input-date"
                       [formControlName]="q.uid"
-                      [min]="q.hasDateLimit ? q.minDate : null"
-                      [max]="q.hasDateLimit ? q.maxDate : null"
+                      [attr.min]="q.hasDateLimit && q.minDate ? q.minDate : null"
+                      [attr.max]="q.hasDateLimit && q.maxDate ? q.maxDate : null"
+                      (change)="onDateTimeChange(q.uid, $event)"
+                      (input)="onDateTimeChange(q.uid, $event)"
                     />
                   }
                 }

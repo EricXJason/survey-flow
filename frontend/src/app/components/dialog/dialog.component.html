@@ -64,7 +64,7 @@
       </div>
 
       <div class="dialog-message-container">
-        <p id="dialog-desc" class="dialog-message">{{ dialogData.message }}</p>
+        <div id="dialog-desc" class="dialog-message" [innerHTML]="formatMessage(dialogData.message)"></div>
       </div>
 
       <div class="dialog-actions">

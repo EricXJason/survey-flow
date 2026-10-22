@@ -15,7 +15,6 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserStateService } from './user-state.service';
-import { environment } from '../../environments/environment';
 
 export interface ApiResponse<T> {
   status: number;
@@ -25,6 +24,21 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
+/**
+ * 解析後端 API 基礎根路徑 (純原生無多餘檔案)
+ * 本地開發 (localhost / 127.0.0.1) 自動連線 http://localhost:8080
+ * 雲端生產部署 (Cloudflare Pages 等) 自動對接 Render 雲端後端服務
+ */
+function resolveApiBaseUrl(): string {
+  if (typeof window !== 'undefined' && window.location) {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:8080';
+    }
+  }
+  return 'https://survey-flow-9gt6.onrender.com';
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -32,8 +46,8 @@ export class ApiClientService {
   private readonly http = inject(HttpClient);
   private readonly userState = inject(UserStateService);
 
-  /** 後端 API 基礎根路徑 (本地指向 localhost:8080，生產自動對接雲端 Render) */
-  public readonly baseUrl = environment.apiUrl;
+  /** 後端 API 基礎根路徑 */
+  public readonly baseUrl = resolveApiBaseUrl();
 
   /**
    * 取得附加 JWT Bearer Token 之通訊標頭

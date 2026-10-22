@@ -478,13 +478,17 @@ export class UserEmitterService {
         } : null,
         answers: (payload.answers || []).map((ans, idx) => {
           const qId = ans.questionId || (idx + 1);
-          const isNum = typeof ans.answer === 'number';
+          const isScaleType = ans.type === 'scale';
+          const numValue = isScaleType && ans.answer != null && !isNaN(Number(ans.answer))
+            ? Number(ans.answer)
+            : (typeof ans.answer === 'number' ? ans.answer : null);
+
           return {
             questionId: qId,
             selectedOptionId: ans.selectedOptionId ?? null,
             selectedOptionIds: ans.selectedOptionIds ?? null,
-            ratingValue: isNum ? ans.answer : null,
-            textAnswer: !isNum && ans.answer != null ? (Array.isArray(ans.answer) ? ans.answer.join(', ') : String(ans.answer)) : null,
+            ratingValue: numValue,
+            textAnswer: ans.answer != null ? (Array.isArray(ans.answer) ? ans.answer.join(', ') : String(ans.answer)) : null,
           };
         }),
       };

@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ==============================================================================
+ 檔案名稱: pom.xml
+ 所屬模組: SurveyFlow 後端 Maven 專案建置與依賴管理中樞
+ 責任描述: 定義 Java 21 與 Spring Boot 4.1.1 企業級全端依賴體系，包含 Spring Data JPA、
+           Spring Security、Argon2id (BouncyCastle)、JJWT、JavaMailSender 與 TiDB/MySQL 驅動。
+ ==============================================================================
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -53,6 +61,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Actuator (健康檢查 /actuator/health 端點，保活探針必要依賴) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <!-- MySQL Connector / J -->

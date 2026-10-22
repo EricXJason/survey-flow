@@ -1,8 +1,8 @@
-# 04. API 與通訊協定規格書 (API & Communication Specifications)
+# 06. API 與通訊協定規格書 (API & Communication Specifications)
 
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
-> **通訊協定**: RESTful API / JSON Payload (目前前端以 Service Layer 封裝本地模擬與持久化)  
-> **更新日期**: 2026-10-06  
+> **通訊協定**: RESTful HTTPS API / JSON Payload (Spring Boot 4.1.1 Web API)  
+> **更新日期**: 2026-10-22  
 
 ## 0. HTTP 通訊方法鐵律 (HTTP Method Invariants)
 

@@ -83,7 +83,8 @@ public class MailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
             String sanitizedName = resolveSenderName();
-            helper.setFrom(new InternetAddress(fromEmail, sanitizedName, StandardCharsets.UTF_8.name()));
+            String senderAddress = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail.trim() : "no-reply@surveyflow.tw";
+            helper.setFrom(new InternetAddress(senderAddress, sanitizedName, StandardCharsets.UTF_8.name()));
             helper.setTo(toEmail.trim());
             helper.setSubject(subject);
             helper.setText(htmlContent, true);

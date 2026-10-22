@@ -37,6 +37,7 @@ public class SurveyAnalyticsResponse {
     private String startDate;
     private String endDate;
     private KpiDto kpi;
+    private String lastResponseAt;
 
     @Builder.Default
     private List<TrendDto> trends = new ArrayList<>();

@@ -1,9 +1,9 @@
-# 03 - 系統分層架構與全專案檔案物理索引字典 (Exhaustive Codebase Dictionary)
+# 04. 系統分層架構與全專案檔案物理索引字典 (Exhaustive Codebase Dictionary)
 
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **系統架構**: 現代化前端微元件與後端 Spring Boot 4.1.1 乾淨分層架構 (Clean Architecture)  
-> **更新日期**: 2026-10-15  
-> **精確環境版號**: Node.js 24.18.0, Angular 19.0.0, Java 21.0.12, Spring Boot 4.1.1, MySQL 8.0.36  
+> **更新日期**: 2026-10-22  
+> **精確環境版號**: Node.js 24.18.0, Angular 19.0.0, Java 21.0.12, Spring Boot 4.1.1, MySQL 8.0.36 協定 (TiDB)  
 > **文件定位**: 本文件為 SurveyFlow 系統全域檔案之「物理辭典與索引庫」。完整窮舉專案中每一個資料夾、程式碼腳本與設定檔之實體用途與聯動關係，供工程師與 AI Agent 於 3 秒內精準檢索。
 
 ---

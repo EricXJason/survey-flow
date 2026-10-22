@@ -143,6 +143,7 @@ export class SurveyGetterService {
               text: o.optionText,
               enableUnlockQuestion: !!o.triggerQuestionUid,
               unlockTargetUid: o.triggerQuestionUid || '',
+              sortOrder: o.sortOrder,
             }));
 
             let determinedScaleType = 'scale-text-satisfaction-5';

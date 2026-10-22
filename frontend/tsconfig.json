@@ -1,5 +1,11 @@
-/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+/*
+ * ============================================================================
+ * 檔案名稱: tsconfig.json
+ * 所屬模組: TypeScript 核心編譯組態
+ * 責任描述: 定義前端全域 TypeScript 編譯規則、ES2022 目標版本、嚴格型別檢查與模組解析。
+ * 核心規範: 啟用最高嚴格模式 (strict: true)，杜絕隱式 any 與型別穿透。
+ * ============================================================================
+ */
 {
   "compileOnSave": false,
   "compilerOptions": {
