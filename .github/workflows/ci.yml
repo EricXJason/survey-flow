@@ -56,7 +56,7 @@ jobs:
       - name: Install Frontend Dependencies
         run: |
           cd frontend
-          npm ci
+          npm ci || npm install
 
       - name: Build Frontend for Production (Cloudflare Pages Target)
         run: |

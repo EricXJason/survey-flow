@@ -60,10 +60,9 @@ backend/*.jar
 backend/*.war
 backend/*.class
 
-# Spring Boot / Maven / Gradle
-backend/.mvn/wrapper/maven-wrapper.jar
-backend/mvnw
-backend/mvnw.cmd
+# Spring Boot / Maven / Gradle (保留 mvnw 與 wrapper 設定供 CI/CD 與 Docker 使用)
+# backend/.mvn/wrapper/maven-wrapper.jar
+# backend/mvnw
 backend/gradlew
 backend/gradlew.bat
 
