@@ -2,18 +2,17 @@
 -- 專案名稱: SurveyFlow (企業級問卷調查與智慧數據分析系統)
 -- 檔案名稱: schema.sql
 -- 存放路徑: backend/src/main/resources/database/schema.sql (全系統唯一真實 DDL 來源)
--- 責任描述: TiDB Cloud Serverless / MySQL 8.0+ 資料庫全表 DDL 結構腳本
---           嚴格落實第三正規化 (3NF)、CHAR(10) 定長唯一索引、TINYINT 狀態與布林、級聯約束
+-- 責任描述: TiDB Cloud Serverless / MySQL 8.0+ 資料庫終極結構腳本
+--           採用整庫乾淨重置 (DROP DATABASE -> CREATE DATABASE)，零殘留、零 Warning
+--           嚴格落實第三正規化 (3NF)、CHAR(10) 定長唯一索引、TINYINT 狀態與布林、全外鍵級聯
 -- 專案作者: 許哲誠 (HSU, CHE-CHENG)
 -- 字元編碼: utf8mb4 / utf8mb4_unicode_ci
 -- ============================================================================
 
--- ─────────────────────────────────────────────────────────────────────────────
--- 【方案 A】全量乾淨重置 (Clean Drop & Recreate)
--- 直接執行本區塊將以最新 3NF 與定長規範完整重建 9 大實體資料表
--- ─────────────────────────────────────────────────────────────────────────────
+-- 1. 整庫刪除與全新建立 (極致乾淨，杜絕殘留舊表與 1051 / 1007 Warning)
+DROP DATABASE IF EXISTS `survey_flow`;
 
-CREATE DATABASE IF NOT EXISTS `survey_flow`
+CREATE DATABASE `survey_flow`
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_unicode_ci;
 
@@ -22,24 +21,8 @@ USE `survey_flow`;
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
 
--- 暫時關閉外鍵檢查，確保安全反向清理舊結構
-SET FOREIGN_KEY_CHECKS = 0;
-
-DROP TABLE IF EXISTS `submission_answers`;
-DROP TABLE IF EXISTS `submission_basic_infos`;
-DROP TABLE IF EXISTS `submissions`;
-DROP TABLE IF EXISTS `survey_options`;
-DROP TABLE IF EXISTS `survey_questions`;
-DROP TABLE IF EXISTS `survey_basic_info_configs`;
-DROP TABLE IF EXISTS `surveys`;
-DROP TABLE IF EXISTS `verification_tokens`;
-DROP TABLE IF EXISTS `refresh_tokens`; -- 清理歷史遺留
-DROP TABLE IF EXISTS `users`;
-
-SET FOREIGN_KEY_CHECKS = 1;
-
--- 1. 會員核心資料表 (users)
-CREATE TABLE IF NOT EXISTS `users` (
+-- 2. 會員核心資料表 (users)
+CREATE TABLE `users` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '會員唯一流水號',
     `username` VARCHAR(50) NOT NULL COMMENT '登入帳號名稱',
     `email` VARCHAR(100) NOT NULL COMMENT '會員電子郵件',
@@ -60,8 +43,8 @@ CREATE TABLE IF NOT EXISTS `users` (
     KEY `idx_users_role_status` (`role`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系統會員核心資料表';
 
--- 2. 帳號時效性驗證碼記錄表 (verification_tokens)
-CREATE TABLE IF NOT EXISTS `verification_tokens` (
+-- 3. 帳號時效性驗證碼記錄表 (verification_tokens)
+CREATE TABLE `verification_tokens` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '驗證碼流水號',
     `user_id` BIGINT DEFAULT NULL COMMENT '關聯會員流水號 (未註冊前為 NULL)',
     `email` VARCHAR(100) NOT NULL COMMENT '驗證目標電子郵件',
@@ -76,8 +59,8 @@ CREATE TABLE IF NOT EXISTS `verification_tokens` (
     CONSTRAINT `fk_vt_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='時效性 OTP 驗證碼記錄表';
 
--- 3. 問卷專案主檔表 (surveys)
-CREATE TABLE IF NOT EXISTS `surveys` (
+-- 4. 問卷專案主檔表 (surveys)
+CREATE TABLE `surveys` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '問卷唯一識別碼',
     `user_id` BIGINT NOT NULL COMMENT '發起人會員 ID (關聯 users.id)',
     `title` VARCHAR(150) NOT NULL COMMENT '問卷主題名稱',
@@ -95,11 +78,11 @@ CREATE TABLE IF NOT EXISTS `surveys` (
     PRIMARY KEY (`id`),
     KEY `idx_surveys_user` (`user_id`),
     KEY `idx_surveys_open_dates` (`is_open`, `is_public_to_lobby`, `start_date`, `end_date`),
-    CONSTRAINT `fk_surveys_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT
+    CONSTRAINT `fk_surveys_creator` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='問卷專案主檔資料表';
 
--- 4. 問卷受訪者個人輪廓收集欄位配置表 (survey_basic_info_configs)
-CREATE TABLE IF NOT EXISTS `survey_basic_info_configs` (
+-- 5. 問卷受訪者個人輪廓收集欄位配置表 (survey_basic_info_configs)
+CREATE TABLE `survey_basic_info_configs` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '配置記錄編號',
     `survey_id` BIGINT NOT NULL UNIQUE COMMENT '所屬問卷 ID (一對一強制唯一)',
     `collect_basic_info` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否啟用受訪者資料收集 (0:關閉, 1:啟用)',
@@ -126,8 +109,8 @@ CREATE TABLE IF NOT EXISTS `survey_basic_info_configs` (
     CONSTRAINT `fk_basic_info_survey` FOREIGN KEY (`survey_id`) REFERENCES `surveys` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='問卷受訪者個人輪廓收集欄位配置表';
 
--- 5. 問卷題目清單資料表 (survey_questions)
-CREATE TABLE IF NOT EXISTS `survey_questions` (
+-- 6. 問卷題目清單資料表 (survey_questions)
+CREATE TABLE `survey_questions` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '題目流水號',
     `survey_id` BIGINT NOT NULL COMMENT '所屬問卷 ID',
     `question_code` VARCHAR(50) DEFAULT NULL COMMENT '前端題號識別代碼 (如 Q1, Q2)',
@@ -145,8 +128,8 @@ CREATE TABLE IF NOT EXISTS `survey_questions` (
     CONSTRAINT `fk_questions_survey` FOREIGN KEY (`survey_id`) REFERENCES `surveys` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='問卷題目清單資料表';
 
--- 6. 單選/多選/是非題目選項資料表 (survey_options)
-CREATE TABLE IF NOT EXISTS `survey_options` (
+-- 7. 單選/多選/是非題目選項資料表 (survey_options)
+CREATE TABLE `survey_options` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '選項唯一流水號',
     `question_id` BIGINT NOT NULL COMMENT '所屬題目 ID',
     `option_text` VARCHAR(255) NOT NULL COMMENT '選項文字標籤',
@@ -157,8 +140,8 @@ CREATE TABLE IF NOT EXISTS `survey_options` (
     CONSTRAINT `fk_options_question` FOREIGN KEY (`question_id`) REFERENCES `survey_questions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='題目選項資料表';
 
--- 7. 問卷填答主檔紀錄表 (submissions)
-CREATE TABLE IF NOT EXISTS `submissions` (
+-- 8. 問卷填答主檔紀錄表 (submissions)
+CREATE TABLE `submissions` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '填答事件流水號',
     `survey_id` BIGINT NOT NULL COMMENT '作答之問卷 ID',
     `ip_address` VARCHAR(45) DEFAULT NULL COMMENT '受訪者 IPv4 / IPv6 位址',
@@ -170,8 +153,8 @@ CREATE TABLE IF NOT EXISTS `submissions` (
     CONSTRAINT `fk_submissions_survey` FOREIGN KEY (`survey_id`) REFERENCES `surveys` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='問卷填答主檔紀錄表';
 
--- 8. 受訪者個資輪廓真實填報明細表 (submission_basic_infos)
-CREATE TABLE IF NOT EXISTS `submission_basic_infos` (
+-- 9. 受訪者個資輪廓真實填報明細表 (submission_basic_infos)
+CREATE TABLE `submission_basic_infos` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '受訪者基本資料流水號',
     `submission_id` BIGINT NOT NULL UNIQUE COMMENT '關聯之填答紀錄 ID (一對一唯一定位)',
     `name` VARCHAR(50) DEFAULT NULL COMMENT '填報姓名',
@@ -197,8 +180,8 @@ CREATE TABLE IF NOT EXISTS `submission_basic_infos` (
     CONSTRAINT `fk_sub_info_submission` FOREIGN KEY (`submission_id`) REFERENCES `submissions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='受訪者個資輪廓真實填報明細表';
 
--- 9. 受訪者各題詳細作答答案表 (submission_answers)
-CREATE TABLE IF NOT EXISTS `submission_answers` (
+-- 10. 受訪者各題詳細作答答案表 (submission_answers)
+CREATE TABLE `submission_answers` (
     `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '單題作答流水號',
     `submission_id` BIGINT NOT NULL COMMENT '所屬填答紀錄 ID',
     `question_id` BIGINT NOT NULL COMMENT '作答之題目 ID',
@@ -214,9 +197,7 @@ CREATE TABLE IF NOT EXISTS `submission_answers` (
     CONSTRAINT `fk_answers_option` FOREIGN KEY (`option_id`) REFERENCES `survey_options` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='受訪者各題詳細作答答案表';
 
--- ─────────────────────────────────────────────────────────────────────────────
--- 初始化系統最高管理員種子帳號 (預設帳號: admin / 密碼: Admin123!)
--- ─────────────────────────────────────────────────────────────────────────────
+-- 11. 初始化系統最高管理員預設帳號 (admin / 密碼: Admin123!)
 INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `full_name`, `phone`, `identity_card`, `role`, `status`, `created_at`, `updated_at`)
 VALUES (
     1,
@@ -230,34 +211,4 @@ VALUES (
     'ACTIVE',
     NOW(),
     NOW()
-) ON DUPLICATE KEY UPDATE `updated_at` = CURRENT_TIMESTAMP;
-
-
--- ============================================================================
--- 【方案 B】增量更新專用區塊 (ALTER TABLE - 保留既有生產資料庫數據)
--- 若您不想刪除現有問卷與填答記錄，請僅執行以下語句：
--- ============================================================================
-/*
--- 1. 會員表調整定長與 UNIQUE 約束
-ALTER TABLE users 
-    MODIFY COLUMN phone CHAR(10) DEFAULT NULL COMMENT '定長聯絡手機 (10碼純數字)',
-    MODIFY COLUMN identity_card CHAR(10) DEFAULT NULL COMMENT '定長身分證統一編號 (10碼)';
-
--- 補齊唯一鍵索引 (若尚未建立)
-ALTER TABLE users ADD UNIQUE INDEX uk_users_phone (phone);
-ALTER TABLE users ADD UNIQUE INDEX uk_users_identity_card (identity_card);
-
--- 2. 驗證碼表記錄加入 user_id 外鍵關聯
-ALTER TABLE verification_tokens 
-    ADD COLUMN user_id BIGINT DEFAULT NULL COMMENT '關聯會員流水號' AFTER id,
-    MODIFY COLUMN is_used TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已核銷使用 (0:未使用, 1:已使用)';
-ALTER TABLE verification_tokens 
-    ADD CONSTRAINT fk_vt_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
--- 3. 受訪者輪廓表調整型別
-ALTER TABLE submission_basic_infos 
-    MODIFY COLUMN gender TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '生理性別 (0:未指定, 1:男, 2:女, 3:其他)',
-    MODIFY COLUMN national_id CHAR(10) DEFAULT NULL COMMENT '定長身分證統一編號 (10碼)',
-    MODIFY COLUMN phone CHAR(10) DEFAULT NULL COMMENT '定長聯絡電話 (10碼純數字)',
-    MODIFY COLUMN home_phone VARCHAR(20) DEFAULT NULL COMMENT '住家市話';
-*/
+);

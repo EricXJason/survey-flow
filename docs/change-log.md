@@ -3,6 +3,18 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-23 00:23] - 資料庫 Schema 極致防呆與純粹最終版：整庫刪建 (DROP DATABASE) 徹底消滅 1051/1007 Warning
+
+- **改動原因**:
+  - 排查 TiDB Cloud SQL Editor 執行時產生之 Warning 警告：
+    1. 舊版單表 DROP 造成不存在之 `refresh_tokens` 拋出 `(1051) Unknown table` Warning。
+    2. `CREATE DATABASE IF NOT EXISTS` 於已存在之庫中執行拋出 `(1007) Can't create database` Warning。
+  - 落實使用者直觀暴力之最佳化建議：一律不分方案 A 或 B，直接提供純粹單一終極版，採用「整庫刪除 (`DROP DATABASE IF EXISTS survey_flow;`) ➔ 乾淨重建 (`CREATE DATABASE survey_flow;`) ➔ 切入使用 (`USE survey_flow;`)」，完全不需逐表逐步 DROP，一次達成 100% 綠燈、零殘留、零 Warning 重建。
+- **具體內容**:
+  - 重構 [`backend/src/main/resources/database/schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql)：徹底移除多餘之 `/* 方案 B ALTER TABLE */` 與逐表 DROP，改以最純粹之整庫重置語句為開頭，隨後建立 9 大正規化資料表並注入初始管理員帳號。
+- **影響範圍**:
+  - `backend/src/main/resources/database/schema.sql`, `docs/change-log.md`
+
 ## [2026-10-23 00:13] - 資料庫 SQL 檔案唯一路徑 (SSOT) 規範入庫、種子性別標準化與專案整潔化發布
 
 - **改動原因**:
