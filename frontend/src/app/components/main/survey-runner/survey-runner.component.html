@@ -529,7 +529,6 @@
                       @for (opt of q.options; track $index) {
                         <label
                           class="choice-option-label"
-                          [class.selected]="runnerFormGroup.get(q.uid)?.value === opt"
                           (click)="selectRadioOption(q.uid, opt)"
                         >
                           <input

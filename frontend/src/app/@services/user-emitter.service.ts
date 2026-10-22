@@ -373,6 +373,46 @@ export class UserEmitterService {
             qType = 'TEXT';
           }
 
+          let minR = 1;
+          let maxR = 5;
+          if (qType === 'RATING') {
+            const scaleCode = q.scaleType || '';
+            if (scaleCode === 'scale-num-0-10' || scaleCode === 'nps') {
+              minR = 0;
+              maxR = 10;
+            } else if (scaleCode === 'scale-num-1-10') {
+              minR = 1;
+              maxR = 10;
+            } else if (scaleCode === 'scale-text-satisfaction-4') {
+              minR = 1;
+              maxR = 4;
+            } else if (q.minRating !== undefined && q.maxRating !== undefined && q.minRating !== null && q.maxRating !== null) {
+              minR = q.minRating;
+              maxR = q.maxRating;
+            }
+          }
+
+          // 構建選項清單（針對是非題自動提供標準「是」與「否」選項，保障後端關聯與統計）
+          let builtOptions: Array<{ optionText: string; sortOrder: number; triggerQuestionUid: string | null }> = [];
+          if (qType === 'BOOLEAN') {
+            builtOptions = [
+              { optionText: '是', sortOrder: 1, triggerQuestionUid: null },
+              { optionText: '否', sortOrder: 2, triggerQuestionUid: null },
+            ];
+          } else if (q.optionsConfig && q.optionsConfig.length > 0) {
+            builtOptions = q.optionsConfig.map((optItem, oIdx) => ({
+              optionText: optItem.text,
+              sortOrder: oIdx + 1,
+              triggerQuestionUid: optItem.enableUnlockQuestion ? (optItem.unlockTargetUid || null) : null,
+            }));
+          } else if (q.options && q.options.length > 0) {
+            builtOptions = q.options.map((optText: string, oIdx: number) => ({
+              optionText: optText,
+              sortOrder: oIdx + 1,
+              triggerQuestionUid: null,
+            }));
+          }
+
           return {
             questionCode: q.uid || `Q${idx + 1}`,
             type: qType,
@@ -380,19 +420,9 @@ export class UserEmitterService {
             imageUrl: q.imageBase64 || '',
             isRequired: !!q.isRequired,
             sortOrder: idx + 1,
-            minRating: 1,
-            maxRating: 5,
-            options: (q.optionsConfig && q.optionsConfig.length > 0)
-              ? q.optionsConfig.map((optItem, oIdx) => ({
-                  optionText: optItem.text,
-                  sortOrder: oIdx + 1,
-                  triggerQuestionUid: optItem.enableUnlockQuestion ? (optItem.unlockTargetUid || null) : null,
-                }))
-              : (q.options || []).map((optText: string, oIdx: number) => ({
-                  optionText: optText,
-                  sortOrder: oIdx + 1,
-                  triggerQuestionUid: null,
-                })),
+            minRating: minR,
+            maxRating: maxR,
+            options: builtOptions,
           };
         }),
       };
@@ -479,16 +509,46 @@ export class UserEmitterService {
         answers: (payload.answers || []).map((ans, idx) => {
           const qId = ans.questionId || (idx + 1);
           const isScaleType = ans.type === 'scale';
-          const numValue = isScaleType && ans.answer != null && !isNaN(Number(ans.answer))
-            ? Number(ans.answer)
-            : (typeof ans.answer === 'number' ? ans.answer : null);
+          let numValue: number | null = null;
+
+          if (isScaleType && ans.answer != null) {
+            const rawAnsStr = String(ans.answer).trim();
+            if (!isNaN(Number(rawAnsStr))) {
+              numValue = Number(rawAnsStr);
+            } else {
+              // 文字量表等級自動轉譯映射字典
+              const textScaleMap: Record<string, number> = {
+                '非常不滿意': 1, '不滿意': 2, '普通': 3, '滿意': 4, '非常滿意': 5,
+                '非常不同意': 1, '不同意': 2, '同意': 4, '非常同意': 5,
+                '非常不重要': 1, '不重要': 2, '重要': 4, '非常重要': 5,
+                '非常不喜歡': 1, '不喜歡': 2, '喜歡': 4, '非常喜歡': 5,
+                '從不': 1, '很少': 2, '有時': 3, '經常': 4, '總是': 5,
+              };
+              numValue = textScaleMap[rawAnsStr] ?? null;
+            }
+          } else if (typeof ans.answer === 'number') {
+            numValue = ans.answer;
+          }
+
+          let textAns: string | null = null;
+          if (ans.answer != null) {
+            if (Array.isArray(ans.answer)) {
+              textAns = ans.answer.join(', ');
+            } else if (ans.type === 't/f') {
+              // 是非題標準化為繁體中文「是」或「否」
+              const s = String(ans.answer).trim();
+              textAns = (s === 'true' || s === '是') ? '是' : ((s === 'false' || s === '否') ? '否' : s);
+            } else {
+              textAns = String(ans.answer).trim();
+            }
+          }
 
           return {
             questionId: qId,
             selectedOptionId: ans.selectedOptionId ?? null,
             selectedOptionIds: ans.selectedOptionIds ?? null,
             ratingValue: numValue,
-            textAnswer: ans.answer != null ? (Array.isArray(ans.answer) ? ans.answer.join(', ') : String(ans.answer)) : null,
+            textAnswer: textAns,
           };
         }),
       };

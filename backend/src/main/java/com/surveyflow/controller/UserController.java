@@ -33,41 +33,49 @@ public class UserController {
 
     /**
      * 查詢當前登入會員之個人檔案資料 (需登入)
-     * @param userDetails 當前登入會員身分
+     * @param principal 系統憑證實體 (Spring Security 注入)
      * @return 個人資料 DTO
      */
     @GetMapping({"/profile", "/me"})
-    public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        UserProfileResponse response = userService.getProfile(userDetails.getUsername());
+    public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile(java.security.Principal principal) {
+        if (principal == null) {
+            throw new IllegalArgumentException("未授權之存取請求");
+        }
+        UserProfileResponse response = userService.getProfile(principal.getName());
         return ResponseEntity.ok(ApiResponse.ok(response, "成功獲取個人資料"));
     }
 
     /**
      * 更新當前登入會員之個人檔案資料 (姓名、電話、身分證，需登入)
      * @param request 個人資料更新請求
-     * @param userDetails 當前登入會員身分
+     * @param principal 系統憑證實體 (Spring Security 注入)
      * @return 更新後之個人資料 DTO
      */
     @PutMapping("/profile")
     public ResponseEntity<ApiResponse<UserProfileResponse>> updateProfile(
             @Valid @RequestBody UserProfileUpdateRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        UserProfileResponse response = userService.updateProfile(userDetails.getUsername(), request);
+            java.security.Principal principal) {
+        if (principal == null) {
+            throw new IllegalArgumentException("未授權之存取請求");
+        }
+        UserProfileResponse response = userService.updateProfile(principal.getName(), request);
         return ResponseEntity.ok(ApiResponse.ok(response, "個人資料已成功更新"));
     }
 
     /**
      * 修改當前登入會員之登入密碼 (需登入)
      * @param request 包含原密碼與新密碼之請求
-     * @param userDetails 當前登入會員身分
+     * @param principal 系統憑證實體 (Spring Security 注入)
      * @return 操作確認回應
      */
-    @PutMapping("/password")
+    @PutMapping({"/password", "/change-password"})
     public ResponseEntity<ApiResponse<Void>> changePassword(
             @Valid @RequestBody PasswordChangeRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        userService.changePassword(userDetails.getUsername(), request);
+            java.security.Principal principal) {
+        if (principal == null) {
+            throw new IllegalArgumentException("未授權之存取請求");
+        }
+        userService.changePassword(principal.getName(), request);
         return ResponseEntity.ok(ApiResponse.ok("登入密碼已成功變更"));
     }
 }

@@ -166,6 +166,19 @@
   --container-narrow: 860px;
   --container-px:     clamp(2rem, 5.5vw, 4rem);
   --header-h:         6.0rem;
+  /* ── 13. 資料視覺化圖表色彩庫 (Chart Visual Palette) ── */
+  --c-chart-0:  #3b82f6; /* 明亮電氣藍 */
+  --c-chart-1:  #10b981; /* 鮮明翡翠純綠 */
+  --c-chart-2:  #f59e0b; /* 澄澈琥珀金 */
+  --c-chart-3:  #8b5cf6; /* 清爽鳶尾亮紫 */
+  --c-chart-4:  #06b6d4; /* 澄澈湖水天青 */
+  --c-chart-5:  #ec4899; /* 鮮麗櫻花桃粉 */
+  --c-chart-6:  #f97316; /* 晨曦活力陽光橘 */
+  --c-chart-7:  #6366f1; /* 電氣亮靛 */
+  --c-chart-8:  #14b8a6; /* 澄淨薄荷綠 */
+  --c-chart-9:  #d946ef; /* 霓虹洋紅 */
+  --c-chart-10: #84cc16; /* 活力青檸綠 */
+  --c-chart-11: #0ea5e9; /* 蔚藍晴空 */
 }
 
 @media (max-width: 480px) {

@@ -124,7 +124,7 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
       title: ['', [Validators.required, Validators.minLength(1)]],
       category: ['', Validators.required],
       hasDescription: [false],
-      description: ['', Validators.required],
+      description: [''],
       hasDescriptionImage: [false],
       descriptionImageBase64: [''],
 
@@ -579,13 +579,17 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
     }
 
     if (this.formBuilderGroup.get('hasDescription')?.value) {
-      if (!this.formBuilderGroup.get('description')?.value) {
-        errors.push('• 階段 01：問卷前言／填答說明內容不可為空');
+      const descText = (this.formBuilderGroup.get('description')?.value ?? '').trim();
+      const hasImageCheck = !!this.formBuilderGroup.get('hasDescriptionImage')?.value;
+      const descImageBase64 = this.formBuilderGroup.get('descriptionImageBase64')?.value;
+
+      if (hasImageCheck && !descImageBase64) {
+        errors.push('• 階段 01：已勾選附加說明圖片，但尚未上傳圖片');
       }
-      if (this.formBuilderGroup.get('hasDescriptionImage')?.value) {
-        if (!this.formBuilderGroup.get('descriptionImageBase64')?.value) {
-          errors.push('• 階段 01：已勾選附加說明圖片，但尚未上傳圖片');
-        }
+
+      // 若未填寫文字且未上傳圖片（既無文字也無圖片），提示至少提供一項
+      if (!descText && (!hasImageCheck || !descImageBase64)) {
+        errors.push('• 階段 01：已開啟問卷前言，請至少輸入文字說明或上傳說明圖片');
       }
     }
 

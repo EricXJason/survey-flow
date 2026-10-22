@@ -45,7 +45,6 @@ import {
   TextResponseItem,
   QuestionAnalyticsItem,
 } from '../../../@interfaces/survey-analytics-model';
-import { QuestionTypeCountPipe } from '../../../pipes/question-type-count.pipe';
 
 /**
  * 問卷管理與調研專案後台組件 (SurveyManagementComponent)
@@ -61,7 +60,6 @@ import { QuestionTypeCountPipe } from '../../../pipes/question-type-count.pipe';
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
-    QuestionTypeCountPipe,
   ],
   templateUrl: './survey-management.component.html',
   styleUrl: './survey-management.component.scss',
@@ -142,21 +140,14 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
   /** 簡答題展開/收合長文字集合 (responseId -> boolean) */
   public readonly expandedResponseSet = signal<Set<string>>(new Set<string>());
 
-  /** 專業高對比資料視覺化調色盤 (高明度、高純度、澄澈通透且不灰暗的現代頂級調色盤) */
-  public readonly chartColors: string[] = [
-    '#3b82f6', // 明亮電氣藍 (Vibrant Electric Blue, L=60%)
-    '#10b981', // 鮮明翡翠純綠 (Vivid Emerald, L=60%)
-    '#f59e0b', // 澄澈琥珀金 (Radiant Amber, L=62%)
-    '#8b5cf6', // 清爽鳶尾亮紫 (Vivid Violet, L=65%)
-    '#06b6d4', // 澄澈湖水天青 (Vivid Cyan, L=60%)
-    '#ec4899', // 鮮麗櫻花桃粉 (Bright Rose Pink, L=65%)
-    '#f97316', // 晨曦活力陽光橘 (Bright Sun Orange, L=62%)
-    '#6366f1', // 電氣亮靛 (Electric Indigo, L=65%)
-    '#14b8a6', // 澄淨薄荷綠 (Bright Mint Teal, L=60%)
-    '#d946ef', // 霓虹洋紅 (Vivid Magenta, L=65%)
-    '#84cc16', // 活力青檸綠 (Bright Lime Green, L=60%)
-    '#0ea5e9', // 蔚藍晴空 (Sky Blue, L=60%)
-  ];
+  /**
+   * 專業高對比資料視覺化調色盤（100% 透過全域 CSS 變數 --c-chart-0 ~ --c-chart-11 驅動）
+   * 嚴格遵循 TS 零色票原則，不於 TypeScript 邏輯檔案中硬編碼十六進位色碼
+   */
+  public readonly chartColors: string[] = Array.from(
+    { length: 12 },
+    (_, i) => `var(--c-chart-${i})`
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
   // Material Table 配置
@@ -771,52 +762,34 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
    * @param item 分段數據物件
    * @param sIdx 分段索引
    * @param total 分段總柱數 (如 5 或 11)
-   * @returns 鮮明澄澈的 HEX 色碼
+  /**
+   * 計算量表長條圖背景色彩（嚴格遵守 TS 零色票原則，完全返回 CSS 變數）
+   * @param item 級距統計物件
+   * @param sIdx 級距索引
+   * @param _total 總級距數量
+   * @returns CSS 變數表達式
    */
   public getScaleBarColor(
     item: { score: number; count: number; percentage: number },
     sIdx: number,
-    total: number,
+    _total: number,
   ): string {
     if (!item || item.count <= 0) {
-      return '#e2e8f0'; // 0 票淡灰底
+      return 'var(--c-neutral-200)';
     }
+    const colorIndex = Math.abs(sIdx) % 12;
+    return `var(--c-chart-${colorIndex})`;
+  }
 
-    // 5 級分制 (1 至 5 分滿意度)：明亮珊瑚紅 -> 暖金橘 -> 晴空藍 -> 皇家藍 -> 翡翠純綠
-    if (total === 5) {
-      const fiveGradeColors = [
-        '#fb7185', // 1 分: 明亮活力珊瑚粉紅 (Detractor / 非常不滿意)
-        '#fb923c', // 2 分: 明亮陽光金橘 (不滿意)
-        '#38bdf8', // 3 分: 澄澈晴空天藍 (Neutral / 普通)
-        '#3b82f6', // 4 分: 明亮深邃皇家藍 (Satisfied / 滿意)
-        '#10b981', // 5 分: 鮮明翡翠純綠 (Promoter / 極度滿意)
-      ];
-      return fiveGradeColors[sIdx] || '#3b82f6';
-    }
-
-    // 11 級分制 NPS (0 至 10 分淨推薦值)
-    if (total === 11) {
-      if (sIdx <= 6) {
-        // 0-6 分 批評者 (Detractor: 明亮暖紅到暖橘梯度)
-        const detractorColors = [
-          '#fda4af', '#fb7185', '#f43f5e', '#f87171', '#fb923c', '#f59e0b', '#fbbf24'
-        ];
-        return detractorColors[sIdx] || '#fb923c';
-      } else if (sIdx <= 8) {
-        // 7-8 分 被動者 (Passive: 明亮澄澈湖藍/天藍)
-        return sIdx === 7 ? '#38bdf8' : '#60a5fa';
-      } else {
-        // 9-10 分 推薦者 (Promoter: 鮮亮電氣藍至翡翠純綠)
-        return sIdx === 9 ? '#3b82f6' : '#10b981';
-      }
-    }
-
-    // 一般級距：採用高明度、高彩度現代色調
-    const modernVibrantColors = [
-      '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4',
-      '#ec4899', '#f97316', '#6366f1', '#14b8a6', '#84cc16'
-    ];
-    return modernVibrantColors[sIdx % modernVibrantColors.length];
+  /**
+   * 計算特定題型之題目數量（取代獨立 Pipe，落實最少實體檔案原則）
+   * @param items 題目統計分析清單
+   * @param type 目標題型代碼
+   * @returns 符合之題數
+   */
+  public getQuestionTypeCount(items: QuestionAnalyticsItem[] | null | undefined, type: string): number {
+    if (!items || items.length === 0) return 0;
+    return items.filter((q) => q.type === type).length;
   }
 
   /**

@@ -3,6 +3,62 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 21:18] - 架構規範與核心工程大重構：資料庫 9 大實體資料表規格重繪、多分支 Switch 規範、前端 TS 零色票與題型統一視覺、ModelMapper 整合與後端全套單元測試擴充
+
+- **改動原因**:
+  - 排查並落實使用者最新工程要求：
+    1. 修正資料庫規格書：真實資料庫共有 9 張 Table，規格書與 ERD 必須 100% 精確對齊實體程式碼。
+    2. 多分支條件判斷規範：嚴格禁止超過 3 個分支之冗長 `if-else if` 鏈，寫入規範中並在專案實作全面重構為 `switch-case` 或常數字典映射表。
+    3. 移除多餘獨立 Pipe：依據 SOLID 最少實體檔案原則，刪除 `question-type-count.pipe.ts`，由組件內部方法精簡實現。
+    4. 前端 TS 零色票與題型統一視覺原則：嚴格禁止在 Angular TS 中直接硬編碼十六進位色票字串，統一由 SCSS/CSS 變數庫驅動；題目類型展示外觀移除彩色背景，所有題型背景一律統一。
+    5. 後端 Entity 與 DTO 轉換統一使用 ModelMapper：引入 `modelmapper:3.2.2` 依賴並配置 STRICT 單例 Bean，重構 Service 層之物件映射。
+    6. 後端全套 JUnit 5 + Mockito 單元測試擴充：擴充 Controller 與 Service 測試覆蓋率，確保 CI/CD 流程無懈可擊。
+- **具體內容**:
+  - **規範手冊同步更新**：在 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md)、[`AGENTS-FRONT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-FRONT.md) 與 [`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md) 中完整追加「多分支條件 Switch/Lookup Map 規範」、「前端 TS 零色票與全題型背景統一底線」以及「後端 Entity ⇄ DTO 統一 ModelMapper 規範」。
+  - **資料庫架構書重繪 (9 大實體表)**：在 [`docs/system-design/07-specs-database.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md) 中，以深色 HUD Mermaid ERD 與完整 DDL 重新定義 `users`, `verification_tokens`, `surveys`, `survey_basic_info_configs`, `survey_questions`, `survey_options`, `submissions`, `submission_answers`, `submission_basic_infos` 9 張實體表格與外鍵級聯關係。
+  - **前端精簡與美學重構**：
+    1. 刪除多餘獨立 Pipe `question-type-count.pipe.ts`，於 [`survey-management.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-management/survey-management.component.ts) 內建 `getQuestionTypeCount` 函式。
+    2. 在 [`variables.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/variables.scss) 定義全域圖表色票 `--c-chart-0` 至 `--c-chart-11`，全面替換 TS 中寫死之十六進位色彩字串。
+    3. 在 [`survey-design.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-design/survey-design.component.scss) 與 [`survey-management.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-management/survey-management.component.scss) 中，移除各題型專用之彩色彩度覆寫，全題型徽章背景一律統一為高質感中性色階。
+    4. 在 [`survey-getter.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/survey-getter.service.ts) 與 [`survey-runner.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.ts) 中，全面將題型、DOM 回退檢驗與答案組裝之長鏈 `if-else if` 重構為標準 `switch-case`。
+  - **後端 ModelMapper 整合**：
+    1. [`pom.xml`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/pom.xml)：導入 `modelmapper:3.2.2`。
+    2. 建立 [`ModelMapperConfig.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/config/ModelMapperConfig.java)：配置 `MatchingStrategies.STRICT`。
+    3. 重構 [`UserService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/UserService.java)、[`SurveyService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/SurveyService.java) 與 [`SubmissionService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/SubmissionService.java)，全面透過 `modelMapper.map(...)` 執行物件轉換。
+  - **全套單元測試擴充與 100% 通過**：
+    1. 新增 [`SubmissionServiceTest.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/test/java/com/surveyflow/service/SubmissionServiceTest.java)（作答送出、時效與問卷關閉邊界檢驗）。
+    2. 新增 [`UserServiceTest.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/test/java/com/surveyflow/service/UserServiceTest.java)（個人資料查詢、修改、密碼變更與管理員保護）。
+    3. 新增 [`UserControllerTest.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/test/java/com/surveyflow/controller/UserControllerTest.java)（MockMvc 會員端點 Web 測試）。
+    4. 後端全套 28 項測試全數 PASS，Maven 打包 JAR 成功，前端建置 0 錯誤。
+- **影響範圍**: `AGENTS.md`, `AGENTS-FRONT.md`, `AGENTS-BACK.md`, `07-specs-database.md`, `variables.scss`, `survey-getter.service.ts`, `survey-runner.component.ts`, `survey-management.component.ts`, `survey-management.component.html`, `survey-management.component.scss`, `survey-design.component.scss`, `question-type-count.pipe.ts`, `pom.xml`, `ModelMapperConfig.java`, `UserService.java`, `SurveyService.java`, `SubmissionService.java`, `UserController.java`, `SubmissionServiceTest.java`, `UserServiceTest.java`, `UserControllerTest.java`, `docs/change-log.md`
+
+## [2026-10-22 20:51] - 問卷填答與統計全維度重大修復：是非題美學規範、單選解鎖題型健全化與統計數據遺失徹底根治
+
+- **改動原因**:
+  - 排查使用者反饋：
+    1. 單選題在同名選項或切換時因純文字比對導致多選項同時呈現選取黑框之異常。
+    2. 單選題之條件跳題解鎖題目在填答與預覽模式下未能順利展開。
+    3. 是非題過度使用翡翠綠與珊瑚紅，視覺不符極簡沉穩美學規範。
+    4. 受訪者已確實作答並提交問卷，但後台數據分析儀表板中是非題與評分量表題卻顯示「0 則回應、未回答 1 則、作答率 0%」之嚴重統計斷層。
+- **具體內容**:
+  - **美學規範統一**：在 [`survey-runner.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.scss) 中移除是非題專用紅綠色調，統一收斂至系統標準深色選取主題；單選題黑框樣式純粹由原生 `:has(input:checked)` 驅動，徹底杜絕多重黑框現象。
+  - **條件跳題解鎖修復**：升級 [`survey-runner.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.ts) 的 `isQuestionVisible`，支援目標題目的 UUID、資料庫 ID、QuestionCode 與順序索引多維相容匹配；開放預覽模式下自由點選互動並通知變更檢測，確保條件跳題 100% 即時解鎖。
+  - **是非題與量表題數據鏈路修復 (前後端雙重閉環)**：
+    1. [`user-emitter.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/user-emitter.service.ts)：問卷建立時為是非題自動注入「是」與「否」標準選項；填答送出時將文字量表（滿意/同意/重要等）精準轉譯為 1~5 整數分值，是非題標準化繁中「是/否」答案文字。
+    2. [`SurveyService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/SurveyService.java)：建立問卷與回傳詳情時，針對 `BOOLEAN` 題型全面保障「是」與「否」實體選項。
+    3. [`SubmissionService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/SubmissionService.java)：健全答案入庫反向匹配，是非題支援 `true/false/是/否` 智能綁定選項，評分量表題支援文字分值轉譯入庫。
+    4. [`AnalyticsService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/AnalyticsService.java)：為是非題與評分量表題增加文字答案反向統計後備機制，徹底修復現存與歷史問卷數據顯示為 0 則之問題。
+- **影響範圍**: `survey-runner.component.scss`, `survey-runner.component.html`, `survey-runner.component.ts`, `user-emitter.service.ts`, `SurveyService.java`, `SubmissionService.java`, `AnalyticsService.java`, `docs/change-log.md`
+
+## [2026-10-22 20:25] - 問卷設計器體驗優化：前言說明解除強制文字必填限制，支援「純圖片說明」或「圖文並茂」自由配置
+
+- **改動原因**:
+  - 使用者在設計問卷時，經常以活動海報、流程圖或流程卡片作為前言說明；原本系統強制要求必須輸入文字說明，造成若僅需展示活動主視覺圖片時被表單驗證阻擋。
+- **具體內容**:
+  - 調整 [`survey-design.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-design/survey-design.component.ts)：將 `description` 由強制必填改為選填；改寫送出前檢核邏輯，僅在「既無文字也無圖片」時提示至少提供一項，若已附加圖片則文字可完全留空。
+  - 調整 [`survey-design.component.html`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-design/survey-design.component.html)：移除前言說明標題上的紅色必填星號 `*`，並將輸入框提示文字更新為明確支援純圖片留空說明。
+- **影響範圍**: `survey-design.component.ts`, `survey-design.component.html`, `docs/change-log.md`
+
 ## [2026-10-22 20:02] - 後端啟動依賴解耦修復：MailService 內部實例化 ObjectMapper 徹底解決容器 Bean 缺失問題
 
 - **改動原因**:

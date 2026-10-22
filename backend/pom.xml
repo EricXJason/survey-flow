@@ -89,6 +89,13 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
+        <!-- ModelMapper (實體 Entity 與資料傳輸物件 DTO 自動映射) -->
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>3.2.2</version>
+        </dependency>
+
         <!-- JJWT (Java JWT) -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

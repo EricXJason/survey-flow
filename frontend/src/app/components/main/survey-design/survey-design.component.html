@@ -127,24 +127,18 @@
               <div class="sub-panel">
                 <div class="field-group">
                   <div class="label-with-counter">
-                    <label class="field-label">前言說明內容 <span class="req-star">*</span></label>
+                    <label class="field-label">前言說明內容 <span class="subtext">（可純填文字、僅附圖片或兩者兼具）</span></label>
                     <span class="char-counter">
                       {{ detectTextLength(formBuilderGroup.get("description")?.value ?? "") }}/250
                     </span>
                   </div>
                   <textarea
                     class="field-textarea"
-                    placeholder="請輸入問卷前言、活動說明或填答指引"
+                    placeholder="請輸入問卷前言、活動說明或填答指引（若已附加說明圖片，此處亦可留空）"
                     rows="4"
                     maxlength="250"
                     formControlName="description"
                   ></textarea>
-                  @if (
-                    formBuilderGroup.get("description")?.invalid &&
-                    (formBuilderGroup.get("description")?.touched || formBuilderGroup.get("hasDescription")?.touched)
-                  ) {
-                    <span class="field-error">問卷說明內容不可為空</span>
-                  }
                 </div>
 
                 <!-- 前言說明圖片上傳 -->

@@ -28,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+import org.modelmapper.ModelMapper;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
     /**
      * 依使用者帳號取得個人檔案資料
@@ -132,20 +135,10 @@ public class UserService {
     }
 
     /**
-     * 實體轉換為 UserProfileResponse DTO
+     * 實體轉換為 UserProfileResponse DTO (統一透過 ModelMapper 自動映射)
      */
     public UserProfileResponse convertToProfileResponse(User user) {
-        return UserProfileResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .phone(user.getPhone())
-                .identityCard(user.getIdentityCard())
-                .role(user.getRole())
-                .status(user.getStatus())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .build();
+        if (user == null) return null;
+        return modelMapper.map(user, UserProfileResponse.class);
     }
 }

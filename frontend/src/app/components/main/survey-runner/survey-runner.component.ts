@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
@@ -78,6 +78,8 @@ export class SurveyRunnerComponent implements OnInit {
 
   /** Angular 路由服務 */
   private readonly _router = inject(Router);
+  /** 畫面變更檢測服務 */
+  private readonly _cdr = inject(ChangeDetectorRef);
   /** 填答執行表單群組 */
   protected runnerFormGroup: FormGroup = this._formBuilder.group({});
   /** 問卷填答是否已成功提交送出之狀態旗標 */
@@ -240,9 +242,6 @@ export class SurveyRunnerComponent implements OnInit {
 
     this._checkSurveyAvailability(this.survey);
     this.runnerFormGroup = this.formBuilderGroupInit();
-    if (this.isPreview) {
-      this.runnerFormGroup.disable();
-    }
   }
 
   /**
@@ -608,21 +607,36 @@ export class SurveyRunnerComponent implements OnInit {
         if (!val) continue;
 
         for (const option of parentQuestion.optionsConfig) {
-          if (!option.enableUnlockQuestion || option.unlockTargetUid !== question.uid) {
+          if (!option.enableUnlockQuestion) {
             continue;
           }
 
-          // 單選或文字匹配
+          // [Why]: 條件解鎖目標支援 UUID、後端 ID、題號代碼與順序索引多維相容匹配
+          const targetKey = String(option.unlockTargetUid || '').trim();
+          const targetId = String(question.id ?? '').trim();
+          const targetUid = String(question.uid ?? '').trim();
+          const targetCode = String((question as any).questionCode ?? '').trim();
+
+          const isTargetMatch =
+            targetKey === targetUid ||
+            (targetId && targetKey === targetId) ||
+            (targetCode && targetKey === targetCode);
+
+          if (!isTargetMatch) {
+            continue;
+          }
+
+          // 單選或文字選項內容精準匹配
           if (String(val).trim() === String(option.text).trim()) {
             return true;
           }
 
-          // 是非題匹配 (true/false 與選項文字相容)
+          // 是非題匹配 (支援 true/false 與 是/否 相容轉換)
           if (parentQuestion.type === 't/f') {
-            if ((val === 'true' || val === true) && option.sortOrder === 1) {
+            if ((val === 'true' || val === true || val === '是') && option.sortOrder === 1) {
               return true;
             }
-            if ((val === 'false' || val === false) && option.sortOrder === 2) {
+            if ((val === 'false' || val === false || val === '否') && option.sortOrder === 2) {
               return true;
             }
           }
@@ -709,13 +723,13 @@ export class SurveyRunnerComponent implements OnInit {
    * @param value 所選取之值
    */
   protected selectScaleOption(questionUid: string, value: string): void {
-    if (this.isPreview) return;
     const ctrl = this.runnerFormGroup.get(questionUid);
     if (ctrl) {
       ctrl.setValue(String(value));
       ctrl.markAsDirty();
       ctrl.markAsTouched();
       ctrl.updateValueAndValidity();
+      this._cdr.markForCheck();
     }
   }
 
@@ -725,13 +739,13 @@ export class SurveyRunnerComponent implements OnInit {
    * @param value 所選取之布林字串值 ('true' | 'false')
    */
   protected selectTfOption(questionUid: string, value: string): void {
-    if (this.isPreview) return;
     const ctrl = this.runnerFormGroup.get(questionUid);
     if (ctrl) {
       ctrl.setValue(value);
       ctrl.markAsDirty();
       ctrl.markAsTouched();
       ctrl.updateValueAndValidity();
+      this._cdr.markForCheck();
     }
   }
 
@@ -741,13 +755,13 @@ export class SurveyRunnerComponent implements OnInit {
    * @param opt 所選取之選項文字
    */
   protected selectRadioOption(questionUid: string, opt: string): void {
-    if (this.isPreview) return;
     const ctrl = this.runnerFormGroup.get(questionUid);
     if (ctrl) {
       ctrl.setValue(opt);
       ctrl.markAsDirty();
       ctrl.markAsTouched();
       ctrl.updateValueAndValidity();
+      this._cdr.markForCheck();
     }
   }
 
@@ -867,59 +881,73 @@ export class SurveyRunnerComponent implements OnInit {
       const control = this.runnerFormGroup.get(q.uid);
       if (!control) continue;
 
-      if (q.type === 'radio') {
-        const checkedRadio = formElement.querySelector<HTMLInputElement>(`input[name="radio_${q.uid}"]:checked`);
-        if (checkedRadio && checkedRadio.value) {
-          control.setValue(checkedRadio.value);
-          control.markAsDirty();
-          control.updateValueAndValidity();
-        }
-      } else if (q.type === 't/f') {
-        const checkedTf = formElement.querySelector<HTMLInputElement>(`input[name="tf_radio_${q.uid}"]:checked`);
-        if (checkedTf && checkedTf.value) {
-          control.setValue(checkedTf.value);
-          control.markAsDirty();
-          control.updateValueAndValidity();
-        }
-      } else if (q.type === 'scale') {
-        const checkedScale = formElement.querySelector<HTMLInputElement>(`input[name="scale_${q.uid}"]:checked`);
-        if (checkedScale && checkedScale.value) {
-          control.setValue(checkedScale.value);
-          control.markAsDirty();
-          control.updateValueAndValidity();
-        }
-      } else if (q.type === 'multiRadio') {
-        const multiArray = control as FormArray;
-        const checkedBoxes = formElement.querySelectorAll<HTMLInputElement>(`input[type="checkbox"]:checked`);
-        // 僅收集屬於此複選題卡片內的已勾選項目
-        const cardEl = formElement.querySelector(`.runner-question-card:has(input[type="checkbox"])`);
-        if (cardEl) {
-          const matchedValues: string[] = [];
-          cardEl.querySelectorAll<HTMLInputElement>(`input[type="checkbox"]:checked`).forEach((cb) => {
-            if (cb.value && (q.options || []).includes(cb.value)) {
-              matchedValues.push(cb.value);
-            }
-          });
-          if (matchedValues.length > 0 && multiArray.length === 0) {
-            matchedValues.forEach((v) => multiArray.push(this._formBuilder.control(v)));
-            multiArray.markAsDirty();
-            multiArray.updateValueAndValidity();
+      switch (q.type) {
+        case 'radio': {
+          const checkedRadio = formElement.querySelector<HTMLInputElement>(`input[name="radio_${q.uid}"]:checked`);
+          if (checkedRadio && checkedRadio.value) {
+            control.setValue(checkedRadio.value);
+            control.markAsDirty();
+            control.updateValueAndValidity();
           }
+          break;
         }
-      } else if (q.type === 'date' || q.type === 'time') {
-        const dateOrTimeInput = formElement.querySelector<HTMLInputElement>(`input[formControlName="${q.uid}"]`);
-        if (dateOrTimeInput && dateOrTimeInput.value && !control.value) {
-          control.setValue(dateOrTimeInput.value);
-          control.markAsDirty();
-          control.updateValueAndValidity();
+        case 't/f': {
+          const checkedTf = formElement.querySelector<HTMLInputElement>(`input[name="tf_radio_${q.uid}"]:checked`);
+          if (checkedTf && checkedTf.value) {
+            control.setValue(checkedTf.value);
+            control.markAsDirty();
+            control.updateValueAndValidity();
+          }
+          break;
         }
-      } else if (q.type === 'text') {
-        const textInput = formElement.querySelector<HTMLTextAreaElement>(`textarea[formControlName="${q.uid}"]`);
-        if (textInput && textInput.value && !control.value) {
-          control.setValue(textInput.value.trim());
-          control.markAsDirty();
-          control.updateValueAndValidity();
+        case 'scale': {
+          const checkedScale = formElement.querySelector<HTMLInputElement>(`input[name="scale_${q.uid}"]:checked`);
+          if (checkedScale && checkedScale.value) {
+            control.setValue(checkedScale.value);
+            control.markAsDirty();
+            control.updateValueAndValidity();
+          }
+          break;
         }
+        case 'multiRadio': {
+          const multiArray = control as FormArray;
+          const cardEl = formElement.querySelector(`.runner-question-card:has(input[type="checkbox"])`);
+          if (cardEl) {
+            const matchedValues: string[] = [];
+            cardEl.querySelectorAll<HTMLInputElement>(`input[type="checkbox"]:checked`).forEach((cb) => {
+              if (cb.value && (q.options || []).includes(cb.value)) {
+                matchedValues.push(cb.value);
+              }
+            });
+            if (matchedValues.length > 0 && multiArray.length === 0) {
+              matchedValues.forEach((v) => multiArray.push(this._formBuilder.control(v)));
+              multiArray.markAsDirty();
+              multiArray.updateValueAndValidity();
+            }
+          }
+          break;
+        }
+        case 'date':
+        case 'time': {
+          const dateOrTimeInput = formElement.querySelector<HTMLInputElement>(`input[formControlName="${q.uid}"]`);
+          if (dateOrTimeInput && dateOrTimeInput.value && !control.value) {
+            control.setValue(dateOrTimeInput.value);
+            control.markAsDirty();
+            control.updateValueAndValidity();
+          }
+          break;
+        }
+        case 'text': {
+          const textInput = formElement.querySelector<HTMLTextAreaElement>(`textarea[formControlName="${q.uid}"]`);
+          if (textInput && textInput.value && !control.value) {
+            control.setValue(textInput.value.trim());
+            control.markAsDirty();
+            control.updateValueAndValidity();
+          }
+          break;
+        }
+        default:
+          break;
       }
     }
   }
@@ -930,7 +958,17 @@ export class SurveyRunnerComponent implements OnInit {
    * 若有遺漏或格式不符，彈出提醒對話框並終止提交；核驗通過則呼叫 sendRunnerData 進行送出。
    */
   protected checkRunnerData(): void {
-    if (this.isPreview) return;
+    if (this.isPreview) {
+      const previewNotice: DialogData = {
+        title: '預覽模式說明',
+        message: '您目前正處於問卷預覽視角，所有題目與跳題解鎖邏輯皆已啟用可供點擊測試！在此模式下填答數據免送出入庫。',
+        mode: 'noticeMode',
+        confirmText: '了解',
+        showCloseButton: true,
+      };
+      this._dialogService.showDialog(previewNotice).subscribe();
+      return;
+    }
 
     // 送出前強制執行 DOM 實體值防呆全題型雙向同步
     this._syncDomValuesToForm();
@@ -971,36 +1009,50 @@ export class SurveyRunnerComponent implements OnInit {
 
         // 若表單控制項無值，二次檢驗 DOM 原生實體是否存在選中或輸入
         if (!hasAnswer) {
-          if (question.type === 'radio') {
-            const el = document.querySelector<HTMLInputElement>(`input[name="radio_${question.uid}"]:checked`);
-            if (el && el.value) {
-              hasAnswer = true;
-              control?.setValue(el.value);
+          switch (question.type) {
+            case 'radio': {
+              const el = document.querySelector<HTMLInputElement>(`input[name="radio_${question.uid}"]:checked`);
+              if (el && el.value) {
+                hasAnswer = true;
+                control?.setValue(el.value);
+              }
+              break;
             }
-          } else if (question.type === 't/f') {
-            const el = document.querySelector<HTMLInputElement>(`input[name="tf_radio_${question.uid}"]:checked`);
-            if (el && el.value) {
-              hasAnswer = true;
-              control?.setValue(el.value);
+            case 't/f': {
+              const el = document.querySelector<HTMLInputElement>(`input[name="tf_radio_${question.uid}"]:checked`);
+              if (el && el.value) {
+                hasAnswer = true;
+                control?.setValue(el.value);
+              }
+              break;
             }
-          } else if (question.type === 'scale') {
-            const el = document.querySelector<HTMLInputElement>(`input[name="scale_${question.uid}"]:checked`);
-            if (el && el.value) {
-              hasAnswer = true;
-              control?.setValue(el.value);
+            case 'scale': {
+              const el = document.querySelector<HTMLInputElement>(`input[name="scale_${question.uid}"]:checked`);
+              if (el && el.value) {
+                hasAnswer = true;
+                control?.setValue(el.value);
+              }
+              break;
             }
-          } else if (question.type === 'date' || question.type === 'time') {
-            const el = document.querySelector<HTMLInputElement>(`input[formControlName="${question.uid}"]`);
-            if (el && el.value) {
-              hasAnswer = true;
-              control?.setValue(el.value);
+            case 'date':
+            case 'time': {
+              const el = document.querySelector<HTMLInputElement>(`input[formControlName="${question.uid}"]`);
+              if (el && el.value) {
+                hasAnswer = true;
+                control?.setValue(el.value);
+              }
+              break;
             }
-          } else if (question.type === 'text') {
-            const el = document.querySelector<HTMLTextAreaElement>(`textarea[formControlName="${question.uid}"]`);
-            if (el && el.value.trim().length > 0) {
-              hasAnswer = true;
-              control?.setValue(el.value.trim());
+            case 'text': {
+              const el = document.querySelector<HTMLTextAreaElement>(`textarea[formControlName="${question.uid}"]`);
+              if (el && el.value.trim().length > 0) {
+                hasAnswer = true;
+                control?.setValue(el.value.trim());
+              }
+              break;
             }
+            default:
+              break;
           }
         }
 
@@ -1058,25 +1110,36 @@ export class SurveyRunnerComponent implements OnInit {
         let selectedOptionId: number | null = null;
         let selectedOptionIds: number[] | null = null;
 
-        if (question.type === 't/f') {
-          // 是非題：若選 true 匹配「是」或第 1 個選項；若選 false 匹配「否」或第 2 個選項
-          const opts = question.optionsConfig || [];
-          if ((val === 'true' || val === true) && opts.length > 0) {
-            selectedOptionId = opts[0].id ?? null;
-          } else if ((val === 'false' || val === false) && opts.length > 1) {
-            selectedOptionId = opts[1].id ?? null;
+        switch (question.type) {
+          case 't/f': {
+            // 是非題：若選 true 匹配「是」或第 1 個選項；若選 false 匹配「否」或第 2 個選項
+            const opts = question.optionsConfig || [];
+            if ((val === 'true' || val === true) && opts.length > 0) {
+              selectedOptionId = opts[0].id ?? null;
+            } else if ((val === 'false' || val === false) && opts.length > 1) {
+              selectedOptionId = opts[1].id ?? null;
+            }
+            break;
           }
-        } else if (question.type === 'radio') {
-          // 單選題：比對選項文字獲取 optionId
-          const matchedOpt = (question.optionsConfig || []).find((o) => o.text === String(val));
-          if (matchedOpt && matchedOpt.id) {
-            selectedOptionId = matchedOpt.id;
+          case 'radio': {
+            // 單選題：比對選項文字獲取 optionId
+            const matchedOpt = (question.optionsConfig || []).find((o) => o.text === String(val));
+            if (matchedOpt && matchedOpt.id) {
+              selectedOptionId = matchedOpt.id;
+            }
+            break;
           }
-        } else if (question.type === 'multiRadio' && Array.isArray(val)) {
-          // 複選題：比對多個勾選項目的文字獲取對應 optionId 清單
-          selectedOptionIds = (question.optionsConfig || [])
-            .filter((o) => val.includes(o.text) && o.id)
-            .map((o) => o.id!);
+          case 'multiRadio': {
+            // 複選題：比對多個勾選項目的文字獲取對應 optionId 清單
+            if (Array.isArray(val)) {
+              selectedOptionIds = (question.optionsConfig || [])
+                .filter((o) => val.includes(o.text) && o.id)
+                .map((o) => o.id!);
+            }
+            break;
+          }
+          default:
+            break;
         }
 
         answers.push({

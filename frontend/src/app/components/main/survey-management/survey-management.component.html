@@ -741,19 +741,19 @@
                 </div>
                 <div class="structure-type-grid">
                   <div class="structure-type-item">
-                    <span class="stype-count">{{ report.questionsAnalytics | questionTypeCount: 'radio' }}</span>
+                    <span class="stype-count">{{ getQuestionTypeCount(report.questionsAnalytics, 'radio') }}</span>
                     <span class="stype-label">單選題</span>
                   </div>
                   <div class="structure-type-item">
-                    <span class="stype-count">{{ report.questionsAnalytics | questionTypeCount: 'checkbox' }}</span>
+                    <span class="stype-count">{{ getQuestionTypeCount(report.questionsAnalytics, 'checkbox') }}</span>
                     <span class="stype-label">多選題</span>
                   </div>
                   <div class="structure-type-item">
-                    <span class="stype-count">{{ report.questionsAnalytics | questionTypeCount: 'scale' }}</span>
+                    <span class="stype-count">{{ getQuestionTypeCount(report.questionsAnalytics, 'scale') }}</span>
                     <span class="stype-label">量表題</span>
                   </div>
                   <div class="structure-type-item">
-                    <span class="stype-count">{{ report.questionsAnalytics | questionTypeCount: 'text' }}</span>
+                    <span class="stype-count">{{ getQuestionTypeCount(report.questionsAnalytics, 'text') }}</span>
                     <span class="stype-label">簡答題</span>
                   </div>
                 </div>

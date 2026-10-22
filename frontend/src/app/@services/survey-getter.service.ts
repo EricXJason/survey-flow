@@ -122,20 +122,28 @@ export class SurveyGetterService {
           const rawQuestions = (d.questions ?? []).map((q: any, idx: number) => {
             const rawType = (q.type || '').toUpperCase();
             let frontendType = 'text';
-            if (rawType === 'BOOLEAN') {
-              frontendType = 't/f';
-            } else if (rawType === 'SINGLE') {
-              frontendType = 'radio';
-            } else if (rawType === 'MULTI') {
-              frontendType = 'multiRadio';
-            } else if (rawType === 'RATING') {
-              frontendType = 'scale';
-            } else if (rawType === 'TIME') {
-              frontendType = 'time';
-            } else if (rawType === 'DATE') {
-              frontendType = 'date';
-            } else {
-              frontendType = 'text';
+            switch (rawType) {
+              case 'BOOLEAN':
+                frontendType = 't/f';
+                break;
+              case 'SINGLE':
+                frontendType = 'radio';
+                break;
+              case 'MULTI':
+                frontendType = 'multiRadio';
+                break;
+              case 'RATING':
+                frontendType = 'scale';
+                break;
+              case 'TIME':
+                frontendType = 'time';
+                break;
+              case 'DATE':
+                frontendType = 'date';
+                break;
+              default:
+                frontendType = 'text';
+                break;
             }
 
             const optionsConfig = (q.options ?? []).map((o: any) => ({
@@ -147,14 +155,22 @@ export class SurveyGetterService {
             }));
 
             let determinedScaleType = 'scale-text-satisfaction-5';
-            if (q.minRating === 0 && q.maxRating === 10) {
-              determinedScaleType = 'scale-num-0-10';
-            } else if (q.minRating === 1 && q.maxRating === 10) {
-              determinedScaleType = 'scale-num-1-10';
-            } else if (q.minRating === 1 && q.maxRating === 5) {
-              determinedScaleType = 'scale-num-1-5';
-            } else if (q.scaleType) {
-              determinedScaleType = q.scaleType;
+            const ratingRangeKey = `${q.minRating}-${q.maxRating}`;
+            switch (ratingRangeKey) {
+              case '0-10':
+                determinedScaleType = 'scale-num-0-10';
+                break;
+              case '1-10':
+                determinedScaleType = 'scale-num-1-10';
+                break;
+              case '1-5':
+                determinedScaleType = 'scale-num-1-5';
+                break;
+              default:
+                if (q.scaleType) {
+                  determinedScaleType = q.scaleType;
+                }
+                break;
             }
 
             return {

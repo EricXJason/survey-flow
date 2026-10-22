@@ -1970,44 +1970,9 @@
   border-radius: var(--r-xs, 2px);
   white-space: nowrap;
   line-height: 1.35;
-
-  // 單選題：沉穩藍 (Blue)
-  &.q-type-radio {
-    background: #eff6ff;
-    color: #1d4ed8;
-    border: 1px solid #bfdbfe;
-  }
-
-  // 複選題：藍綠青 (Teal)
-  &.q-type-checkbox,
-  &.q-type-multiRadio {
-    background: #f0fdfa;
-    color: #0f766e;
-    border: 1px solid #99f6e4;
-  }
-
-  // 是非題：翡翠綠 (Emerald)
-  &.q-type-boolean,
-  &.q-type-t\/f,
-  &.q-type-tf {
-    background: #ecfdf5;
-    color: #047857;
-    border: 1px solid #a7f3d0;
-  }
-
-  // 量表題：琥珀金 (Amber)
-  &.q-type-scale {
-    background: #fefce8;
-    color: #a16207;
-    border: 1px solid #fef08a;
-  }
-
-  // 文字簡答：典雅紫 (Violet)
-  &.q-type-text {
-    background: #faf5ff;
-    color: #7e22ce;
-    border: 1px solid #e9d5ff;
-  }
+  background: var(--c-neutral-100, #f1f5f9);
+  color: var(--c-neutral-700, #334155);
+  border: 1px solid var(--c-neutral-200, #e2e8f0);
 }
 
 .req-badge {

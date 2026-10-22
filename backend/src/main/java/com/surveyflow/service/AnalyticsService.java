@@ -220,18 +220,39 @@ public class AnalyticsService {
                 for (SurveyOption o : q.getOptions()) {
                     counts.put(o.getOptionText(), 0L);
                 }
+                if (q.getType() == QuestionType.BOOLEAN && counts.isEmpty()) {
+                    counts.put("是", 0L);
+                    counts.put("否", 0L);
+                }
 
                 List<Map<String, Object>> rawCounts = answerRepository.countSelectionsByQuestionNative(q.getId());
                 long sumSelections = 0;
                 for (Map<String, Object> row : rawCounts) {
                     Long optId = getLong(getCaseInsensitive(row, "optionId"));
                     Long count = getLong(getCaseInsensitive(row, "selectedCount"));
-                    sumSelections += count;
+                    final long finalCount = count != null ? count : 0L;
+                    sumSelections += finalCount;
 
                     if (optId != null) {
                         q.getOptions().stream().filter(o -> o.getId().equals(optId)).findFirst().ifPresent(o -> {
-                            counts.put(o.getOptionText(), count);
+                            counts.put(o.getOptionText(), counts.getOrDefault(o.getOptionText(), 0L) + finalCount);
                         });
+                    }
+                }
+
+                // [健壯防禦]: 針對是非題，若歷史資料未綁定 option_id，掃描 text_answer 進行後備統計補全
+                if (q.getType() == QuestionType.BOOLEAN && sumSelections == 0) {
+                    List<String> rawTexts = answerRepository.findTextAnswersByQuestionNative(q.getId());
+                    for (String t : rawTexts) {
+                        if (t == null) continue;
+                        String trimmed = t.trim();
+                        if ("是".equals(trimmed) || "true".equalsIgnoreCase(trimmed) || "1".equals(trimmed)) {
+                            counts.put("是", counts.getOrDefault("是", 0L) + 1);
+                            sumSelections++;
+                        } else if ("否".equals(trimmed) || "false".equalsIgnoreCase(trimmed) || "0".equals(trimmed)) {
+                            counts.put("否", counts.getOrDefault("否", 0L) + 1);
+                            sumSelections++;
+                        }
                     }
                 }
 
@@ -303,6 +324,39 @@ public class AnalyticsService {
                             else if (score == 3) passiveCount += rCnt;
                             else promoterCount += rCnt;
                         }
+                    }
+                }
+
+                // [健壯防禦]: 若 totalCount 為 0，檢查文字量表反饋並反向補充分值統計
+                if (totalCount == 0L) {
+                    List<String> rawTexts = answerRepository.findTextAnswersByQuestionNative(q.getId());
+                    for (String t : rawTexts) {
+                        if (t == null) continue;
+                        String rawTxt = t.trim();
+                        Integer score = null;
+                        try {
+                            score = Integer.parseInt(rawTxt);
+                        } catch (NumberFormatException ignored) {
+                            if (rawTxt.contains("非常滿意") || rawTxt.contains("非常同意") || rawTxt.contains("非常重要") || rawTxt.contains("非常喜歡") || rawTxt.contains("總是")) {
+                                score = 5;
+                            } else if (rawTxt.contains("滿意") || rawTxt.contains("同意") || rawTxt.contains("重要") || rawTxt.contains("喜歡") || rawTxt.contains("經常")) {
+                                score = 4;
+                            } else if (rawTxt.contains("普通") || rawTxt.contains("有時")) {
+                                score = 3;
+                            } else if (rawTxt.contains("非常不") || rawTxt.contains("從不")) {
+                                score = 1;
+                            } else if (rawTxt.contains("不滿意") || rawTxt.contains("不同意") || rawTxt.contains("不重要") || rawTxt.contains("不喜歡") || rawTxt.contains("很少")) {
+                                score = 2;
+                            }
+                        }
+                        if (score != null) {
+                            totalCount++;
+                            distMap.put(score, distMap.getOrDefault(score, 0L) + 1);
+                            allScores.add(score);
+                        }
+                    }
+                    if (totalCount > 0) {
+                        avg = allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
                     }
                 }
 

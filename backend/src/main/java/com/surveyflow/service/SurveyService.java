@@ -13,6 +13,7 @@
 
 package com.surveyflow.service;
 
+import com.surveyflow.common.enums.QuestionType;
 import com.surveyflow.common.enums.RoleType;
 import com.surveyflow.dto.survey.*;
 import com.surveyflow.entity.*;
@@ -34,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -42,6 +45,7 @@ public class SurveyService {
     private final SurveyRepository surveyRepository;
     private final UserRepository userRepository;
     private final SubmissionRepository submissionRepository;
+    private final ModelMapper modelMapper;
 
     /**
      * 建立新問卷 (支援草稿或直接發布)
@@ -67,32 +71,15 @@ public class SurveyService {
                 .viewCount(0)
                 .build();
 
-        // 綁定基本資料收集設定
+        // 綁定基本資料收集設定 (統一透過 ModelMapper 自動映射)
         BasicInfoConfigDto configDto = request.getBasicInfoConfig();
         if (configDto != null) {
-            SurveyBasicInfoConfig config = SurveyBasicInfoConfig.builder()
-                    .survey(survey)
-                    .collectBasicInfo(configDto.getCollectBasicInfo() != null ? configDto.getCollectBasicInfo() : true)
-                    .requireName(Boolean.TRUE.equals(configDto.getRequireName()))
-                    .requireGender(Boolean.TRUE.equals(configDto.getRequireGender()))
-                    .requireAge(Boolean.TRUE.equals(configDto.getRequireAge()))
-                    .requireBirthday(Boolean.TRUE.equals(configDto.getRequireBirthday()))
-                    .requireNationalId(Boolean.TRUE.equals(configDto.getRequireNationalId()))
-                    .requirePhone(Boolean.TRUE.equals(configDto.getRequirePhone()))
-                    .requireHomePhone(Boolean.TRUE.equals(configDto.getRequireHomePhone()))
-                    .requireEmail(Boolean.TRUE.equals(configDto.getRequireEmail()))
-                    .requireIndustry(Boolean.TRUE.equals(configDto.getRequireIndustry()))
-                    .requireJobTitle(Boolean.TRUE.equals(configDto.getRequireJobTitle()))
-                    .requireDepartment(Boolean.TRUE.equals(configDto.getRequireDepartment()))
-                    .requireEmployeeId(Boolean.TRUE.equals(configDto.getRequireEmployeeId()))
-                    .requireAcademicMajor(Boolean.TRUE.equals(configDto.getRequireAcademicMajor()))
-                    .requireClassName(Boolean.TRUE.equals(configDto.getRequireClassName()))
-                    .requireStudentId(Boolean.TRUE.equals(configDto.getRequireStudentId()))
-                    .requireHeight(Boolean.TRUE.equals(configDto.getRequireHeight()))
-                    .requireWeight(Boolean.TRUE.equals(configDto.getRequireWeight()))
-                    .requireResidence(Boolean.TRUE.equals(configDto.getRequireResidence()))
-                    .requireRegisteredAddress(Boolean.TRUE.equals(configDto.getRequireRegisteredAddress()))
-                    .build();
+            SurveyBasicInfoConfig config = modelMapper.map(configDto, SurveyBasicInfoConfig.class);
+            config.setId(null);
+            config.setSurvey(survey);
+            if (config.getCollectBasicInfo() == null) {
+                config.setCollectBasicInfo(true);
+            }
             survey.setBasicInfoConfig(config);
         }
 
@@ -112,8 +99,8 @@ public class SurveyService {
                         .maxRating(qDto.getMaxRating())
                         .build();
 
+                List<SurveyOption> options = new ArrayList<>();
                 if (qDto.getOptions() != null && !qDto.getOptions().isEmpty()) {
-                    List<SurveyOption> options = new ArrayList<>();
                     for (OptionDto oDto : qDto.getOptions()) {
                         SurveyOption option = SurveyOption.builder()
                                 .question(question)
@@ -123,6 +110,11 @@ public class SurveyService {
                                 .build();
                         options.add(option);
                     }
+                } else if (question.getType() == QuestionType.BOOLEAN) {
+                    options.add(SurveyOption.builder().question(question).optionText("是").sortOrder(1).build());
+                    options.add(SurveyOption.builder().question(question).optionText("否").sortOrder(2).build());
+                }
+                if (!options.isEmpty()) {
                     question.setOptions(options);
                 }
                 questions.add(question);
@@ -322,29 +314,7 @@ public class SurveyService {
 
         BasicInfoConfigDto configDto = null;
         if (survey.getBasicInfoConfig() != null) {
-            SurveyBasicInfoConfig c = survey.getBasicInfoConfig();
-            configDto = BasicInfoConfigDto.builder()
-                    .collectBasicInfo(c.getCollectBasicInfo())
-                    .requireName(c.getRequireName())
-                    .requireGender(c.getRequireGender())
-                    .requireAge(c.getRequireAge())
-                    .requireBirthday(c.getRequireBirthday())
-                    .requireNationalId(c.getRequireNationalId())
-                    .requirePhone(c.getRequirePhone())
-                    .requireHomePhone(c.getRequireHomePhone())
-                    .requireEmail(c.getRequireEmail())
-                    .requireIndustry(c.getRequireIndustry())
-                    .requireJobTitle(c.getRequireJobTitle())
-                    .requireDepartment(c.getRequireDepartment())
-                    .requireEmployeeId(c.getRequireEmployeeId())
-                    .requireAcademicMajor(c.getRequireAcademicMajor())
-                    .requireClassName(c.getRequireClassName())
-                    .requireStudentId(c.getRequireStudentId())
-                    .requireHeight(c.getRequireHeight())
-                    .requireWeight(c.getRequireWeight())
-                    .requireResidence(c.getRequireResidence())
-                    .requireRegisteredAddress(c.getRequireRegisteredAddress())
-                    .build();
+            configDto = modelMapper.map(survey.getBasicInfoConfig(), BasicInfoConfigDto.class);
         }
 
         List<QuestionDto> questionDtos = survey.getQuestions().stream().map(q -> {
@@ -354,6 +324,11 @@ public class SurveyService {
                     .sortOrder(o.getSortOrder())
                     .triggerQuestionUid(o.getTriggerQuestionUid())
                     .build()).collect(Collectors.toList());
+
+            if (q.getType() == QuestionType.BOOLEAN && optionDtos.isEmpty()) {
+                optionDtos.add(OptionDto.builder().optionText("是").sortOrder(1).build());
+                optionDtos.add(OptionDto.builder().optionText("否").sortOrder(2).build());
+            }
 
             return QuestionDto.builder()
                     .id(q.getId())

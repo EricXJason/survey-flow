@@ -27,6 +27,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,6 +36,7 @@ public class SubmissionService {
 
     private final SubmissionRepository submissionRepository;
     private final SurveyRepository surveyRepository;
+    private final ModelMapper modelMapper;
 
     /**
      * 處理受訪者送出問卷填答
@@ -66,31 +69,12 @@ public class SubmissionService {
                 .submittedAt(now)
                 .build();
 
-        // 2. 建立受訪者基本輪廓
+        // 2. 建立受訪者基本輪廓 (統一透過 ModelMapper 自動映射)
         SubmissionBasicInfoDto basicDto = request.getBasicInfo();
         if (basicDto != null) {
-            SubmissionBasicInfo basicInfo = SubmissionBasicInfo.builder()
-                    .submission(submission)
-                    .name(basicDto.getName())
-                    .gender(basicDto.getGender())
-                    .ageGroup(basicDto.getAgeGroup())
-                    .birthday(basicDto.getBirthday())
-                    .nationalId(basicDto.getNationalId())
-                    .phone(basicDto.getPhone())
-                    .homePhone(basicDto.getHomePhone())
-                    .email(basicDto.getEmail())
-                    .industry(basicDto.getIndustry())
-                    .jobTitle(basicDto.getJobTitle())
-                    .department(basicDto.getDepartment())
-                    .employeeId(basicDto.getEmployeeId())
-                    .academicMajor(basicDto.getAcademicMajor())
-                    .className(basicDto.getClassName())
-                    .studentId(basicDto.getStudentId())
-                    .height(basicDto.getHeight())
-                    .weight(basicDto.getWeight())
-                    .residence(basicDto.getResidence())
-                    .registeredAddress(basicDto.getRegisteredAddress())
-                    .build();
+            SubmissionBasicInfo basicInfo = modelMapper.map(basicDto, SubmissionBasicInfo.class);
+            basicInfo.setId(null);
+            basicInfo.setSubmission(submission);
             submission.setBasicInfo(basicInfo);
         }
 
@@ -135,8 +119,17 @@ public class SubmissionService {
                         && aDto.getTextAnswer() != null && !aDto.getTextAnswer().isBlank()) {
                     // [健壯防禦]: 單選或是非題若僅帶文字答案，依文字內容反向匹配對應之選項實體
                     String trimmedText = aDto.getTextAnswer().trim();
+                    if (question.getType() == QuestionType.BOOLEAN) {
+                        if ("true".equalsIgnoreCase(trimmedText) || "1".equals(trimmedText)) {
+                            trimmedText = "是";
+                        } else if ("false".equalsIgnoreCase(trimmedText) || "0".equals(trimmedText)) {
+                            trimmedText = "否";
+                        }
+                    }
+
+                    final String finalText = trimmedText;
                     SurveyOption option = question.getOptions().stream()
-                            .filter(o -> o.getOptionText().equalsIgnoreCase(trimmedText))
+                            .filter(o -> o.getOptionText().equalsIgnoreCase(finalText))
                             .findFirst()
                             .orElse(null);
 
@@ -144,7 +137,7 @@ public class SubmissionService {
                             .submission(submission)
                             .question(question)
                             .option(option)
-                            .textAnswer(aDto.getTextAnswer())
+                            .textAnswer(finalText)
                             .build());
                 } else if (question.getType() == QuestionType.MULTI && aDto.getTextAnswer() != null && !aDto.getTextAnswer().isBlank()) {
                     // [健壯防禦]: 多選題若傳入逗號分隔之文字，拆分並反向匹配各個選項實體
@@ -176,9 +169,22 @@ public class SubmissionService {
                     // 文字簡答題或評分量表題
                     Integer rating = aDto.getRatingValue();
                     if (rating == null && question.getType() == QuestionType.RATING && aDto.getTextAnswer() != null) {
+                        String rawTxt = aDto.getTextAnswer().trim();
                         try {
-                            rating = Integer.parseInt(aDto.getTextAnswer().trim());
+                            rating = Integer.parseInt(rawTxt);
                         } catch (NumberFormatException ignored) {
+                            // [Why]: 支援文字量表（滿意度、認同度、重要度、頻率）智能反向轉譯整數分值
+                            if (rawTxt.contains("非常滿意") || rawTxt.contains("非常同意") || rawTxt.contains("非常重要") || rawTxt.contains("非常喜歡") || rawTxt.contains("總是")) {
+                                rating = 5;
+                            } else if (rawTxt.contains("滿意") || rawTxt.contains("同意") || rawTxt.contains("重要") || rawTxt.contains("喜歡") || rawTxt.contains("經常")) {
+                                rating = 4;
+                            } else if (rawTxt.contains("普通") || rawTxt.contains("有時")) {
+                                rating = 3;
+                            } else if (rawTxt.contains("非常不") || rawTxt.contains("從不")) {
+                                rating = 1;
+                            } else if (rawTxt.contains("不滿意") || rawTxt.contains("不同意") || rawTxt.contains("不重要") || rawTxt.contains("不喜歡") || rawTxt.contains("很少")) {
+                                rating = 2;
+                            }
                         }
                     }
                     answers.add(SubmissionAnswer.builder()
