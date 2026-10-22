@@ -42,7 +42,7 @@ import java.util.Map;
 public class MailService {
 
     private final JavaMailSender mailSender;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final String fromEmail;
     private final String senderName;
     private final String frontendBaseUrl;
@@ -57,7 +57,6 @@ public class MailService {
      */
     public MailService(
             JavaMailSender mailSender,
-            ObjectMapper objectMapper,
             @Value("${app.mail.from}") String fromEmail,
             @Value("${app.mail.sender-name}") String senderName,
             @Value("${app.frontend.base-url}") String frontendBaseUrl,
@@ -65,7 +64,6 @@ public class MailService {
             @Value("${app.mail.resend-api-key:}") String resendApiKey,
             @Value("${app.mail.provider:AUTO}") String mailProvider) {
         this.mailSender = mailSender;
-        this.objectMapper = objectMapper;
         this.fromEmail = fromEmail;
         this.senderName = senderName;
         this.frontendBaseUrl = frontendBaseUrl;

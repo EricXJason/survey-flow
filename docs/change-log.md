@@ -3,6 +3,15 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 20:02] - 後端啟動依賴解耦修復：MailService 內部實例化 ObjectMapper 徹底解決容器 Bean 缺失問題
+
+- **改動原因**:
+  - 排查 Render 生產啟動日誌，發現 Spring Boot 啟動時回報 `Parameter 1 of constructor in MailService required a bean of type 'ObjectMapper' that could not be found`，導致應用程式上下文建立失敗。
+- **具體內容**:
+  - 重構 [`MailService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/MailService.java)：移除建構子中由外部注入 `ObjectMapper` 之相依性，改由類別內部自主直接實例化執行個體 (`private final ObjectMapper objectMapper = new ObjectMapper();`)，徹底解耦 Spring 容器自動裝配限制。
+  - 通過全套後端 16/16 單元測試。
+- **影響範圍**: `MailService.java`, `docs/change-log.md`
+
 ## [2026-10-22 19:42] - 前端構建雙軌相容修復：自動同步產出至 dist/cloudflare 確保 Pages 部署無縫通過
 
 - **改動原因**:
