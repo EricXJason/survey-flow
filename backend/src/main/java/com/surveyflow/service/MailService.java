@@ -14,6 +14,7 @@
 package com.surveyflow.service;
 
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +71,8 @@ public class MailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
-            helper.setFrom(fromEmail, senderName);
+            String sanitizedName = resolveSenderName();
+            helper.setFrom(new InternetAddress(fromEmail, sanitizedName, StandardCharsets.UTF_8.name()));
             helper.setTo(toEmail.trim());
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
@@ -85,6 +87,23 @@ public class MailService {
             log.warn("│ 郵件主旨: {}                                            ", subject);
             log.warn("└──────────────────────────────────────────────────────────────────────────┘");
         }
+    }
+
+    /**
+     * 防禦性解析寄件者外顯名稱，自動校正 properties ISO-8859-1 編碼轉換為正確繁體中文
+     */
+    private String resolveSenderName() {
+        if (senderName == null || senderName.isBlank()) {
+            return "SurveyFlow 線上問卷團隊";
+        }
+        // 若偵測到 Latin-1 亂碼特徵 (例如 ç, ä, å, é)，自動逆向還原回純 UTF-8
+        if (senderName.contains("ç") || senderName.contains("ä") || senderName.contains("å") || senderName.contains("é")) {
+            try {
+                return new String(senderName.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+            } catch (Exception ignored) {
+            }
+        }
+        return senderName;
     }
 
     /**

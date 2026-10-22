@@ -3,6 +3,18 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 11:15] - 安全與通訊治理：信件發送者名稱 UTF-8 解碼修復與全專案嚴禁 @Autowired 規範確立
+
+- **改動原因**: 依據使用者回饋，修復郵件寄件人外顯名稱因 Properties ISO-8859-1 編碼問題出現之亂碼；正式確立全 Java 專案絕對禁止使用 `@Autowired` 欄位注入，一律強制採用建構子注入搭配 Lombok 之最高規範
+- **具體內容**:
+  - **發件人名稱編碼雙保險修復**:
+    - **`application.properties`**: 將 `app.mail.sender-name` 改用 Unicode Escape 形式（`SurveyFlow \u7dda\u4e0a\u554f\u5377\u5718\u968a`），杜絕 properties 預設 Latin-1 解析錯誤
+    - **`MailService.java`**: 實作 `resolveSenderName()` 自動偵測並逆向修正 Latin-1 亂碼字元還原為純 UTF-8，並透過 `new InternetAddress(fromEmail, sanitizedName, StandardCharsets.UTF_8.name())` 進行標準 MIME 封裝
+  - **核心架構規範寫入**:
+    - **`AGENTS-BACK.md`**: 於 §1 Java 核心工程標準強化「構造器依賴注入 (DIP, 全專案零 @Autowired 鐵律)」，明確規範全專案（含 Controller、Service、Component、Config 及所有測試類別）一律強制使用建構子注入搭配 Lombok `@RequiredArgsConstructor`，絕對嚴禁 `@Autowired`
+    - **`AGENTS.md`**: 於 §3 DIP 條款強化全域規範
+- **影響範圍**: 後端郵件模組、組態設定與全域 AI Agent 協定庫
+
 ## [2026-10-22 11:00] - 架構治理重構：貫徹三層式軟體分層邊界（Controller 嚴禁直接依賴 Repository）
 
 - **改動原因**: 依據使用者檢驗與軟體工程規範，修復 Controller 層直接注入並調用 Repository 之分層架構違規，確保展示層 (Controller) 僅與業務邏輯層 (Service) 交互，資料倉儲存取 (Repository) 全面下沉並收斂至 Service 層
