@@ -1,0 +1,30 @@
+# ==============================================================================
+# SurveyFlow 專案全域 Docker 忽略檔 (.dockerignore)
+# 責任描述: 排除無關資產進入 Docker Build 上下文，優化映像檔建置傳輸速度
+# ==============================================================================
+
+# Git 與版本控制
+.git
+.gitignore
+.github
+
+# 後端編譯產出與本地快取
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+**/*.class
+
+# 前端依賴與本機快取 (後端容器不需要前端代碼)
+frontend/node_modules/
+frontend/.angular/
+frontend/dist/
+
+# 本地協定與規格文檔
+AGENTS*.md
+docs/
+.agents/
+
+# IDE 與作業系統暫存檔
+.idea/
+.vscode/
+.DS_Store
+*.log
