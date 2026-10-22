@@ -3,6 +3,15 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 19:42] - 前端構建雙軌相容修復：自動同步產出至 dist/cloudflare 確保 Pages 部署無縫通過
+
+- **改動原因**:
+  - 排查 Cloudflare Pages 部署日誌，發現後台輸出目錄被指定為 `frontend/dist/cloudflare`，而 Angular 原生預設產出於 `dist/survey-flow/browser`，導致驗證時拋出 `Error: Output directory "frontend/dist/cloudflare" not found`。
+- **具體內容**:
+  - 升級 [`frontend/package.json`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/package.json) 之 `build` 腳本：於 `ng build` 完成後，自動建立 `dist/cloudflare` 並同步鏡像拷貝全部靜態構建資源，達成雙軌目錄無縫相容。
+  - 確保無論 Cloudflare Pages 後台設定為 `dist/cloudflare` 或 `dist/survey-flow/browser`，皆能 100% 成功通過資產驗證並即時發布。
+- **影響範圍**: `frontend/package.json`, `docs/change-log.md`
+
 ## [2026-10-22 19:16] - 郵件通訊架構重大升級：引入Brevo/Resend HTTP REST API支援突破雲端防火牆阻斷
 
 - **改動原因**:
