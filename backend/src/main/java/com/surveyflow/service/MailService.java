@@ -127,49 +127,41 @@ public class MailService {
             <html lang="zh-TW">
             <head>
               <meta charset="UTF-8">
-              <style>
-                body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; color: #0f172a; }
-                .email-card { max-width: 520px; margin: 30px auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); }
-                .email-head { background: #0f172a; padding: 24px 32px; text-align: center; }
-                .email-head h1 { margin: 0; color: #ffffff; font-size: 20px; letter-spacing: 0.5px; }
-                .email-body { padding: 32px; }
-                .btn-box { text-align: center; margin: 24px 0 16px 0; }
-                .btn-action { background-color: #0f172a; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2); }
-                .code-box { background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; margin: 16px 0; }
-                .code-text { font-family: monospace; font-size: 28px; font-weight: 800; letter-spacing: 6px; color: #0f172a; }
-                .tip-text { font-size: 14px; color: #64748b; line-height: 1.6; }
-                .email-foot { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 32px; text-align: center; font-size: 12px; color: #94a3b8; }
-              </style>
             </head>
-            <body>
-              <div class="email-card">
-                <div class="email-head">
-                  <h1>SurveyFlow 帳號安全中心</h1>
+            <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #0f172a;">
+              <div style="max-width: 520px; margin: 30px auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);">
+                <div style="background: #0f172a; padding: 24px 32px; text-align: center;">
+                  <h1 style="margin: 0; color: #ffffff; font-size: 20px; letter-spacing: 0.5px;">SurveyFlow 帳號安全中心</h1>
                 </div>
-                <div class="email-body">
-                  <h2 style="font-size: 18px; margin-top: 0;">重設您的登入密碼</h2>
-                  <p class="tip-text">您好！我們收到了重設您 SurveyFlow 會員密碼的請求。您可以直接點擊下方按鈕前往重設密碼頁面（系統將為您自動帶入驗證碼）：</p>
+                <div style="padding: 32px;">
+                  <h2 style="font-size: 18px; margin-top: 0; color: #0f172a;">重設您的登入密碼</h2>
+                  <p style="font-size: 14px; color: #475569; line-height: 1.6;">您好！我們收到了重設您 SurveyFlow 會員密碼的請求。請直接點擊下方按鈕前往重設密碼（系統將自動為您帶入信箱與驗證碼）：</p>
                   
-                  <div class="btn-box">
-                    <a href="%s" target="_blank" class="btn-action">立即前往重設密碼</a>
+                  <div style="text-align: center; margin: 28px 0 16px 0;">
+                    <a href="%s" target="_blank" style="background-color: #0f172a; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">立即前往重設密碼</a>
                   </div>
                   
-                  <p class="tip-text" style="margin-bottom: 6px;">若按鈕無法點擊，您亦可手動輸入以下 6 位數安全驗證碼：</p>
-                  <div class="code-box">
-                    <div class="code-text">%s</div>
+                  <p style="font-size: 13px; color: #64748b; line-height: 1.6; word-break: break-all; margin: 12px 0 20px 0; text-align: center;">
+                    或直接點擊/複製專屬連結：<br/>
+                    <a href="%s" target="_blank" style="color: #2563eb; text-decoration: underline;">%s</a>
+                  </p>
+                  
+                  <p style="font-size: 14px; color: #475569; margin-bottom: 6px;">若連結無法開啟，您亦可手動輸入以下 6 位數安全驗證碼：</p>
+                  <div style="background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; margin: 12px 0;">
+                    <div style="font-family: monospace; font-size: 28px; font-weight: 800; letter-spacing: 6px; color: #0f172a;">%s</div>
                   </div>
                   
-                  <p class="tip-text">⚠️ <strong>注意事項</strong>：<br/>
-                  • 此驗證碼與重設連結之有效期限為 <strong>15 分鐘</strong>，請儘速完成密碼重設。<br/>
+                  <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-top: 20px;">⚠️ <strong>注意事項</strong>：<br/>
+                  • 此驗證碼與專屬連結有效期限為 <strong>15 分鐘</strong>，請儘速完成密碼重設。<br/>
                   • 若非您本人發起此項操作，請忽略此郵件，您的帳號仍然是安全的。</p>
                 </div>
-                <div class="email-foot">
+                <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 32px; text-align: center; font-size: 12px; color: #94a3b8;">
                   本信件由 SurveyFlow 系統自動發送，請勿直接回覆。
                 </div>
               </div>
             </body>
             </html>
-            """.formatted(resetUrl, code);
+            """.formatted(resetUrl, resetUrl, resetUrl, code);
     }
 
     /**
@@ -182,48 +174,40 @@ public class MailService {
             <html lang="zh-TW">
             <head>
               <meta charset="UTF-8">
-              <style>
-                body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; color: #0f172a; }
-                .email-card { max-width: 520px; margin: 30px auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); }
-                .email-head { background: #0f172a; padding: 24px 32px; text-align: center; }
-                .email-head h1 { margin: 0; color: #ffffff; font-size: 20px; letter-spacing: 0.5px; }
-                .email-body { padding: 32px; }
-                .btn-box { text-align: center; margin: 24px 0 16px 0; }
-                .btn-action { background-color: #0f172a; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2); }
-                .code-box { background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; margin: 16px 0; }
-                .code-text { font-family: monospace; font-size: 28px; font-weight: 800; letter-spacing: 6px; color: #0f172a; }
-                .tip-text { font-size: 14px; color: #64748b; line-height: 1.6; }
-                .email-foot { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 32px; text-align: center; font-size: 12px; color: #94a3b8; }
-              </style>
             </head>
-            <body>
-              <div class="email-card">
-                <div class="email-head">
-                  <h1>SurveyFlow 會員註冊認證</h1>
+            <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f8fafc; color: #0f172a;">
+              <div style="max-width: 520px; margin: 30px auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);">
+                <div style="background: #0f172a; padding: 24px 32px; text-align: center;">
+                  <h1 style="margin: 0; color: #ffffff; font-size: 20px; letter-spacing: 0.5px;">SurveyFlow 會員註冊認證</h1>
                 </div>
-                <div class="email-body">
-                  <h2 style="font-size: 18px; margin-top: 0;">歡迎加入 SurveyFlow，%s！</h2>
-                  <p class="tip-text">感謝您註冊 SurveyFlow 線上問卷系統。您可以直接點擊下方按鈕立即開通您的會員帳號並自動登入：</p>
+                <div style="padding: 32px;">
+                  <h2 style="font-size: 18px; margin-top: 0; color: #0f172a;">歡迎加入 SurveyFlow，%s！</h2>
+                  <p style="font-size: 14px; color: #475569; line-height: 1.6;">感謝您註冊 SurveyFlow 線上問卷系統。您可以直接點擊下方按鈕立即開通您的會員帳號並自動登入：</p>
                   
-                  <div class="btn-box">
-                    <a href="%s" target="_blank" class="btn-action">點擊立即開通帳號</a>
+                  <div style="text-align: center; margin: 28px 0 16px 0;">
+                    <a href="%s" target="_blank" style="background-color: #0f172a; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block;">點擊立即開通帳號</a>
                   </div>
                   
-                  <p class="tip-text" style="margin-bottom: 6px;">若按鈕無法點擊，您亦可在註冊開通頁面輸入以下 6 位數啟用碼：</p>
-                  <div class="code-box">
-                    <div class="code-text">%s</div>
+                  <p style="font-size: 13px; color: #64748b; line-height: 1.6; word-break: break-all; margin: 12px 0 20px 0; text-align: center;">
+                    或直接點擊/複製專屬連結：<br/>
+                    <a href="%s" target="_blank" style="color: #2563eb; text-decoration: underline;">%s</a>
+                  </p>
+                  
+                  <p style="font-size: 14px; color: #475569; margin-bottom: 6px;">若連結無法開啟，您亦可在開通頁面手動輸入以下 6 位數啟用碼：</p>
+                  <div style="background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; margin: 12px 0;">
+                    <div style="font-family: monospace; font-size: 28px; font-weight: 800; letter-spacing: 6px; color: #0f172a;">%s</div>
                   </div>
                   
-                  <p class="tip-text">⚠️ <strong>注意事項</strong>：<br/>
-                  • 此驗證碼與啟用連結之有效期限為 <strong>15 分鐘</strong>。<br/>
+                  <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin-top: 20px;">⚠️ <strong>注意事項</strong>：<br/>
+                  • 此驗證碼與開通連結有效期限為 <strong>15 分鐘</strong>。<br/>
                   • 驗證成功後，系統將自動完成開通，您即可立即開始設計問卷與管理專案。</p>
                 </div>
-                <div class="email-foot">
+                <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 32px; text-align: center; font-size: 12px; color: #94a3b8;">
                   本信件由 SurveyFlow 系統自動發送，請勿直接回覆。
                 </div>
               </div>
             </body>
             </html>
-            """.formatted(fullName, verifyUrl, code);
+            """.formatted(fullName, verifyUrl, verifyUrl, verifyUrl, code);
     }
 }
