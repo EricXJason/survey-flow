@@ -468,6 +468,7 @@
     border-radius: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    margin: 0 auto !important;
   }
 
   .table-wrapper {
@@ -477,58 +478,62 @@
     max-width: 100% !important;
   }
 
-  ::ng-deep .survey-neutral-table,
-  .survey-neutral-table {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    border: none !important;
-    background: transparent !important;
-
-    /* 強制完全隱藏表頭，杜絕殘留表頭佔據空間 */
-    thead,
-    .mat-mdc-header-row,
-    th.mat-mdc-header-cell {
-      display: none !important;
-    }
-
-    /* 卡片清單垂直堆疊，百分之百寬度滿版 */
-    tbody {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 1.4rem !important;
+  ::ng-deep {
+    .survey-neutral-table,
+    table.survey-neutral-table {
+      display: block !important;
       width: 100% !important;
       max-width: 100% !important;
-      padding: 0 !important;
-    }
+      min-width: 100% !important;
+      border: none !important;
+      background: transparent !important;
 
-    /* 每一列轉譯為獨立高質感卡片 */
-    tr.mat-mdc-row,
-    tr.survey-neutral-row {
-      display: grid !important;
-      grid-template-columns: auto 1fr !important;
-      align-items: center !important;
-      row-gap: 1rem !important;
-      column-gap: 0.8rem !important;
-      padding: 1.6rem !important;
-      background: #ffffff !important;
-      border: 1px solid var(--c-border, #e2e8f0) !important;
-      border-radius: var(--r-md, 8px) !important;
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      height: auto !important;
-      min-height: 0 !important;
-      box-sizing: border-box !important;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-
-      &:hover {
-        border-color: #cbd5e1 !important;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07) !important;
-        background: #ffffff !important;
+      /* 強制完全隱藏表頭，杜絕殘留表頭佔據空間 */
+      thead,
+      .mat-mdc-header-row,
+      th.mat-mdc-header-cell {
+        display: none !important;
       }
-    }
+
+      /* 卡片清單垂直堆疊，百分之百寬度滿版拉開 */
+      tbody {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.6rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+      }
+
+      /* 每一列轉譯為獨立高質感卡片，保證 100% 滿版橫向拉開與對稱 */
+      tr.mat-mdc-row,
+      tr.survey-neutral-row {
+        display: grid !important;
+        grid-template-columns: auto 1fr !important;
+        align-items: center !important;
+        row-gap: 1rem !important;
+        column-gap: 1rem !important;
+        padding: clamp(1.6rem, 3vw, 2.2rem) !important;
+        background: #ffffff !important;
+        border: 1px solid var(--c-border, #e2e8f0) !important;
+        border-radius: var(--r-md, 8px) !important;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        box-sizing: border-box !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+
+        &:hover {
+          border-color: #cbd5e1 !important;
+          box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07) !important;
+          background: #ffffff !important;
+        }
+      }
 
     /* 儲存格依語意工整分配於卡片中 */
     td.mat-mdc-cell {
@@ -606,6 +611,7 @@
       }
     }
   }
+}
 
   mat-paginator {
     background: #ffffff;

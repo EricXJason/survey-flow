@@ -840,70 +840,8 @@ select.form-control {
   box-sizing: border-box;
   transition: all var(--transition-fast, 0.15s ease);
 
-  // 預設樣式 (中性板岩灰)
+  // 系統標準中性素雅樣式 (遵循 AGENTS.md 全題型與分類視覺統一底線，嚴禁個別切換彩色背景)
   background: #f1f5f9;
-  color: #475569;
+  color: #334155;
   border: 1px solid #cbd5e1;
-
-  // 學術研究 / 論文 / 教育調研 (沉穩靛藍)
-  &[data-cat*="學術"],
-  &[data-cat*="教育"],
-  &[data-cat*="研究"],
-  &[data-cat*="論文"] {
-    background: #eef2ff !important;
-    color: #4338ca !important;
-    border-color: #c7d2fe !important;
-  }
-
-  // 滿意度調查 / 客戶滿意 / 服務反饋 (翡翠翠綠)
-  &[data-cat*="滿意"],
-  &[data-cat*="服務"],
-  &[data-cat*="反饋"],
-  &[data-cat*="體驗"] {
-    background: #ecfdf5 !important;
-    color: #047857 !important;
-    border-color: #a7f3d0 !important;
-  }
-
-  // 市場調查 / 商業 / 行銷趨勢 (琥珀金橙)
-  &[data-cat*="市場"],
-  &[data-cat*="行銷"],
-  &[data-cat*="商業"],
-  &[data-cat*="消費"] {
-    background: #fef3c7 !important;
-    color: #b45309 !important;
-    border-color: #fde68a !important;
-  }
-
-  // 產品評測 / 科技軟體 / 系統回饋 (科技天藍)
-  &[data-cat*="產品"],
-  &[data-cat*="科技"],
-  &[data-cat*="軟體"],
-  &[data-cat*="系統"] {
-    background: #f0f9ff !important;
-    color: #0369a1 !important;
-    border-color: #bae6fd !important;
-  }
-
-  // 人事行政 / 人資 / 組織職場 (典雅紫)
-  &[data-cat*="人事"],
-  &[data-cat*="人資"],
-  &[data-cat*="行政"],
-  &[data-cat*="組織"],
-  &[data-cat*="員工"] {
-    background: #f5f3ff !important;
-    color: #6d28d9 !important;
-    border-color: #ddd6fe !important;
-  }
-
-  // 生活休閒 / 娛樂 / 心理情感 (珊瑚玫瑰)
-  &[data-cat*="生活"],
-  &[data-cat*="休閒"],
-  &[data-cat*="娛樂"],
-  &[data-cat*="心理"],
-  &[data-cat*="日常"] {
-    background: #fff1f2 !important;
-    color: #be123c !important;
-    border-color: #fecdd3 !important;
-  }
 }

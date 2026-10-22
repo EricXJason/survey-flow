@@ -2,7 +2,7 @@
   <app-survey-reorder-dialog [initialQuestions]="getReorderDialogItems()" />
 }
 
-<div class="design-shell" [attr.data-category]="formBuilderGroup.get('category')?.value">
+<div class="design-shell">
   <div class="design-wrapper">
   <!-- 頂部導航與預覽切換工具列 -->
   <header class="design-header-bar">
@@ -505,9 +505,9 @@
 
                 <!-- 題目附加圖片 -->
                 <div class="field-group">
-                  <label class="checkbox-row sub-checkbox">
+                  <label class="checkbox-row question-config-checkbox">
                     <input type="checkbox" formControlName="hasImage" />
-                    <span>附加題目示意圖片或圖表</span>
+                    <span class="checkbox-main-text">附加題目示意圖片或圖表</span>
                   </label>
 
                   @if (control.get("hasImage")?.value) {
@@ -866,9 +866,12 @@
 
                 <!-- 題目必填設定 -->
                 <div class="q-footer-settings">
-                  <label class="checkbox-row">
+                  <label class="checkbox-row question-config-checkbox">
                     <input type="checkbox" formControlName="isRequired" />
-                    <strong>將此題設為必填（未填答無法送出問卷）</strong>
+                    <span class="checkbox-main-text">
+                      將此題設為<span class="required-tag-text">必填</span>
+                      <span class="checkbox-subtext">（未填答無法送出問卷）</span>
+                    </span>
                   </label>
                 </div>
               </div>

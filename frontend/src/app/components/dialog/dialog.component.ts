@@ -85,12 +85,25 @@ export class DialogComponent {
 
   /**
    * 格式化對話框內文訊息，確保每個錯誤或提示項目獨立分行，徹底避免黏在同一行
-   * 若字串包含換行符或圓點項目 (• / · / -)，結構化轉譯為帶有清晰間距的區塊條目
+   * 自動攔截 raw 英文 Http failure response，100% 轉譯為臺灣繁體中文友好訊息
    * @param message 原始對話框內文字串
    * @returns 轉換後之結構化 HTML 字串
    */
   protected formatMessage(message?: string): string {
     if (!message) return '';
+
+    // 攔截並轉譯 raw 英文 HTTP 錯誤代碼 (終極防線)
+    if (message.includes('Http failure response') || message.includes('status: 403') || message.endsWith(': 403')) {
+      message = '存取權限不足或登入憑證已失效，請確認帳號權限或重新登入。';
+    } else if (message.includes('status: 401') || message.endsWith(': 401')) {
+      message = '尚未登入或認證資訊已失效，請重新登入後再試。';
+    } else if (message.includes('status: 404') || message.endsWith(': 404')) {
+      message = '找不到所請求的伺服器資源或目標問卷不存在。';
+    } else if (message.includes('status: 500') || message.endsWith(': 500')) {
+      message = '伺服器內部發生異常，請稍後再試或聯繫系統管理員。';
+    } else if (message.includes('status: 0') || message.endsWith(': 0')) {
+      message = '無法連線至伺服器，請確認後端服務是否已啟動或檢查網路連線。';
+    }
 
     // 若訊息包含換行符或條目符號，拆分為清單呈現
     const lines = message.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);

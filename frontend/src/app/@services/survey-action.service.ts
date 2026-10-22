@@ -30,14 +30,48 @@ export class SurveyActionService {
   private readonly userState = inject(UserStateService);
   private readonly apiClient = inject(ApiClientService);
 
+  /**
+   * 將後端錯誤與 HTTP 狀態碼轉譯為 100% 臺灣繁體中文友好訊息
+   * 嚴格禁止向使用者拋出 "Http failure response for ...: 403" 等原始英文
+   */
   private resolveErrorMessage(err: any, fallbackMessage: string): string {
-    if (!err || err.status === 0) {
-      return '無法連線至伺服器，請確認後端服務是否已啟動（8080 埠位）或檢查網路連線。';
+    if (!err) {
+      return fallbackMessage;
     }
-    if (err.status === 504 || err.status === 502 || err.status === 503) {
+    const status = err.status;
+    if (status === 0) {
+      return '無法連線至伺服器，請確認後端服務是否正常運行或檢查網路連線。';
+    }
+    if (status === 401) {
+      return '尚未登入或會員認證已過期，請重新登入後再試。';
+    }
+    if (status === 403) {
+      return '存取權限不足或登入憑證已失效，請確認帳號權限或重新登入。';
+    }
+    if (status === 404) {
+      return '找不到所請求的伺服器資源或目標問卷不存在。';
+    }
+    if (status === 400) {
+      const serverMsg = err?.error?.message;
+      if (serverMsg && typeof serverMsg === 'string' && !serverMsg.includes('Http failure')) {
+        return serverMsg;
+      }
+      return '請求資料內容不完整或格式有誤，請檢查後再試。';
+    }
+    if (status === 500) {
+      return '伺服器內部發生異常，請稍後再試或聯繫系統管理員。';
+    }
+    if (status === 502 || status === 503 || status === 504) {
       return '後端伺服器暫時無回應或連線逾時，請確認伺服器運作狀態。';
     }
-    return err?.error?.message || err?.message || fallbackMessage;
+
+    // 若後端有明確回傳業務中文訊息且非英文 Http failure 字串
+    const serverMsg = err?.error?.message;
+    if (serverMsg && typeof serverMsg === 'string' && !serverMsg.includes('Http failure')) {
+      return serverMsg;
+    }
+
+    return fallbackMessage;
   }
 
   /**

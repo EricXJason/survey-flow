@@ -2,6 +2,28 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-23 01:25] - 前端 UI/UX 全面精緻化：大廳 RWD 滿版置中、分類素雅統一主題、必填醒目紅與排版統一、全域 Dialog 100% 繁中轉譯
+
+- **改動原因**:
+  - 排查並解決使用者提出的四項關鍵前端問題：
+    1. **大廳 RWD 不平衡**：平板/中型視窗（822px 等）下問卷卡片偏左縮小、右側大片空白。
+    2. **主題分類背景換色違規**：問卷設計頁面切換主題分類時，違反全站素雅主題原則切換彩色背景。
+    3. **題目設定排版混亂**：題目附加圖片與必填核取方塊字級忽大忽小、排版不協調，使用者要求必填以紅色呈現。
+    4. **Dialog 洩漏英文代碼**：儲存失敗時 Dialog 直接噴出 Angular 原始英文 `Http failure response for ...: 403`。
+- **具體內容**:
+  - **大廳 RWD 滿版穿透與對稱置中**：在 [`lobby.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/lobby/lobby.component.scss) 中，使用 `::ng-deep` 徹底穿透 Angular Material 封裝層，將 `table`、`tbody`、`tr` 設定為 100% 滿版彈性拉伸，消除右側空白，使問卷卡片與容器平衡置中。
+  - **分類主題素雅統一定義**：在 [`common.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/common.scss) 中徹底清除所有彩色 `[data-cat*="..."]` 規則，統一維持純淨高質感中性板岩灰；在 `survey-design` 與 `survey-runner` 中移除 `[attr.data-category]` 屬性。
+  - **題目排版統一與必填紅色高亮**：
+    - 將「附加題目示意圖片或圖表」與「將此題設為必填」的標籤與樣式統一為 `.question-config-checkbox`，字級統一為標準 `1.45rem`。
+    - 將「必填」二字獨立標記為 `.required-tag-text` 並以醒目紅色（`#dc2626`）呈現，括號說明統一為輕量 `1.3rem` 輔助灰。
+  - **全域 Dialog 100% 臺灣繁體中文轉譯雙重守衛**：
+    - 在 [`survey-action.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/survey-action.service.ts) 與 [`auth-action.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/auth-action.service.ts) 升級 `resolveErrorMessage`，將 400、401、403、404、500、503、0 等所有 HTTP 狀態碼轉譯為親切繁中。
+    - 在 [`dialog.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/dialog/dialog.component.ts) 的 `formatMessage` 建立終極防線，自動攔截任何包含 `Http failure response` 或 `: 403` 的英文代碼並即時轉譯為繁體中文，徹底杜絕 raw error 外洩。
+  - **構建驗證**：前端 Angular Production Bundle 構建 0 錯誤（BUILD SUCCESS）。
+- **影響範圍**:
+  - `lobby.component.scss`, `common.scss`, `survey-design.component.html`, `survey-design.component.scss`, `survey-runner.component.html`, `survey-action.service.ts`, `auth-action.service.ts`, `dialog.component.ts`, `docs/change-log.md`
+
+
 ## [2026-10-23 01:13] - 資料庫 DML NOT NULL 約束深度校驗：修復 gender NULL 違規、補齊全體預設會員明文密碼繁中註解
 
 - **改動原因**:
