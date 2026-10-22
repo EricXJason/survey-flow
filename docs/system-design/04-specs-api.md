@@ -22,63 +22,120 @@
 ## 1. 身分驗證與帳號管理端點規格 (Auth & Account Endpoints)
 
 ### 1.1 使用者登入 (User Login)
-- **端點路徑**: `POST /api/auth/login`
+- **端點路徑**: `POST /api/public/auth/login`
 - **請求載荷 (Request Body)**:
-  ```typescript
-  interface AccountLogInPayload {
-    username: string; // 6-12 碼英數帳號
-    password: string; // 8-16 碼高強度密碼
+  ```json
+  {
+    "username": "user46972",
+    "password": "User1234!"
   }
   ```
 - **成功回應 (Response 200)**:
+  - **HTTP Headers**: `Set-Cookie: survey_refresh_token=...; HttpOnly; Secure; SameSite=Lax; Path=/api/public/auth`
+  - **Body**:
+    ```json
+    {
+      "status": 200,
+      "success": true,
+      "message": "會員登入成功",
+      "data": {
+        "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+        "tokenType": "Bearer",
+        "expiresIn": 900,
+        "refreshToken": "eyJhbGciOiJIUzI1NiJ9...",
+        "user": {
+          "id": 1,
+          "username": "user46972",
+          "email": "user46972@gmail.com",
+          "fullName": "許哲誠",
+          "role": "RESEARCHER"
+        }
+      },
+      "timestamp": "2026-10-22T12:00:00"
+    }
+    ```
+- **錯誤回應**:
+  - `403 Forbidden` (`ACCOUNT_NOT_VERIFIED`): 帳號存在但尚未通過電子郵件驗證。
+
+### 1.2 會員註冊 (User Registration)
+- **端點路徑**: `POST /api/public/auth/register`
+- **業務規則**: 若同帳號或信箱處於 `PENDING_VERIFICATION`，系統自動允許表單覆蓋更新並重發啟用信；若已為 `ACTIVE` 則回傳衝突錯誤。
+- **請求載荷 (Request Body)**:
   ```json
   {
-    "code": 200,
-    "message": "登入成功",
-    "data": {
-      "id": "11111",
-      "access": "admin",
-      "userName": "User46972A",
-      "name": "系統管理員",
-      "nationalId": "B234567890",
-      "email": "admin@survey.com",
-      "phone": "0987654321",
-      "gender": "male",
-      "birthday": "1990-01-01",
-      "role": "researcher"
-    }
+    "username": "user46972",
+    "password": "User1234!",
+    "email": "user46972@gmail.com",
+    "fullName": "許哲誠",
+    "phone": "0912345678",
+    "role": "RESEARCHER"
   }
   ```
 
-### 1.2 新使用者註冊 (User Registration)
-- **端點路徑**: `POST /api/auth/register`
+### 1.3 會員信箱核驗開通 (Verify Email)
+- **端點路徑**: `POST /api/public/auth/verify-email`
 - **請求載荷 (Request Body)**:
-  ```typescript
-  interface AccountRegisterPayload {
-    username: string;
-    password: string;
-    name: string;
-    nationalId: string;
-    email: string;
-    phone: string;
-    gender: string;
-    birthday: string;
-    role: string;
+  ```json
+  {
+    "email": "user46972@gmail.com",
+    "code": "316713"
+  }
+  ```
+- **成功回應 (Response 200)**: 帳號狀態切換為 `ACTIVE`，同時自動簽發並回傳雙 Token 與使用者資料。
+
+### 1.4 補發註冊啟用驗證信 (Resend Verification)
+- **端點路徑**: `POST /api/public/auth/resend-verification`
+- **請求載荷 (Request Body)**:
+  ```json
+  {
+    "email": "user46972@gmail.com"
   }
   ```
 
-### 1.3 會員個人資料修改 (Update Profile)
+### 1.5 雙 Token 輪替刷新 (Refresh Tokens)
+- **端點路徑**: `POST /api/public/auth/refresh`
+- **機制**: 支援自動從 `Cookie (survey_refresh_token)` 或 Request Body 讀取；舊 Refresh Token 之 JTI 立即進入吊銷黑名單，簽發全新雙 Token (RTR 防重放保護)。
+- **請求載荷 (Request Body，選填，支援純 Cookie)**:
+  ```json
+  {
+    "refreshToken": "eyJhbGciOiJIUzI1NiJ9..."
+  }
+  ```
+
+### 1.6 忘記密碼發送驗證信 (Forgot Password)
+- **端點路徑**: `POST /api/public/auth/forgot-password`
+- **請求載荷 (Request Body)**:
+  ```json
+  {
+    "email": "user46972@gmail.com"
+  }
+  ```
+
+### 1.7 重設會員密碼 (Reset Password)
+- **端點路徑**: `POST /api/public/auth/reset-password`
+- **請求載荷 (Request Body)**:
+  ```json
+  {
+    "email": "user46972@gmail.com",
+    "code": "316713",
+    "newPassword": "NewPassword123!"
+  }
+  ```
+
+### 1.8 會員安全登出 (Logout)
+- **端點路徑**: `POST /api/public/auth/logout`
+- **機制**: 提取當前 Access Token 與 Refresh Token 之 JTI 標記為吊銷，清除瀏覽器端 HttpOnly Cookie。
+
+### 1.9 會員個人資料修改 (Update Profile)
 - **端點路徑**: `PUT /api/account/profile`
+- **安全要求**: 需要有效 Bearer Access Token 標頭
 - **請求載荷 (Request Body)**:
-  ```typescript
-  interface AccountModifyProfilePayload {
-    password?: string;
-    name: string;
-    nationalId: string;
-    phone: string;
-    gender: string;
-    birthday: string;
-    role: string;
+  ```json
+  {
+    "name": "許哲誠",
+    "phone": "0912345678",
+    "gender": "male",
+    "birthday": "1995-10-20"
   }
   ```
 
