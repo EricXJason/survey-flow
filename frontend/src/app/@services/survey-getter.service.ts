@@ -99,10 +99,7 @@ export class SurveyGetterService {
         }
         return [];
       }),
-      catchError((err) => {
-        console.error('取得管理員全站問卷清單發生異常:', err);
-        return of([]);
-      })
+      catchError(() => of([]))
     );
   }
 

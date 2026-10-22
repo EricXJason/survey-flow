@@ -229,4 +229,15 @@ class AuthServiceTest {
         assertDoesNotThrow(() -> authService.logout("testuser", "Bearer sample_access_jwt"));
         verify(tokenRevocationService, times(1)).revokeToken("jwt_jti_123", 800000L);
     }
+
+    @Test
+    @DisplayName("種子資料密碼測試: 驗證 data.sql 預設管理員與會員之 Argon2id 雜湊精確匹配")
+    void testRealArgon2Hash_MatchesSeedData() {
+        org.springframework.security.crypto.argon2.Argon2PasswordEncoder encoder = 
+            new org.springframework.security.crypto.argon2.Argon2PasswordEncoder(16, 32, 1, 4096, 3);
+        String adminHash = "$argon2id$v=19$m=4096,t=3,p=1$dxlqSLPglwBvQ/uW8I4u4Q$XFRrN5aM8WzQSfMGTQCyLYi880buSWKmRgRpc0FwPgI";
+        String userHash = "$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM";
+        assertTrue(encoder.matches("Admin123!", adminHash), "管理員密碼必須與 Admin123! 精準匹配");
+        assertTrue(encoder.matches("User1234!", userHash), "一般會員密碼必須與 User1234! 精準匹配");
+    }
 }

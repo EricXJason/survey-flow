@@ -35,18 +35,18 @@ TRUNCATE TABLE `users`;
 -- 【一般會員】social_liao     -> 密碼: User1234!   (ROLE_USER)
 INSERT INTO `users` (`id`, `username`, `password_hash`, `full_name`, `email`, `phone`, `identity_card`, `role`, `status`, `created_at`, `updated_at`)
 VALUES 
-(1, 'admin', '$argon2id$v=19$m=4096,t=3,p=1$4u8prALaBK1aC7DVJVg/+g$YoCtbfr0dHvdLvrlYsJ1BHw04HpeH0KTdb50iK3RAQA', '系統最高管理員', 'admin@surveyflow.com', '0912345678', 'A123456789', 'ROLE_ADMIN', 'ACTIVE', NOW(), NOW()), -- 密碼: Admin123!
-(2, 'testuser', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '測試會員小明', 'testuser@surveyflow.com', '0987654321', 'B234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(3, 'academic_chen', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '陳思翰副教授', 'sh.chen@surveyflow.com', '0911223344', 'C123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(4, 'product_lin', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '林品妤產品長', 'py.lin@surveyflow.com', '0922334455', 'D234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(5, 'hr_huang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '黃彥碩人資主管', 'ys.huang@surveyflow.com', '0933445566', 'E123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(6, 'market_wu', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '吳芷晴行銷總監', 'cq.wu@surveyflow.com', '0944556677', 'F234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(7, 'event_chang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '張銘宇活動策劃', 'my.chang@surveyflow.com', '0955667788', 'G123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(8, 'support_li', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '李冠廷客服副總', 'kt.li@surveyflow.com', '0966778899', 'H234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(9, 'edu_wang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '王靜雯培訓講師', 'cw.wang@surveyflow.com', '0977889900', 'I123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(10, 'health_tsai', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '蔡承翰健康顧問', 'ch.tsai@surveyflow.com', '0988990011', 'J234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(11, 'policy_yang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '楊心慈政策研究員', 'ct.yang@surveyflow.com', '0999001122', 'K123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
-(12, 'social_liao', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '廖俊翔社群經理', 'jx.liao@surveyflow.com', '0900112233', 'L234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()); -- 密碼: User1234!
+(1, 'admin', '$argon2id$v=19$m=4096,t=3,p=1$dxlqSLPglwBvQ/uW8I4u4Q$XFRrN5aM8WzQSfMGTQCyLYi880buSWKmRgRpc0FwPgI', '系統最高管理員', 'admin@surveyflow.com', '0912345678', 'A123456789', 'ROLE_ADMIN', 'ACTIVE', NOW(), NOW()), -- 密碼: Admin123!
+(2, 'testuser', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '測試會員小明', 'testuser@surveyflow.com', '0987654321', 'B234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(3, 'academic_chen', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '陳思翰副教授', 'sh.chen@surveyflow.com', '0911223344', 'C123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(4, 'product_lin', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '林品妤產品長', 'py.lin@surveyflow.com', '0922334455', 'D234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(5, 'hr_huang', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '黃彥碩人資主管', 'ys.huang@surveyflow.com', '0933445566', 'E123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(6, 'market_wu', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '吳芷晴行銷總監', 'cq.wu@surveyflow.com', '0944556677', 'F234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(7, 'event_chang', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '張銘宇活動策劃', 'my.chang@surveyflow.com', '0955667788', 'G123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(8, 'support_li', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '李冠廷客服副總', 'kt.li@surveyflow.com', '0966778899', 'H234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(9, 'edu_wang', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '王靜雯培訓講師', 'cw.wang@surveyflow.com', '0977889900', 'I123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(10, 'health_tsai', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '蔡承翰健康顧問', 'ch.tsai@surveyflow.com', '0988990011', 'J234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(11, 'policy_yang', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '楊心慈政策研究員', 'ct.yang@surveyflow.com', '0999001122', 'K123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(12, 'social_liao', '$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM', '廖俊翔社群經理', 'jx.liao@surveyflow.com', '0900112233', 'L234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()); -- 密碼: User1234!
 
 -- -------------------------------------------------------------
 -- 建立 4 筆高度專業且符合統計意義之問卷專案 (testuser 擁有)

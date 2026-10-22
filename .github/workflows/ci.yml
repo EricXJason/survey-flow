@@ -1,5 +1,15 @@
+# ==============================================================================
+# 檔案名稱: ci.yml
+# 所屬模組: CI/CD 自動化管線 - GitHub Actions 持續整合與品質檢驗
+# 責任描述: 負責跨分支 Push 與 Pull Request 之全自動化前後端品質檢驗，確保單元測試 100% 通過與生產構建零錯誤
+# 聯動關係:
+#   - 上游觸發: master, development, dev, feature 分支之 Push 與 PR 事件
+#   - 下游目標: 後端 Maven 測試封裝 (JAR) 與前端 Cloudflare Pages 生產構建驗證
+# ==============================================================================
+
 name: SurveyFlow CI/CD Pipeline
 
+# 觸發事件規劃：監聽關鍵主幹與沙盒分支之推播與合併請求
 on:
   push:
     branches:
@@ -14,14 +24,19 @@ on:
       - dev
 
 jobs:
+  # ----------------------------------------------------------------------------
+  # 後端持續整合任務: JDK 21 環境建置、Maven 單元測試覆蓋、JAR 打包驗證
+  # ----------------------------------------------------------------------------
   backend-ci:
     name: Backend Test & Build
     runs-on: ubuntu-latest
 
     steps:
+      # 步驟 1: 檢出專案原始碼倉庫
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 步驟 2: 設定 Eclipse Temurin JDK 21 執行環境並啟用 Maven 依賴快取
       - name: Set up JDK 21 (Temurin)
         uses: actions/setup-java@v4
         with:
@@ -29,25 +44,32 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
+      # 步驟 3: 賦予 Maven Wrapper 執行權限並執行全套單元測試
       - name: Run Backend Unit Tests
         run: |
           cd backend
           chmod +x ./mvnw
           ./mvnw clean test
 
+      # 步驟 4: 驗證後端 Spring Boot 可執行 JAR 封裝結構完整性
       - name: Verify Backend Packaging (JAR)
         run: |
           cd backend
           ./mvnw package -DskipTests
 
+  # ----------------------------------------------------------------------------
+  # 前端持續整合任務: Node.js 20.x 環境建置、依賴安裝、Angular 生產構建驗證
+  # ----------------------------------------------------------------------------
   frontend-ci:
     name: Frontend Build & Verify
     runs-on: ubuntu-latest
 
     steps:
+      # 步驟 1: 檢出專案原始碼倉庫
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 步驟 2: 設定 Node.js 20.x LTS 執行環境並啟用依賴快取機制
       - name: Set up Node.js 20.x
         uses: actions/setup-node@v4
         with:
@@ -55,11 +77,13 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
+      # 步驟 3: 安裝前端專案依賴套件
       - name: Install Frontend Dependencies
         run: |
           cd frontend
           npm ci || npm install
 
+      # 步驟 4: 執行 Angular Production Bundle 構建（驗證 Cloudflare Pages 部署靜態產物）
       - name: Build Frontend for Production (Cloudflare Pages Target)
         run: |
           cd frontend

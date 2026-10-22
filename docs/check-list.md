@@ -182,8 +182,11 @@
   - [x] 前端刪除多餘的 `environments/` 目錄與 `auth.interceptor.ts`，以純原生主機名動態解析後端網址。
   - [x] 後端 `application.properties` 徹底移除硬編碼 Email 與應用程式密碼，100% 透過環境變數注入。
   - [x] 前端樣式 100% 原生 SCSS/CSS，嚴格禁止引用 Bootstrap、Tailwind 等任何外部樣式表。
-- [x] **全量設定檔繁體中文註解補齊**:
-  - [x] `Dockerfile`、`backend/pom.xml`、`frontend/tsconfig.json`、`application.properties` 等 100% 標註繁中用途說明與參數邊界。
+- [x] **全題型與主題分類語意多色標籤辨識 (`common.scss`)**: 為大廳與問卷管理的主題分類標籤新增 9 大領域之柔和典雅配色（靛藍、金橙、翠綠、天藍、紫粉、珊瑚紅、薄荷綠、典雅紫、精緻灰），維持全站素雅基底同時強化視覺辨識度。
+- [x] **預設帳號密碼 Argon2id 雜湊精確修復 (`data.sql`)**: 重新計算並更新全體預設會員與管理員之 Argon2id 密碼雜湊，單元測試自動化驗證 `Admin123!` 與 `User1234!` 100% 成功登入。
+- [x] **大廳 RWD 滿版置中與排版平衡 (`lobby.component.scss`)**: 穿透 Angular Material 封裝層消除卡片右側留白，多視窗尺寸下維持完美居中。
+- [x] **題目設定排版統一與必填醒目紅 (`survey-design.component.scss`)**: 統一選項設定文字級別為 1.45rem，必填文字以紅色醒目呈現。
+- [x] **全域 Dialog 訊息 100% 臺灣繁體中文雙重守衛 (`dialog.component.ts`, `survey-action.service.ts`)**: 自動攔截並轉譯原始 403 / 500 等英文錯誤代碼，杜絕 raw error 外洩。
 
 
 

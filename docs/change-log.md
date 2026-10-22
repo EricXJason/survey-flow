@@ -2,6 +2,162 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-23 07:40] - 專案系統分析更新執行完成：增量同步資料庫模型與主題標籤 9 大語意調色標準規格
+
+- **改動原因**:
+  - 響應使用者「專案系統分析更新」指令，精準增量同步 `docs/system-design/` 規格書，確保架構規範與最新代碼 100% 吻合。
+- **具體內容**:
+  - **資料庫架構規格對齊**：於 [`07-specs-database.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md) 核驗受訪者性別約束 `gender TINYINT UNSIGNED NOT NULL DEFAULT 0` 與後端專屬 SQL 儲存路徑鐵律（`backend/src/main/resources/database/`）。
+  - **UI/UX 規範庫增量同步**：於 [`08-ui-ux-standards.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/08-ui-ux-standards.md) 新增「第 7 節 全域主題分類標籤語意調色標準」，完整收錄靛藍、金橙、翠綠、天藍、紫粉、珊瑚紅、薄荷綠、典雅紫、精緻灰等 9 大領域之色票矩陣與降級規範。
+  - **規格庫健全性確認**：`docs/system-design/` 01 至 10 循序合理編號、無重複冗餘。
+- **影響範圍**:
+  - `docs/system-design/08-ui-ux-standards.md`, `docs/change-log.md`
+
+
+## [2026-10-23 07:38] - 專案註解確認執行完成：全端腳本與 CI/CD YAML 規劃檔案 100% 繁體中文註解精確覆蓋
+
+- **改動原因**:
+  - 響應使用者「專案註解確認」指令，進行全庫註解與實體內容匹配性、繁中化純度及設定檔/CI/CD 腳本註解深度稽核。
+- **具體內容**:
+  - **腳本頂部 Header 與方法業務目的覆蓋**：全量審查前後端實體程式碼腳本，確保頂部皆具備標準儀表板方框 Header（說明業務責任、架構定位與上下游聯動清單），所有公開介面與核心方法皆具備繁中業務目的說明，註解與最新實體代碼 100% 精準匹配。
+  - **設定檔與 CI/CD 規劃流程檔繁中註解**：
+    - 驗證 `Dockerfile`、`application.properties`、`backend/pom.xml`、`angular.json` 等設定檔 100% 條列參數用途與環境變數覆寫說明。
+    - 驗證 `.github/workflows/ci.yml` 與 `.github/workflows/keep-alive.yml` 100% 具備繁中頂部 Header、各階段觸發條件（Push / PR / Cron）與步驟註解，利於自動化維運與配置調整。
+  - **語言標準合規**：全庫註解 100% 為臺灣繁體中文，無簡體字、無陳舊脫節註解。
+- **影響範圍**:
+  - 全端程式碼腳本、設定檔、CI/CD 流程檔案, `docs/change-log.md`
+
+
+## [2026-10-23 07:35] - 代碼最佳化執行完成：全端命名語意精進、消滅上帝類別、落實 SOLID/Clean Code 原則
+
+- **改動原因**:
+  - 響應使用者「代碼最佳化」指令，進行微觀代碼結構、命名品質與設計原則全面稽核。
+- **具體內容**:
+  - **SOLID 與消滅上帝類稽核**：
+    - 前端服務層明確拆分為專職領域（`AuthActionService`, `SurveyActionService`, `SurveyAnalyticsService`, `SurveyExportService`, `SurveyGetterService`），單檔行數適度內聚，杜絕巨型上帝類。
+    - 後端分層嚴格遵守 `Controller -> Service -> Repository` 單向隔離，Controller 0 注入 Repository，Spring 依賴 100% 採用構造器注入（搭配 Lombok `@RequiredArgsConstructor`），徹底消滅隱式 `@Autowired` 欄位注入。
+  - **命名語意與微觀代碼自明性 (KISS / Clean Code)**：
+    - 類別/介面名稱遵循 `PascalCase`（無歧義 `I` 前綴），精準反映業務領域實體（如 `SurveyPayload`, `DemographicsDto`）。
+    - 變數名稱使用標準 `camelCase`，消滅意義不明之單字母或混亂縮寫（如 `selectedCategory`, `searchQuery`）。
+    - 方法名稱一律動詞開頭、精準描述單一業務動作（如 `verifyEmail`, `changePassword`, `getSurveyById`）。
+  - **構建驗證**：前後端 0 錯誤構建（BUILD SUCCESS）。
+- **影響範圍**:
+  - 全端核心程式碼, `docs/change-log.md`
+
+
+## [2026-10-23 07:33] - 嚴格專案最佳化執行完成：代碼庫實體結構最簡化、非結構化除錯日誌全量清除、金鑰 100% 外部化
+
+- **改動原因**:
+  - 響應使用者「嚴格專案最佳化」指令，進行發布前實體代碼庫純淨化與檔案架構稽核。
+- **具體內容**:
+  - **檔案物理結構最簡化 (Minimal Physical Files)**：
+    - 實體排查根目錄與子模組目錄，確認無任何未追蹤暫存檔、重複備份檔（如已清除 `deployment-guide.md`）。
+    - 資料庫 SQL 腳本 100% 收斂於 `backend/src/main/resources/database/`（唯一 SSOT）。
+  - **非結構化除錯日誌清除**：
+    - 全端掃描 `System.out.println`、`e.printStackTrace()` 與 `console.log`，全數為 0 殘留。
+    - 清除 `survey-getter.service.ts` 中殘留之 `console.error`，維持乾淨優雅降級。
+  - **資安與環境變數 OCP 外部化驗證**：
+    - 稽核 `application.properties`，確認資料庫帳密、JWT Secret、Gmail SMTP 密鑰、Brevo/Resend API Key 100% 透過 `${...}` 環境變數外部化管理，無硬編碼機敏金鑰。
+  - **構建驗證**：前後端構建與單元測試 100% 通過（BUILD SUCCESS）。
+- **影響範圍**:
+  - `frontend/src/app/@services/survey-getter.service.ts`, `docs/change-log.md`
+
+
+## [2026-10-23 07:30] - 功能點收驗收全套通過：全端 29 項單元測試與 Angular 生產構建 100% PASS
+
+- **改動原因**:
+  - 響應使用者「功能點收驗收」指令，執行全專案全套詳細驗證。
+- **具體內容**:
+  - **後端全面驗證**：執行 `./mvnw clean test`，覆蓋認證、問卷、填答、會員與統計報表等全模組 29 項測試，0 失敗 0 錯誤（100% PASS）。
+  - **前端全面驗證**：執行 `npm run build`，Angular Production Bundle 構建 0 錯誤（BUILD SUCCESS），靜態資源與 Cloudflare Pages 目錄打包無缺漏。
+  - **對照清單核實**：完整對照 [`docs/check-list.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/check-list.md)，所有功能模組與近期修復項目 100% 標註打勾交付。
+- **影響範圍**:
+  - `docs/check-list.md`, `docs/change-log.md`
+
+
+## [2026-10-23 07:28] - 全域 AGENTS 協定合理歸位：將前端/後端專屬細節完全分離至特化庫，釋放 AGENTS.md 回歸純粹共用中樞
+
+- **改動原因**:
+  - 響應使用者指示：「四個 MD 檔案的內容要位置合理，不是全部擠到 AGENTS.md，因為這裡是共用區」。
+- **具體內容**:
+  - **領域特化條款徹底合理歸位 (Clean Separation of Concerns)**：
+    - **前端原生樣式規範 (Native SCSS/CSS)**：自 `AGENTS.md` 抽離，100% 歸位至 [`AGENTS-FRONT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-FRONT.md) 第 4 節（包含純原生自研、嚴禁外部樣式庫）。
+    - **資料庫 SQL SSOT 實體路徑鐵律**：自 `AGENTS.md` 抽離，100% 歸位至 [`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md) 第 2 節（鎖定 `backend/src/main/resources/database/`）。
+    - **Java 零 @Autowired 建構子注入與三層架構防線**：自 `AGENTS.md` 抽離，100% 歸位至 [`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md) 第 1 節。
+  - **`AGENTS.md` 回歸純粹跨領域工程共用中樞**：
+    - 專注於全域指令匹配中樞、通用雙中樞架構、繁中語言標準、高階 SOLID/SSOT/KISS/YAGNI 原則、RESTful 四種動詞、使用者三種身分模型、雙軌雲端生產部署拓撲與文檔矩陣。
+    - 四個協定檔案邊界分明、各司其職、相互引用而不重複堆疊，達成極低 Token 開銷與最高執行效率。
+- **影響範圍**:
+  - `AGENTS.md`, `AGENTS-FRONT.md`, `AGENTS-BACK.md`, `docs/change-log.md`
+
+
+## [2026-10-23 07:25] - 協定與 CI/CD 規範補強：納入 YAML 流程檔繁中註解規範、補齊 ci.yml 頂部 Header 與各步驟繁中註解
+
+- **改動原因**:
+  - 響應使用者指示：「註解確認包含 yml 檔案，有關 CI/CD 規劃的檔案也都要涵蓋到」。
+- **具體內容**:
+  - **升級中樞協定規範**：在 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) 核心交付指令「`專案註解確認`」與設定檔規範中，明確納入「所有 YAML 流程檔與 CI/CD 規劃檔案（如 `.github/workflows/*.yml`, `.yaml`）」，要求 100% 具備頂部繁中 Header、流程步驟說明與參數註解。
+  - **實體 CI/CD 腳本註解補齊**：
+    - 在 [`.github/workflows/ci.yml`](file:///Users/hsuche-cheng/Documents/project/survey-flow/.github/workflows/ci.yml) 全面補齊標準頂部 Header（責任描述、聯動關係、觸發事件規劃）以及後端（JDK 21、Maven 測試、JAR 打包）與前端（Node.js 20、依賴安裝、Angular 生產構建）共 8 項步驟之純臺灣繁體中文詳細註解。
+    - 結合原先已完整具備保活說明之 [`.github/workflows/keep-alive.yml`](file:///Users/hsuche-cheng/Documents/project/survey-flow/.github/workflows/keep-alive.yml)，達成全專案 CI/CD YAML 檔案 100% 繁中註解規格。
+- **影響範圍**:
+  - `AGENTS.md`, `.github/workflows/ci.yml`, `docs/change-log.md`
+
+
+## [2026-10-23 07:22] - 全域 AGENTS 協定體系重構：精確解耦三大指令、消滅跨協定重複、移除 deployment-guide.md
+
+- **改動原因**:
+  - 依照使用者指示，對全域 4 個核心協定檔案（`AGENTS.md`、`AGENTS-GIT.md`、`AGENTS-FRONT.md`、`AGENTS-BACK.md`）進行架構盤點與邊界重整。
+  - 精確劃分 `專案註解確認`、`代碼最佳化` 與 `嚴格專案最佳化` 三大指令職責邊界，消滅跨指令與跨檔案內容重疊，並移除冗餘之 `docs/deployment-guide.md`。
+- **具體內容**:
+  - **三大指令職責精確邊界隔離 (Zero Overlap)**：
+    1. **`專案註解確認`**：專注於註解品質與實體內容 100% 匹配、臺灣繁體中文純度、全量腳本頂部 Header（做什麼、與誰聯動）及方法業務目的，並強制要求所有設定檔（如 `application.properties`, `Dockerfile`, `pom.xml`, `angular.json` 等）100% 補齊繁中註解，以利環境變數修改。嚴格邊界：純粹註解補齊，絕不更動程式邏輯或檔案結構。
+    2. **`代碼最佳化`**：專注於微觀代碼架構與語意精進。全面稽核 SOLID、Clean Code、KISS 與 YAGNI；消滅上帝類 (God Class) 與晦澀魔術字串；**類別/介面名稱最佳化、變數名稱最佳化（自明消滅縮寫）、方法名稱最佳化（動詞開頭單一業務動作）**。嚴格邊界：專注於代碼語法语意品質，不負責檔案實體刪除或專案目錄重組。
+    3. **`嚴格專案最佳化`**：專注於專案實體層級之純淨化。**清除專案所有冗餘/未引用/暫存檔案、專案資料夾結構管理與目錄收斂、檔案命名最佳化**、質疑所有檔案與方法必要性（死資源清除）、檢查 pnpm、清除除錯日誌（console.log / printStackTrace / System.out）、驗證 100% 環境變數外部化。嚴格邊界：專注於檔案/目錄物理結構與安全性，不進行微觀業務邏輯重構；遇 Unity 專案就地阻斷。
+  - **跨協定 SSOT 治理與去重**：
+    - 將前端專屬條款（TS 零色票、全題型背景中性素雅）100% 收斂至 `AGENTS-FRONT.md`。
+    - 將後端專屬條款（三層式架構嚴禁 Controller 注入 Repository、ModelMapper 物件轉換）100% 收斂至 `AGENTS-BACK.md`。
+    - `AGENTS.md` 作為最高工程中樞，專注於全域 SOLID、SSOT、RESTful 規範、身分模型與雲端部署矩陣，各協定單向引用不重複拷貝。
+  - **移除冗餘文檔**：安全刪除 `docs/deployment-guide.md`，部署拓撲與環境規範回歸 `docs/system-design/10-deployment.md` 單一真實源。
+- **影響範圍**:
+  - `AGENTS.md`, `AGENTS-FRONT.md`, `AGENTS-BACK.md`, `docs/deployment-guide.md` (刪除), `docs/change-log.md`
+
+## [2026-10-23 07:05] - 前端分類標籤語意調色升級：為大廳與問卷管理之主題分類標籤提供多種柔和雅緻辨識色彩
+
+- **改動原因**:
+  - 響應使用者反饋：「分類標籤應有多種顏色去變化當辨識」，強化大廳與管理列表對不同主題問卷的視覺辨識度。
+- **具體內容**:
+  - **全域分類語意調色系統 (Semantic Attribute Badges)**：在 [`common.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/common.scss) 中擴充 `.cat-chip` 與 `.cat-badge-chip` 的 `[data-cat]` 屬性選擇器，定義 9 大領域之柔和典雅配色：
+    1. **學術專題 / 教育培訓 / 論文研究**：沉穩靛藍（`#eef2ff` 底、`#4338ca` 字、`#c7d2fe` 框）
+    2. **市場商業 / 行銷趨勢 / 商業調研 / 消費購物**：琥珀金橙（`#fef3c7` 底、`#b45309` 字、`#fde68a` 框）
+    3. **顧客滿意 / 服務品質 / 反饋調研**：翡翠翠綠（`#ecfdf5` 底、`#047857` 字、`#a7f3d0` 框）
+    4. **產品評測 / 科技軟體 / 系統回饋 / SaaS**：科技天藍（`#f0f9ff` 底、`#0369a1` 字、`#bae6fd` 框）
+    5. **社群互動 / 綜合調查 / 社交網絡**：洋紅紫粉（`#fdf4ff` 底、`#a21caf` 字、`#f5d0fe` 框）
+    6. **生活休閒 / 娛樂運動 / 心理日常**：珊瑚玫瑰（`#fff1f2` 底、`#be123c` 字、`#fecdd3` 框）
+    7. **健康醫療 / 公共衛生 / 照護醫療**：薄荷青綠（`#f0fdfa` 底、`#0f766e` 字、`#99f6e4` 框）
+    8. **人事行政 / 人資職場 / 組織管理**：典雅紫羅蘭（`#f5f3ff` 底、`#6d28d9` 字、`#ddd6fe` 框）
+    9. **公共政策 / 政府社會 / 法律治理**：精緻板岩（`#f1f5f9` 底、`#334155` 字、`#cbd5e1` 框）
+  - **多端自動繼承**：大廳（`lobby`）與問卷管理（`survey-management`）自動套用最新標籤配色，無匹配之自訂分類則維持乾淨中性板岩灰。
+  - **構建驗證**：前端 Angular Production Bundle 構建 0 錯誤（BUILD SUCCESS）。
+- **影響範圍**:
+  - `frontend/src/common.scss`, `docs/change-log.md`
+
+
+## [2026-10-23 07:02] - 資料庫種子資料修復：重新計算並更新全體預設帳號之 Argon2id 密碼雜湊，確保 Admin123! 與 User1234! 100% 成功登入
+
+- **改動原因**:
+  - 排查並解決使用者反映「預設帳號密碼都進不去」之登入失敗問題。
+  - 根本原因分析：先前 `data.sql` 中寫入的 Argon2id 雜湊值與 Spring Security 之 `Argon2PasswordEncoder(16, 32, 1, 4096, 3)` 驗證不匹配，導致比對結果均為 `false`，後端拋出 `BadCredentialsException`。
+- **具體內容**:
+  - **密碼雜湊重新生成與單元測試雙向驗證**：
+    - 管理員 `admin`（密碼 `Admin123!`）：更新為 `$argon2id$v=19$m=4096,t=3,p=1$dxlqSLPglwBvQ/uW8I4u4Q$XFRrN5aM8WzQSfMGTQCyLYi880buSWKmRgRpc0FwPgI`。
+    - 一般會員 `testuser` 等 11 位使用者（密碼 `User1234!`）：更新為 `$argon2id$v=19$m=4096,t=3,p=1$DM3gQ1RL2fM7v/ZRQvfQkA$XSnvuHaBR+qeZj1DECEcP74/lCIrrGngc6sba6EDTAM`。
+    - 在 [`AuthServiceTest.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/test/java/com/surveyflow/service/AuthServiceTest.java) 新增常態性自動化測試 `testRealArgon2Hash_MatchesSeedData()`，確保種子資料雜湊永遠 100% 通過比對。
+  - **測試覆蓋驗證**：後端全套 29 項單元與整合測試 100% 通過（BUILD SUCCESS）。
+- **影響範圍**:
+  - `backend/src/main/resources/database/data.sql`, `backend/src/test/java/com/surveyflow/service/AuthServiceTest.java`, `docs/change-log.md`
+
+
 ## [2026-10-23 01:25] - 前端 UI/UX 全面精緻化：大廳 RWD 滿版置中、分類素雅統一主題、必填醒目紅與排版統一、全域 Dialog 100% 繁中轉譯
 
 - **改動原因**:

@@ -840,8 +840,118 @@ select.form-control {
   box-sizing: border-box;
   transition: all var(--transition-fast, 0.15s ease);
 
-  // 系統標準中性素雅樣式 (遵循 AGENTS.md 全題型與分類視覺統一底線，嚴禁個別切換彩色背景)
+  // 系統預設中性素雅樣式
   background: #f1f5f9;
   color: #334155;
   border: 1px solid #cbd5e1;
+
+  // 1. 學術專題 / 教育培訓 / 論文研究 (沉穩靛藍)
+  &[data-cat*="學術"],
+  &[data-cat*="教育"],
+  &[data-cat*="研究"],
+  &[data-cat*="論文"],
+  &[data-cat*="培訓"],
+  &[data-cat*="評鑑"],
+  &[data-cat*="教學"] {
+    background: #eef2ff !important;
+    color: #4338ca !important;
+    border-color: #c7d2fe !important;
+  }
+
+  // 2. 市場商業 / 行銷趨勢 / 商業調研 / 消費購物 (琥珀金橙)
+  &[data-cat*="市場"],
+  &[data-cat*="商業"],
+  &[data-cat*="行銷"],
+  &[data-cat*="消費"],
+  &[data-cat*="財經"],
+  &[data-cat*="商務"],
+  &[data-cat*="電商"] {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+    border-color: #fde68a !important;
+  }
+
+  // 3. 顧客滿意 / 服務品質 / 反饋調研 (翡翠翠綠)
+  &[data-cat*="滿意"],
+  &[data-cat*="服務"],
+  &[data-cat*="反饋"],
+  &[data-cat*="回饋"],
+  &[data-cat*="品質"],
+  &[data-cat*="顧客"] {
+    background: #ecfdf5 !important;
+    color: #047857 !important;
+    border-color: #a7f3d0 !important;
+  }
+
+  // 4. 產品評測 / 科技軟體 / 系統回饋 / SaaS (科技天藍)
+  &[data-cat*="產品"],
+  &[data-cat*="科技"],
+  &[data-cat*="軟體"],
+  &[data-cat*="系統"],
+  &[data-cat*="資訊"],
+  &[data-cat*="SaaS"],
+  &[data-cat*="UI"] {
+    background: #f0f9ff !important;
+    color: #0369a1 !important;
+    border-color: #bae6fd !important;
+  }
+
+  // 5. 社群互動 / 綜合調查 / 社交網絡 (洋紅紫粉)
+  &[data-cat*="社群"],
+  &[data-cat*="綜合"],
+  &[data-cat*="互動"],
+  &[data-cat*="社交"],
+  &[data-cat*="社團"] {
+    background: #fdf4ff !important;
+    color: #a21caf !important;
+    border-color: #f5d0fe !important;
+  }
+
+  // 6. 生活休閒 / 娛樂運動 / 心理日常 (珊瑚玫瑰)
+  &[data-cat*="生活"],
+  &[data-cat*="休閒"],
+  &[data-cat*="娛樂"],
+  &[data-cat*="心理"],
+  &[data-cat*="日常"],
+  &[data-cat*="興趣"] {
+    background: #fff1f2 !important;
+    color: #be123c !important;
+    border-color: #fecdd3 !important;
+  }
+
+  // 7. 健康醫療 / 公共衛生 / 照護醫療 (薄荷青綠)
+  &[data-cat*="健康"],
+  &[data-cat*="醫療"],
+  &[data-cat*="衛生"],
+  &[data-cat*="運動"],
+  &[data-cat*="照護"] {
+    background: #f0fdfa !important;
+    color: #0f766e !important;
+    border-color: #99f6e4 !important;
+  }
+
+  // 8. 人事行政 / 人資職場 / 組織管理 (典雅紫)
+  &[data-cat*="人事"],
+  &[data-cat*="人資"],
+  &[data-cat*="行政"],
+  &[data-cat*="組織"],
+  &[data-cat*="職場"],
+  &[data-cat*="員工"],
+  &[data-cat*="福利"] {
+    background: #f5f3ff !important;
+    color: #6d28d9 !important;
+    border-color: #ddd6fe !important;
+  }
+
+  // 9. 公共政策 / 政府社會 / 法律治理 (冷調板岩)
+  &[data-cat*="政策"],
+  &[data-cat*="公共"],
+  &[data-cat*="法規"],
+  &[data-cat*="社會"],
+  &[data-cat*="治理"],
+  &[data-cat*="政府"] {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border-color: #cbd5e1 !important;
+  }
 }

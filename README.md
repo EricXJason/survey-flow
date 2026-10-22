@@ -42,11 +42,12 @@ SurveyFlow 採**前後端完全解耦之現代雲端雙軌架構**，前端與�
 
 | 模組分類 | 核心功能特點 | 規格邊界與實作說明 |
 | :--- | :--- | :--- |
+| **問卷公開大廳** | 9 大領域分類辨識與即時搜尋 | 支援現代化下拉式主題分類篩選、9 大領域柔和語意標籤調色（靛藍、金橙、翠綠、天藍、紫粉、玫瑰紅等）、即時關鍵字模糊搜尋、⌘K 快捷鍵聚焦、Angular Material Table 排序與自適應無橫移卡片流。 |
 | **視覺化問卷設計** | 7 大型態動態編排與條件跳題 | 支援是非、單選、多選、評分量表 (1-5/1-10/NPS)、簡答、時間、日期題型；支援拖曳排序、單選與是非動態跳題解鎖、封面附圖/前言圖文彈性編輯（支援純圖或純文）與即時擬真預覽。發布後鎖定結構以確保作答真實性。 |
 | **問卷填答運行器** | 雙軌填答與原生 DOM 雙向防誤判 | 支援大廳公開或專屬直達連結填寫；全題型原生 DOM 狀態深度掃描同步，徹底根除誤判；條件跳題隱藏題自動豁免必填驗證；整合受訪者 20 項基本輪廓資料收集、身分證 Modulo 10 與手機 10 碼防呆。 |
 | **問卷專案管理** | 生命週期與開放時效管控 | 問卷列表關鍵字搜尋、預覽問卷、複製專屬直達連結、動態切換大廳公開狀態與連結填答狀態、設定有效起訖時限及專案軟刪除。 |
 | **深度數據分析** | 多維聚合圖表與專業報表匯出 | 5 大營運 KPI 指標、近 30 日填答趨勢走勢圖、受訪者人口輪廓金字塔、題型深度聚合 (單複選百分比/最高票皇冠微徽章/評分量表情感分析)、真實最新回覆時間 (非虛假時間) 及 4 大專業格式 (CSV/SPSS/JSON/PDF) 數據匯出。 |
-| **會員帳號認證** | 實名信箱啟用與密碼安全 | 支援 Brevo HTTPS API 與真實 Gmail SMTP 寄送 6 碼註冊啟用信與 15 分鐘時效密碼重設信；個人資料維護 (身分證字號唯讀保護)；舊密碼驗證與 Argon2id 安全重設。 |
+| **會員帳號認證** | 實名信箱啟用與密碼安全 | 支援 Brevo HTTPS API 與真實 Gmail SMTP 寄送 6 碼註冊啟用信與 15 分鐘時效密碼重設信；個人資料維護 (身分證字號唯讀保護)；舊密碼驗證與 Argon2id 安全重設（內建管理員與測試會員種子雜湊 100% 匹配驗證）。 |
 | **系統營運治理** | 管理員全站會員名冊治理 | 系統管理員 (`ROLE_ADMIN`) 專屬全站會員清單審查、會員狀態即時啟用/凍結、違規帳號安全刪除 (內建 admin 保護機制)。 |
 
 ---
@@ -291,7 +292,7 @@ survey-flow/
         │   └── resources/
         │       ├── application.properties # 系統組態 (100% 繁中註解、環境變數 OCP)
         │       └── database/          # schema.sql (9大表 DDL) 與 data.sql (種子資料)
-        └── test/                      # 28/28 全套 JUnit 5 + Mockito 單元與整合測試套件
+        └── test/                      # 29/29 全套 JUnit 5 + Mockito 單元與整合測試套件
 ```
 
 ---
@@ -307,7 +308,7 @@ survey-flow/
 - **資料庫初始化 (SSOT)**: 直接在 TiDB Cloud 或 MySQL 執行 [`backend/src/main/resources/database/schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql)（內含全量方案 A 與增量方案 B）與可選的 [`data.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/data.sql)。
 ```bash
 cd backend
-# 執行全套單元測試驗證 (28/28 PASS，包含 Controller 與 Service)
+# 執行全套單元測試驗證 (29/29 PASS，包含 Controller 與 Service)
 ./mvnw test
 
 # 啟動後端 Web API (預設監聽 http://localhost:8080)
