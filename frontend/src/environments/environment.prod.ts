@@ -12,6 +12,6 @@
 
 export const environment = {
   production: true,
-  /** 雲端生產環境 Render 後端 API 基礎根路徑 (部署 Render 後將自動對接) */
-  apiUrl: 'https://survey-flow-backend.onrender.com',
+  /** 雲端生產環境 Render 後端 API 基礎根路徑 (對接真實上線之 Render Web Service) */
+  apiUrl: 'https://survey-flow-9gt6.onrender.com',
 };

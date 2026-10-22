@@ -3,6 +3,15 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 13:58] - 前端部署準備：生產環境 API 根路徑對接真實 Render 雲端後端
+
+- **改動原因**: 後端已於 Render 成功上線並取得專屬生產網址，需將前端生產設定檔精準對齊真實端點，以利 Cloudflare Pages 一鍵上線
+- **具體內容**:
+  - 更新 [`frontend/src/environments/environment.prod.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/environments/environment.prod.ts)：將 `apiUrl` 精確指向已上線之 Render 後端 `https://survey-flow-9gt6.onrender.com`
+  - 驗證前端構建：執行 `npm run build` 產出 100% 成功，確認 SPA 路由轉發規則 `_redirects` 完整輸出至 `dist/survey-flow/browser`
+  - 透過 Git 三軌管線閉環同步至 `feature`、`development` 與 `master`
+- **影響範圍**: `frontend/src/environments/environment.prod.ts`, `docs/change-log.md`
+
 ## [2026-10-22 13:36] - CI/CD 核心修復：解除 Maven Wrapper 忽略限制與前端 Lockfile 同步
 
 - **改動原因**: GitHub Actions CI 管線與雲端 Docker 容器在構建時回報缺少 `mvnw` 與前端 lockfile 不同步錯誤
