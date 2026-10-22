@@ -20,21 +20,33 @@ TRUNCATE TABLE `survey_basic_info_configs`;
 TRUNCATE TABLE `surveys`;
 TRUNCATE TABLE `users`;
 
--- 重設系統預設使用者帳號與密碼 (admin: Admin123! / testuser: User1234!)
+-- 重設系統預設使用者帳號與密碼 (全體會員預設密碼清單詳見下方註解)
+-- 【管理員】admin           -> 密碼: Admin123!  (ROLE_ADMIN)
+-- 【一般會員】testuser        -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】academic_chen   -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】product_lin     -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】hr_huang        -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】market_wu       -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】event_chang     -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】support_li      -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】edu_wang        -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】health_tsai     -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】policy_yang     -> 密碼: User1234!   (ROLE_USER)
+-- 【一般會員】social_liao     -> 密碼: User1234!   (ROLE_USER)
 INSERT INTO `users` (`id`, `username`, `password_hash`, `full_name`, `email`, `phone`, `identity_card`, `role`, `status`, `created_at`, `updated_at`)
 VALUES 
-(1, 'admin', '$argon2id$v=19$m=4096,t=3,p=1$4u8prALaBK1aC7DVJVg/+g$YoCtbfr0dHvdLvrlYsJ1BHw04HpeH0KTdb50iK3RAQA', '系統最高管理員', 'admin@surveyflow.com', '0912345678', 'A123456789', 'ROLE_ADMIN', 'ACTIVE', NOW(), NOW()),
-(2, 'testuser', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '測試會員小明', 'testuser@surveyflow.com', '0987654321', 'B234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(3, 'academic_chen', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '陳思翰副教授', 'sh.chen@surveyflow.com', '0911223344', 'C123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(4, 'product_lin', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '林品妤產品長', 'py.lin@surveyflow.com', '0922334455', 'D234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(5, 'hr_huang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '黃彥碩人資主管', 'ys.huang@surveyflow.com', '0933445566', 'E123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(6, 'market_wu', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '吳芷晴行銷總監', 'cq.wu@surveyflow.com', '0944556677', 'F234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(7, 'event_chang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '張銘宇活動策劃', 'my.chang@surveyflow.com', '0955667788', 'G123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(8, 'support_li', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '李冠廷客服副總', 'kt.li@surveyflow.com', '0966778899', 'H234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(9, 'edu_wang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '王靜雯培訓講師', 'cw.wang@surveyflow.com', '0977889900', 'I123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(10, 'health_tsai', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '蔡承翰健康顧問', 'ch.tsai@surveyflow.com', '0988990011', 'J234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(11, 'policy_yang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '楊心慈政策研究員', 'ct.yang@surveyflow.com', '0999001122', 'K123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()),
-(12, 'social_liao', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '廖俊翔社群經理', 'jx.liao@surveyflow.com', '0900112233', 'L234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW());
+(1, 'admin', '$argon2id$v=19$m=4096,t=3,p=1$4u8prALaBK1aC7DVJVg/+g$YoCtbfr0dHvdLvrlYsJ1BHw04HpeH0KTdb50iK3RAQA', '系統最高管理員', 'admin@surveyflow.com', '0912345678', 'A123456789', 'ROLE_ADMIN', 'ACTIVE', NOW(), NOW()), -- 密碼: Admin123!
+(2, 'testuser', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '測試會員小明', 'testuser@surveyflow.com', '0987654321', 'B234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(3, 'academic_chen', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '陳思翰副教授', 'sh.chen@surveyflow.com', '0911223344', 'C123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(4, 'product_lin', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '林品妤產品長', 'py.lin@surveyflow.com', '0922334455', 'D234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(5, 'hr_huang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '黃彥碩人資主管', 'ys.huang@surveyflow.com', '0933445566', 'E123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(6, 'market_wu', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '吳芷晴行銷總監', 'cq.wu@surveyflow.com', '0944556677', 'F234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(7, 'event_chang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '張銘宇活動策劃', 'my.chang@surveyflow.com', '0955667788', 'G123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(8, 'support_li', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '李冠廷客服副總', 'kt.li@surveyflow.com', '0966778899', 'H234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(9, 'edu_wang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '王靜雯培訓講師', 'cw.wang@surveyflow.com', '0977889900', 'I123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(10, 'health_tsai', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '蔡承翰健康顧問', 'ch.tsai@surveyflow.com', '0988990011', 'J234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(11, 'policy_yang', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '楊心慈政策研究員', 'ct.yang@surveyflow.com', '0999001122', 'K123456789', 'ROLE_USER', 'ACTIVE', NOW(), NOW()), -- 密碼: User1234!
+(12, 'social_liao', '$argon2id$v=19$m=4096,t=3,p=1$+bDUHogksGfUTL5PLnxALw$umIOklN0jNKTEWF1kP9JGin4eBrQU69UTXHsk1tSFvc', '廖俊翔社群經理', 'jx.liao@surveyflow.com', '0900112233', 'L234567890', 'ROLE_USER', 'ACTIVE', NOW(), NOW()); -- 密碼: User1234!
 
 -- -------------------------------------------------------------
 -- 建立 4 筆高度專業且符合統計意義之問卷專案 (testuser 擁有)
@@ -266,7 +278,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (6, 1, '192.168.1.15', 40, '2026-10-12 15:50:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (6, 6, NULL, NULL, '25-34歲', NULL, NULL, '科技業', NULL);
+VALUES (6, 6, NULL, 0, '25-34歲', NULL, NULL, '科技業', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (52, 6, 1, 1, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (53, 6, 2, 4, NULL, NULL);
@@ -460,7 +472,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (11, 2, '192.168.1.10', 4, '2026-10-10 14:20:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (11, 11, '路人甲', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (11, 11, '路人甲', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (106, 11, 11, 18, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (107, 11, 12, 21, NULL, NULL);
@@ -477,7 +489,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (12, 2, '192.168.1.11', 35, '2026-10-10 16:45:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (12, 12, '受害者', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (12, 12, '受害者', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (115, 12, 11, 18, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (116, 12, 12, 20, NULL, NULL);
@@ -495,7 +507,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (13, 2, '192.168.1.12', 7, '2026-10-11 10:15:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (13, 13, 'asdf', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (13, 13, 'asdf', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (125, 13, 11, 18, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (126, 13, 12, 21, NULL, NULL);
@@ -512,7 +524,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (14, 2, '192.168.1.13', 9, '2026-10-11 11:05:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (14, 14, '111', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (14, 14, '111', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (134, 14, 11, 19, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (135, 14, 12, 21, NULL, NULL);
@@ -529,7 +541,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (15, 2, '192.168.1.14', 45, '2026-10-12 09:30:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (15, 15, '陳小明', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (15, 15, '陳小明', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (143, 15, 11, 18, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (144, 15, 12, 20, NULL, NULL);
@@ -548,7 +560,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (16, 2, '192.168.1.15', 5, '2026-10-12 15:50:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (16, 16, '測試', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (16, 16, '測試', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (154, 16, 11, 18, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (155, 16, 12, 21, NULL, NULL);
@@ -565,7 +577,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (17, 2, '192.168.1.16', 110, '2026-10-13 13:10:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (17, 17, '黃先生', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (17, 17, '黃先生', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (163, 17, 11, 18, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (164, 17, 12, 20, NULL, NULL);
@@ -585,7 +597,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (18, 2, '192.168.1.17', 68, '2026-10-13 17:25:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (18, 18, '林小姐', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (18, 18, '林小姐', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (175, 18, 11, 18, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (176, 18, 12, 21, NULL, NULL);
@@ -602,7 +614,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (19, 2, '192.168.1.18', 18, '2026-10-13 19:40:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (19, 19, '匿名', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (19, 19, '匿名', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (184, 19, 11, 19, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (185, 19, 12, 21, NULL, NULL);
@@ -619,7 +631,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (20, 2, '192.168.1.19', 160, '2026-10-13 20:45:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (20, 20, '張惠君', NULL, NULL, NULL, NULL, NULL, NULL);
+VALUES (20, 20, '張惠君', 0, NULL, NULL, NULL, NULL, NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (193, 20, 11, 18, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (194, 20, 12, 20, NULL, NULL);
@@ -1704,9 +1716,9 @@ INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `
 (83, 92, '羅佳敏', 2,  '30-39歲', '0923445566', 'cm.lo@parent.tw', '全職自由接案家長', '桃園市八德區'),
 (84, 93, '董家瑋', 1,  '35-45歲', '0934556677', 'cw.tung@edu.tw', '中等教育教師', '臺中市西區'),
 (85, 94, '白芷涵', 2,  '32-40歲', '0945667788', 'ch.pai@kids.tw', '幼兒親職推廣', '臺南市永康區'),
-(86, 98, NULL, NULL, '25-34歲', NULL, NULL, '自由業', '臺北市中正區'),
-(87, 99, NULL, NULL, '35-44歲', NULL, NULL, '製造工程', '新竹市東區'),
-(88, 100, NULL, NULL, '45-54歲', NULL, NULL, '商業貿易', '臺中市南屯區');
+(86, 98, NULL, 0, '25-34歲', NULL, NULL, '自由業', '臺北市中正區'),
+(87, 99, NULL, 0, '35-44歲', NULL, NULL, '製造工程', '新竹市東區'),
+(88, 100, NULL, 0, '45-54歲', NULL, NULL, '商業貿易', '臺中市南屯區');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES
 (421, 41, 41, 66, NULL, NULL),

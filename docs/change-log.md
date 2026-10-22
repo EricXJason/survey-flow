@@ -2,6 +2,22 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-23 01:13] - 資料庫 DML NOT NULL 約束深度校驗：修復 gender NULL 違規、補齊全體預設會員明文密碼繁中註解
+
+- **改動原因**:
+  - 排查並解決使用者於 TiDB Cloud SQL Editor 執行 [`data.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/data.sql) 遭遇之 `Query 102 Failed: Column 'gender' cannot be null` 錯誤。
+  - 原因為 [`schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql) 中 `submission_basic_infos.gender` 宣告為 `TINYINT UNSIGNED NOT NULL DEFAULT 0`，而在 `data.sql` 中有 14 筆記錄明確傳入了 `NULL`，在 SQL 嚴格模式下被判定違規。
+  - 落實使用者要求：在 `data.sql` 預設會員清單中，逐一補齊所有預設帳號之真實密碼註解，方便管理與登入測試。
+- **具體內容**:
+  - **性別 NULL 徹底修正**：依據 [`GenderConverter.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/common/converter/GenderConverter.java) 規範，將 14 筆受訪者未填寫性別之欄位值由 `NULL` 全面修正為數值 `0`（代表 0:未指定）。
+  - **全庫 NOT NULL 約束 0 違規檢驗**：撰寫全量自動化語法校驗，核對 9 張資料表所有 NOT NULL 欄位，確認全檔 580 個 INSERT 區塊違規數為 0。
+  - **真實登入密碼繁中註解**：
+    - `admin` -> 密碼: `Admin123!` (系統最高管理員 ROLE_ADMIN)
+    - `testuser` ~ `social_liao`（11 位一般會員）-> 密碼均為: `User1234!` (ROLE_USER)
+- **影響範圍**:
+  - `backend/src/main/resources/database/data.sql`, `docs/change-log.md`
+
+
 ## [2026-10-23 00:43] - 資料庫種子 DML 深度校正：全面落實 TINYINT 性別數值化，徹底修復 TiDB 嚴格模式執行報錯
 
 - **改動原因**:
