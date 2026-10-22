@@ -55,6 +55,7 @@ export interface SurveyOptionItem {
   text: string;
   enableUnlockQuestion: boolean;
   unlockTargetUid: string;
+  sortOrder?: number;
 }
 
 /**

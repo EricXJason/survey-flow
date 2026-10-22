@@ -1,8 +1,8 @@
-# 05. 實體資料模型與快取架構 (Database ERD & Storage Models)
+# 07. 實體資料模型與資料庫架構 (Database ERD & Storage Models)
 
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
-> **持久化架構**: SessionStorage (會話持久化) + LocalStorage (離線帳號快取) + JSON 資料模型  
-> **更新日期**: 2026-10-06  
+> **持久化架構**: TiDB Cloud (Serverless) / MySQL 8.0 分散式關聯式資料庫 + Spring Data JPA  
+> **更新日期**: 2026-10-22  
 
 ---
 

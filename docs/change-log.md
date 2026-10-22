@@ -3,7 +3,83 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
-## [2026-10-22 15:05] - 維運自動化：配置 GitHub Actions 定時保活工作流 (keep-alive.yml)
+## [2026-10-22 18:26] - 規格書純化與零幻覺淨化：移除全站KPI總覽/健康探針與未來維運規劃
+
+- **改動原因**:
+  1. 嚴格審核實體代碼，確認全站營運 KPI 總覽端點與 Actuator 健康探針權限並未實體綁定於角色控制介面，徹底自 `01-overview.md` 與 `02-role-type.md` 表格與說明中剔除。
+  2. 依據零幻覺與工程誠實原則，規格書絕對不得包含任何未來維運規劃或未實施之項目，徹底自 `10-deployment.md` 移除「未來維運規劃清單」，只保留已正式上線之真實架構。
+- **具體內容**:
+  - 清理 [`docs/system-design/01-overview.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/01-overview.md) 與 [`docs/system-design/02-role-type.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/02-role-type.md)：精準收斂至 16 項 100% 真實上線功能。
+  - 清理 [`docs/system-design/10-deployment.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-deployment.md)：徹底移除未來維運規劃清單段落。
+- **影響範圍**: `docs/system-design/01-overview.md`, `docs/system-design/02-role-type.md`, `docs/system-design/10-deployment.md`, `docs/change-log.md`
+
+## [2026-10-22 18:25] - 規格書全域循序工程重構：01-10合理編號、分則明確杜絕重複、AGENTS規範落地
+
+- **改動原因**:
+  1. 解決規格書跨檔案內容重複冗贅（如 01 與 10/11 重複貼大表格、08 與 11 內容重疊）之缺陷，貫徹 SRP 與單一真實資料源。
+  2. 重構 `docs/system-design/` 目錄為循序漸進之 10 份標準檔案（願景 01 → 身分 02 → 選型 03 → 架構 04 → 流程 05 → API 06 → 資料庫 07 → 介面 08 → 資安 09 → 部署 10），確保人類與 Agent 在 3 分鐘內循序快速理解專案。
+  3. 將「規格書循序編排與敘述分則明確規範」永久寫入 `AGENTS.md` 全域協定中樞。
+- **具體內容**:
+  - 重組規格書檔案矩陣：建立 [`02-role-type.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/02-role-type.md)、升級 [`03-tech-stack.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/03-tech-stack.md)、將原 03 改為 [`04-architecture.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/04-architecture.md)、原 06 改為 [`05-flowcharts.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/05-flowcharts.md)、原 04 改為 [`06-specs-api.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/06-specs-api.md)、原 05 改為 [`07-specs-database.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md)、原 07 改為 [`08-ui-ux-standards.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/08-ui-ux-standards.md)、原 08+11 合併昇華為唯一權威 [`10-deployment.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-deployment.md)。
+  - 徹底清除重複之舊檔案（`08-devops.md`、`10-role-type.md`、`11-deployment.md`）。
+  - 更新 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) 4.2 節，強制所有專案落實此項規格書循序編排與分則明確工程準則。
+- **影響範圍**: `docs/system-design/*`, `AGENTS.md`, `docs/check-list.md`, `docs/change-log.md`
+
+## [2026-10-22 18:20] - 規格書真實性嚴格校準：移除未實作之編輯問卷功能、清除非規劃項目、RoleType表格符號純化與01-overview重構
+
+- **改動原因**:
+  1. 嚴格查核實體代碼，確認系統落實「發布後題目結構鎖定」原則，問卷管理介面與後端均無「二次修改已發布題目」之功能，將虛構之「編輯擁有問卷之內容」徹底自規格書移除。
+  2. 依最新指示，RoleType 權限表格僅收錄 100% 真實實作項目，徹底拿掉未規劃列；表格內符號純化為單純 `✅` 與 `❌`（旁邊不加文字），所有權限範圍與邊界集中於「業務功能項目」與「備註說明」釐清。
+  3. 全面重構 `01-overview.md`，條理分明梳理系統 6 大實體業務模組、雲端雙軌部署規格與權限矩陣。
+- **具體內容**:
+  - 重構 [`docs/system-design/01-overview.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/01-overview.md)：精準整理 6 大模組業務能力（設計工作台、運行器、專案管理、數據分析、身分認證、管理員後台），修正為純符號權限表格。
+  - 同步更新 [`docs/system-design/10-role-type.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-role-type.md)：對齊純符號 18 項真實功能權限打勾矩陣，移除未實作項。
+- **影響範圍**: `docs/system-design/01-overview.md`, `docs/system-design/10-role-type.md`, `docs/change-log.md`
+
+## [2026-10-22 18:15] - 深度架構淨化：最少實體檔案原則、環境變數OCP外部化、TiDB MySQL資料庫修正、設定檔全量註解與雙規格書建立
+
+- **改動原因**:
+  1. 徹底清除 `main.ts` 中可能引起混淆的 Bootstrap 註解字樣，嚴正落實「100% 純原生 SCSS/CSS，嚴格禁用外部樣式表」。
+  2. 前端質疑並刪除多餘檔案（刪除 `environments/` 目錄與 `auth.interceptor.ts`），改以純原生單一函式動態解析後端網址，達成極致最少實體檔案架構。
+  3. 後端發信 Email 與密碼徹底杜絕硬編碼，全量外部化為環境變數（實現 OCP）。
+  4. 糾正系統持久化資料庫為 **TiDB Cloud (Serverless) / MySQL 8.0 協定**，徹底肅清文檔中虛構之 PostgreSQL。
+  5. 依規範建立常駐規格書 `10-role-type.md` 與 `11-deployment.md`，並對所有尚未真正規劃或實施之項目明確標註「⚠️ 【尚未規劃】」，恪守零幻覺原則。
+  6. 全量設定檔（properties、Dockerfile、tsconfig、pom.xml、.dockerignore 等）補齊清晰臺灣繁體中文註解。
+  7. 全域中樞 `AGENTS.md` 深度升級，正式納入「最少實體檔案原則」、「全域環境變數 OCP」、「設定檔全量繁中註解必備」與「規格書真實性與尚未規劃標註」等工程底線。
+- **具體內容**:
+  - **前端檔案精簡與純原生動態網址**：在 [`api-client.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/api-client.service.ts) 內建 `resolveApiBaseUrl`，刪除 `frontend/src/environments/` 目錄及其下所有檔案；自 [`angular.json`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/angular.json) 移除 `fileReplacements`；刪除多餘的 `auth.interceptor.ts`。
+  - **樣式與 Bootstrap 徹底淨化**：更新 [`main.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/main.ts) Header 消除誤導字眼；於全站規格書聲明 100% 純原生 SCSS/CSS，嚴禁引用 Bootstrap、Tailwind 等任何外部樣式庫。
+  - **後端環境變數 OCP 徹底外部化**：在 [`application.properties`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/application.properties) 中將 `spring.mail.username`、`spring.mail.password`、`app.mail.from` 移除硬編碼，改為純環境變數注入；[`MailService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/MailService.java) 加入防禦性空值回退與控制台安全日誌。
+  - **資料庫真相校準**：修正 [`01-overview.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/01-overview.md)、[`02-tech-stack.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/02-tech-stack.md)、[`08-devops.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/08-devops.md) 與 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md)，將持久化資料庫正名為 TiDB Cloud (Serverless) / MySQL 8.0 協定。
+  - **規格書常駐擴展與零虛構落地**：
+    - 新增 [`docs/system-design/10-role-type.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-role-type.md)：完備定義 guest、member、admin 三大身分之 20 項細部權限對照打勾矩陣。
+    - 新增 [`docs/system-design/11-deployment.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-deployment.md)：完備定義 Cloudflare Pages + Render Web Service + TiDB Cloud 雙軌雲端架構、環境變數對照表與冷啟動保活探針。
+    - 凡未實作之監控/快取/多角色組，均明確標註「⚠️ 【尚未規劃】」。
+  - **設定檔全量註解補齊**：為 [`Dockerfile`](file:///Users/hsuche-cheng/Documents/project/survey-flow/Dockerfile)、[`frontend/tsconfig.json`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/tsconfig.json)、[`backend/pom.xml`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/pom.xml) 補齊詳細繁體中文 Header 與參數邊界說明。
+- **影響範圍**: `frontend/src/*`, `backend/src/*`, `docs/system-design/*`, `AGENTS.md`, `Dockerfile`, `pom.xml`, `tsconfig.json`
+
+## [2026-10-22 17:55] - 全面品質修復：問卷填答誤判排除、全題型與跳題DOM雙向同步、Dialog分行美化、真實回覆時間與系統設計規範升級
+
+- **改動原因**:
+  1. 受訪者填答時部分題型（radio/date/time）明明已填答卻遭判定為「未完成」，且條件跳題題目需嚴格確認隱藏豁免與展開必填。
+  2. 錯誤反饋對話框（Dialog）多條訊息緊黏在一起未分行，排版可讀性需提升。
+  3. 統計數據報表之「最新回覆」顯示為前端虛假時間，「報表產生」時間為 UTC ISO 格式，需轉為臺灣標準時間與真實資料庫紀錄。
+  4. 依最新指示重構 `01-overview.md`，拔除無關之賽博 HUD 描述，補齊 Deployment 部署平台說明與 RoleType 三身分（Guest/Member/Admin）功能權限比較打勾矩陣，並同步納入 `AGENTS.md`。
+- **具體內容**:
+  - **Dialog 分行排版與樣式優化**：在 [`dialog.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/dialog/dialog.component.ts) 與 [`dialog.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/dialog/dialog.component.scss) 中，將包含換行或條目的錯誤訊息結構化解析為獨立卡片條目區塊，邊距與行高分明，徹底告別訊息黏在一起的現象。
+  - **問卷填答判定與全題型雙向同步**：
+    - 更新 [`survey-runner.component.html`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.html)：移除 date/time 衝突之 `[value]` 屬性綁定，修復 radio/scale/tf input 之事件冒泡衝突。
+    - 更新 [`survey-runner.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.ts)：全面升級 `_syncDomValuesToForm` 與 `checkRunnerData`，在送出前主動掃描 DOM 原生選取狀態（radio、t/f、scale、multiRadio、date、time、text），只要用戶有作答或選中，保證 100% 同步進表單，絕對不誤判；條件跳題隱藏者自動豁免必填檢驗。
+  - **資料庫真實最新回覆時間與臺灣時間格式化**：
+    - 後端在 [`SurveyAnalyticsResponse.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/dto/analytics/SurveyAnalyticsResponse.java) 與 [`AnalyticsService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/AnalyticsService.java) 中計算真實最新回覆時間 `lastResponseAt`。
+    - 前端在 [`survey-analytics.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/survey-analytics.service.ts) 依臺灣標準時間格式化報表產生時間與最新回覆時間，無填答則明確顯示「尚無回覆」。
+    - 更新 [`user-emitter.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/user-emitter.service.ts)：確保量表與評分題之 `ratingValue` 與 `textAnswer` 雙向精準封裝入庫。
+  - **系統設計與全域協定升級**：
+    - 重構 [`docs/system-design/01-overview.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/01-overview.md)：條列專案業務定位與核心特點，拔除賽博 HUD 用詞，新增 Deployment 雲端部署平台架構與完整三身分（Guest / Member / Admin）權限比較打勾表格。
+    - 更新 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md)：正式將 RoleType 權限隔離架構與 Deployment 雙軌雲端部署準則寫入全域協定規範。
+- **影響範圍**: `frontend/src/app/components/dialog/*`, `frontend/src/app/components/main/survey-runner/*`, `frontend/src/app/@services/*`, `backend/src/main/java/com/surveyflow/*`, `docs/system-design/01-overview.md`, `AGENTS.md`, `docs/change-log.md`
+
+
 
 - **改動原因**: 防止 Render 免費 Web Service 容器在 15 分鐘無流量時自動休眠，消除 30~50 秒冷啟動（Cold Start）延遲
 - **具體內容**:

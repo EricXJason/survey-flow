@@ -298,6 +298,27 @@ export class SurveyAnalyticsService {
               }
             }
 
+            // 臺灣時間格式化工具 (YYYY/MM/DD HH:mm:ss)
+            const formatTaiwanDate = (target: Date = new Date()): string => {
+              const y = target.getFullYear();
+              const m = String(target.getMonth() + 1).padStart(2, '0');
+              const day = String(target.getDate()).padStart(2, '0');
+              const h = String(target.getHours()).padStart(2, '0');
+              const min = String(target.getMinutes()).padStart(2, '0');
+              const s = String(target.getSeconds()).padStart(2, '0');
+              return `${y}/${m}/${day} ${h}:${min}:${s}`;
+            };
+
+            // 最新回覆時間：真實取自後端資料庫最新作答紀錄；若尚無任何作答則顯示「尚無回覆」
+            let realLastResponse = '尚無回覆';
+            if (d.lastResponseAt) {
+              realLastResponse = d.lastResponseAt.includes('T')
+                ? formatTaiwanDate(new Date(d.lastResponseAt))
+                : d.lastResponseAt;
+            } else if ((kpi.totalResponses || 0) > 0) {
+              realLastResponse = '已回收作答';
+            }
+
             const report: SurveyAnalyticsReport = {
               surveyId: String(d.surveyId),
               surveyTitle: d.surveyTitle,
@@ -307,11 +328,11 @@ export class SurveyAnalyticsService {
               isPublished: d.isPublicToLobby ?? true,
               startDate: d.startDate || undefined,
               endDate: d.endDate || undefined,
-              generatedAt: new Date().toISOString(),
+              generatedAt: formatTaiwanDate(new Date()),
               totalResponses: kpi.totalResponses || 0,
               completionRate: kpi.completionRate || 100,
               averageDurationMinutes: avgMinutes,
-              lastResponseAt: new Date().toLocaleTimeString('zh-TW'),
+              lastResponseAt: realLastResponse,
               last24hCount: kpi.todayResponses || 0,
               npsScore: kpi.netPromoterScore || 65,
               timeline,

@@ -1,9 +1,9 @@
 /**
  * ============================================================================
  * 檔案名稱: main.ts
- * 所屬模組: 應用程式啟動入口模組 (Bootstrap Module)
- * 責任描述: 負責 Angular 單頁應用程式 (SPA) 的根啟動流程，引導 AppComponent 並載入全域配置。
- * 架構分層: Application Root / Bootstrap Layer
+ * 所屬模組: 應用程式啟動入口模組 (Application Entry Module)
+ * 責任描述: 負責 Angular 單頁應用程式 (SPA) 的根啟動流程，透過 Angular 原生 bootstrapApplication 函式載入 AppComponent 與全域配置。本專案嚴格禁用 Bootstrap UI 框架，100% 採用純原生 SCSS。
+ * 架構分層: Application Root / Entry Layer
  * 聯動關係:
  *   - 上游依賴: ./app/app.config (全域應用設定檔), ./app/app.component (根組件)
  *   - 下游消費: 瀏覽器執行環境 (Browser Runtime)

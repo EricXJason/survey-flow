@@ -1,8 +1,9 @@
-# 02. 技術選型矩陣與版本理由 (Technology Stack & Decisions)
+# 03. 技術選型矩陣與版本理由 (Technology Stack & Decisions)
 
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
-> **系統環境**: Node.js 24.18.0, TypeScript 5.6.2, Angular 19.0.0, Java 21.0.12, Spring Boot 4.1.1, MySQL 8.0.36  
-> **更新日期**: 2026-10-15  
+> **系統環境**: Node.js 24.18.0, TypeScript 5.6.2, Angular 19.0.0, Java 21.0.12, Spring Boot 4.1.1, MySQL 8.0.36 協定 (TiDB)  
+> **更新日期**: 2026-10-22  
+> **文檔定位**: 專案全域技術選型與架構決策紀錄 (ADR)。接續身分權限，闡述支撐系統運作之軟體工程技術棧。
 
 ---
 
@@ -15,11 +16,11 @@
 | **狀態管理機制** | Angular Signals & RxJS | Signals + `7.8.0` | 區域與共享狀態採用 Signals 原生追蹤，複雜事件串流與非同步彈窗交互採用 RxJS Observable，兼顧效能與開發彈性。 |
 | **UI 元件與佈局庫** | Angular Material & CDK | `19.2.19` | 採用 Material Table、Paginator、Sort 提供具備在地化語言支援的後台資料表；導入 `@angular/cdk/drag-drop` 實現問卷題型流暢拖曳排序。 |
 | **表單核心驅動** | Angular Reactive Forms | `19.0.0` | 支援高階動態 FormArray 與 FormGroup 巢狀陣列動態擴充，精準監聽 valueChanges 達成條件跳題與即時防呆。 |
-| **樣式與設計系統** | SCSS + CSS 自訂變數 | 原生 SCSS | 導入模組化 SCSS 體系 (`common.scss`, `variables.scss`, `styles.scss`)，建立去 AI 化頂級設計系統與 Editorial Typography。 |
+| **樣式與設計系統** | SCSS + CSS 自訂變數 | 純原生 SCSS | 導入純原生 SCSS 體系 (`common.scss`, `variables.scss`, `styles.scss`)，100% 純原生 SCSS/CSS，嚴格禁用 Bootstrap, Tailwind 等任何外部樣式庫與外部樣式表。 |
 | **建置與打包工具** | Angular CLI (Vite + esbuild) | `19.0.5` | 底層基於 esbuild 與 Vite 核心，提供極速熱重載 (HMR) 與體積高度壓縮之現代化 Bundle 產物。 |
 | **套件管理器** | pnpm / npm | `Node.js 24.18.0` | 支援高相容性依賴鎖定與現代化套件隔離機制。 |
 | **後端核心框架** | Java / Spring Boot | `Java 21.0.12` / `Spring Boot 4.1.1` | 業界標準企業級後端，提供高併發處理能力、靜態型別安全、Spring Security 嚴密權限防護與 Spring Data JPA 交易隔離。 |
-| **持久化關聯資料庫** | MySQL | `8.0.36` | 業界主流 ACID 關聯式資料庫，具備優異的二級索引查詢、聚合作答統計效能 (COUNT, AVG, GROUP BY) 與外鍵完整性約束。 |
+| **持久化關聯資料庫** | TiDB Cloud / MySQL | `MySQL 8.0.36 協定` | 業界主流 ACID 分散式關聯資料庫，具備優異的二級索引查詢、聚合作答統計效能 (COUNT, AVG, GROUP BY) 與外鍵完整性約束。 |
 
 ---
 
@@ -27,7 +28,7 @@
 
 ### ADR-01: 全面採用 Standalone Components 與 Signals
 - **決策背景**: 傳統 Angular 採用 NgModule 造成模組間依賴難以拆分與樹搖 (Tree-shaking) 不完全。
-- **解決方案**: 專案所有 18 個組件 100% 採用 `standalone: true`，狀態採用 `signal()` 與 `computed()`，大幅降低記憶體開銷並消除不必要的全域變更檢測 (Change Detection Cycle)。
+- **解決方案**: 專案所有組件 100% 採用 `standalone: true`，狀態採用 `signal()` 與 `computed()`，大幅降低記憶體開銷並消除不必要的全域變更檢測 (Change Detection Cycle)。
 
 ### ADR-02: 雙軌狀態儲存 (In-Memory + SessionStorage)
 - **決策背景**: SPA 頁面重新整理 (F5) 容易遺失當前登入者身分與工作區脈絡。
@@ -37,10 +38,10 @@
 - **決策背景**: 若以陣列索引 (Index) 綁定題目跳題解鎖，使用者執行「拖曳重新排序」或刪除題目時，會導致跳題目標錯位失聯。
 - **解決方案**: 題目與選項解鎖目標全面採用 `crypto.randomUUID()` 唯一字串綁定，無論順序如何調動，邏輯依賴永遠精準指向目標題型。
 
-### ADR-04: 嚴禁 Bootstrap，貫徹純原生 CSS / SCSS 模組化設計
-- **決策背景**: Bootstrap 包含大量冗餘樣式、全域類別污染且難以達成客製化的深色 HUD 霓虹高科技風格。
-- **解決方案**: 專案 100% 排除 Bootstrap 依賴，採用原生 SCSS 變數體系 (`variables.scss`) 與流動網格，保證元件樣式完全自主可控且達到極致效能。
+### ADR-04: 嚴禁 Bootstrap 與外部樣式庫，貫徹 100% 純原生 CSS / SCSS
+- **決策背景**: 外部樣式表（如 Bootstrap、Tailwind）容易帶來冗餘樣式、全域類別污染且不利於精準把控品牌調性。
+- **解決方案**: 專案 100% 排除 Bootstrap 與任何外部樣式表，採用純原生 SCSS 變數體系 (`variables.scss`) 與流動網格，保證元件樣式完全自主可控且達到極致效能。
 
-### ADR-05: 面向 Java Spring Boot + MySQL 之全端 RESTful 數據分析架構
+### ADR-05: 面向 Java Spring Boot + TiDB MySQL 之全端 RESTful 數據分析架構
 - **決策背景**: 前端數據分析必須無縫切換至生產環境後端服務，不可造成重構成本。
-- **解決方案**: 前端 DTO 與 API 介面規格嚴格對齊 Spring Boot REST Controller 與 MySQL Schema，提供統一的 `ApiResponse<T>` 封裝，實現平滑無痛接軌。
+- **解決方案**: 前端 DTO 與 API 介面規格嚴格對齊 Spring Boot REST Controller 與 TiDB MySQL Schema，提供統一的 `ApiResponse<T>` 封裝，實現平滑無痛接軌。

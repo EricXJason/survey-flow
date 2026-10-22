@@ -78,6 +78,14 @@ public class AnalyticsService {
         // 4. 各題型詳細數據分析
         List<QuestionStatDto> questionStats = calculateQuestionStats(survey, totalResponses);
 
+        // 5. 計算資料庫真實最新回覆時間 (以臺灣標準時間格式化，若尚無作答回覆則為 null)
+        String lastResponseAt = submissions.stream()
+                .map(Submission::getSubmittedAt)
+                .filter(Objects::nonNull)
+                .max(Comparator.naturalOrder())
+                .map(dt -> dt.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")))
+                .orElse(null);
+
         return SurveyAnalyticsResponse.builder()
                 .surveyId(survey.getId())
                 .surveyTitle(survey.getTitle())
@@ -88,6 +96,7 @@ public class AnalyticsService {
                 .startDate(survey.getStartDate() != null ? survey.getStartDate().toLocalDate().toString() : null)
                 .endDate(survey.getEndDate() != null ? survey.getEndDate().toLocalDate().toString() : null)
                 .kpi(kpi)
+                .lastResponseAt(lastResponseAt)
                 .trends(trends)
                 .demographics(demographics)
                 .questionStats(questionStats)

@@ -82,4 +82,29 @@ export class DialogComponent {
       '了解'
     );
   }
+
+  /**
+   * 格式化對話框內文訊息，確保每個錯誤或提示項目獨立分行，徹底避免黏在同一行
+   * 若字串包含換行符或圓點項目 (• / · / -)，結構化轉譯為帶有清晰間距的區塊條目
+   * @param message 原始對話框內文字串
+   * @returns 轉換後之結構化 HTML 字串
+   */
+  protected formatMessage(message?: string): string {
+    if (!message) return '';
+
+    // 若訊息包含換行符或條目符號，拆分為清單呈現
+    const lines = message.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+    if (lines.length > 1 || lines.some((l) => l.startsWith('•') || l.startsWith('·') || l.startsWith('-'))) {
+      const itemsHtml = lines
+        .map((line) => {
+          // 清除開頭的小圓點或破折號，以統一之結構化樣式呈現
+          const cleanText = line.replace(/^[•·\-\*]\s*/, '');
+          return `<div class="dialog-msg-item"><span class="msg-bullet">•</span><span class="msg-content">${cleanText}</span></div>`;
+        })
+        .join('');
+      return `<div class="dialog-msg-list">${itemsHtml}</div>`;
+    }
+
+    return `<div class="dialog-msg-single">${message.replace(/\n/g, '<br>')}</div>`;
+  }
 }
