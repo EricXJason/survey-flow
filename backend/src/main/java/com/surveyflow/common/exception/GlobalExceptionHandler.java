@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * 檔案名稱: GlobalExceptionHandler.java
- * 所屬模組: Common 核心例外處置模組
+ * 所屬模組: Common 核心例外處置模組 (Exception)
  * 責任描述: 全域攔截 Spring MVC 拋出之商業邏輯、資料庫校驗與安全例外，統一封裝為繁體中文 ApiResponse 回傳
  * 架構分層: Presentation / Exception Layer
  * 聯動關係:
@@ -11,8 +11,9 @@
  * ============================================================================
  */
 
-package com.surveyflow.common;
+package com.surveyflow.common.exception;
 
+import com.surveyflow.common.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

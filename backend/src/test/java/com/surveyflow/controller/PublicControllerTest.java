@@ -14,7 +14,7 @@ package com.surveyflow.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.surveyflow.common.GlobalExceptionHandler;
+import com.surveyflow.common.exception.GlobalExceptionHandler;
 import com.surveyflow.dto.auth.LoginRequest;
 import com.surveyflow.dto.submission.SubmissionRequest;
 import com.surveyflow.dto.submission.SubmissionResponse;

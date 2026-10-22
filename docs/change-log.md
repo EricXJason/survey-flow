@@ -2,6 +2,37 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-23 00:43] - 資料庫種子 DML 深度校正：全面落實 TINYINT 性別數值化，徹底修復 TiDB 嚴格模式執行報錯
+
+- **改動原因**:
+  - 排查並解決使用者於 TiDB Cloud SQL Editor 執行 [`data.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/data.sql) 遭遇之 `Query Failed. Incorrect ? value: '?' for column 'gender' at row 1` 錯誤。
+  - 原因為 TiDB Cloud / MySQL 8.0 處於 SQL 嚴格模式下，`submission_basic_infos.gender` 欄位型別為 `TINYINT UNSIGNED`，若傳入中文字串 `'其他'`（及其他中文字串）會被資料庫視為型別不符直接拒絕。
+- **具體內容**:
+  - **數值代碼徹底對齊**：對照系統標準 [`GenderConverter.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/common/converter/GenderConverter.java) 定義之枚舉轉換規範：
+    - `0`: 未指定 (UNSPECIFIED)
+    - `1`: 男性 (MALE)
+    - `2`: 女性 (FEMALE)
+    - `3`: 其他 (OTHER)
+  - **全面替換修正**：將 [`data.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/data.sql) 中殘留之 `'其他'`（行 200, 286, 769）全數修正為整數值 `3`。
+  - **全量檢驗通過**：使用正則全域掃描全檔 580 筆問卷填答基礎資訊，確認所有 `gender` 欄位已 100% 為整數或 NULL，零文字殘留。
+- **影響範圍**:
+  - `backend/src/main/resources/database/data.sql`, `docs/change-log.md`
+
+
+## [2026-10-23 00:39] - 後端架構模組化收納：建立 exception 專屬 Package、類別歸位與架構整潔化
+
+- **改動原因**:
+  - 排查並落實使用者代碼整潔與結構管理要求：將散落於 `com.surveyflow.common` 根層級之例外處置類別收納入專屬 `com.surveyflow.common.exception` package，提升模組內聚力與代碼可讀性。
+- **具體內容**:
+  - **建立專屬 Package**：建立 [`com.surveyflow.common.exception`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/common/exception/) 套件。
+  - **類別歸位遷移**：
+    - 將 [`GlobalExceptionHandler.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/common/exception/GlobalExceptionHandler.java) 遷移至 `common.exception`，維持全域異常攔截。
+    - 將 [`AccountNotVerifiedException.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/common/exception/AccountNotVerifiedException.java) 遷移至 `common.exception`。
+  - **引用更新**：同步更新 `AuthService.java` 及全套 Controller 測試中之 import 路徑。
+  - **測試驗證**：後端 28/28 單元與整合測試 100% 通過（BUILD SUCCESS）。
+- **影響範圍**:
+  - `backend/src/main/java/com/surveyflow/common/exception/`, `AuthService.java`, Controller 測試套件, `04-architecture.md`, `docs/change-log.md`
+
 ## [2026-10-23 00:35] - 全域協定核心指令「代碼最佳化」正式入庫、專案作者標記唯一規範（僅 README 允許）與全庫標籤淨化
 
 - **改動原因**:

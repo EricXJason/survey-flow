@@ -13,7 +13,7 @@
 
 package com.surveyflow.service;
 
-import com.surveyflow.common.AccountNotVerifiedException;
+import com.surveyflow.common.exception.AccountNotVerifiedException;
 import com.surveyflow.common.enums.RoleType;
 import com.surveyflow.dto.auth.*;
 import com.surveyflow.entity.User;

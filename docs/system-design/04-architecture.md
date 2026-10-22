@@ -190,7 +190,8 @@ flowchart LR
 | `TokenProvider.java` | JJWT 工具類，負責金鑰簽名、單一 Token 生成、時效校驗與 Claims 解析。 |
 | `CustomUserDetailsService.java` | 實作 Spring Security 之 `UserDetailsService`，自 MySQL 載入會員權限物件。 |
 | `ApiResponse.java` | 全域統一之 RESTful JSON 回應封裝物件（含 status, success, message, data）。 |
-| `GlobalExceptionHandler.java` | 全域異常處理器，攔截參數驗證錯誤 (400)、未授權 (401/403) 與系統例外 (500)。 |
+| `exception/GlobalExceptionHandler.java` | 全域異常處理器，收納於專屬 exception package，統一攔截參數驗證錯誤 (400)、未授權 (401/403) 與系統例外 (500)。 |
+| `exception/AccountNotVerifiedException.java` | 帳號尚未完成信箱開通之專屬業務異常，攜帶目標信箱資訊。 |
 | `enums/RoleType.java` | 定義會員身分角色枚舉（`ROLE_GUEST`, `ROLE_USER`, `ROLE_ADMIN`）。 |
 | `enums/QuestionType.java` | 定義問卷 7 大型態枚舉（`SINGLE`, `MULTI`, `RATING`, `TEXT`, `BOOLEAN`, `TIME`, `DATE`）。 |
 

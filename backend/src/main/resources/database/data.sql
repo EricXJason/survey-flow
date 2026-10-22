@@ -197,7 +197,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (2, 1, '192.168.1.11', 5, '2026-10-10 16:45:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (2, 2, '訪客', '其他', '18-24歲', '0900000000', 'test@test.com', '學生', NULL);
+VALUES (2, 2, '訪客', 3, '18-24歲', '0900000000', 'test@test.com', '學生', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (12, 2, 1, 2, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (13, 2, 2, 5, NULL, NULL);
@@ -283,7 +283,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (7, 1, '192.168.1.16', 6, '2026-10-13 13:10:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (7, 7, 'asdf', '其他', '18-24歲', '0911111111', 'fake@mail.com', '待業中', NULL);
+VALUES (7, 7, 'asdf', 3, '18-24歲', '0911111111', 'fake@mail.com', '待業中', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (61, 7, 1, 2, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (62, 7, 2, 5, NULL, NULL);
@@ -766,7 +766,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (22, 3, '192.168.1.11', 8, '2026-10-10 16:45:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (22, 22, '路人', '其他', NULL, NULL, 'no@mail.com', NULL, NULL, '中國文學系', '中三乙', '12345678');
+VALUES (22, 22, '路人', 3, NULL, NULL, 'no@mail.com', NULL, NULL, '中國文學系', '中三乙', '12345678');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (220, 22, 21, 35, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (221, 22, 22, 37, NULL, NULL);

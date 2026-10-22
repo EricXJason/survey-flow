@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-package com.surveyflow.common;
+package com.surveyflow.common.exception;
 
 import lombok.Getter;
 
