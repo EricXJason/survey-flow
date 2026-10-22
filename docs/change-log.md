@@ -3,6 +3,16 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 13:30] - 架構重構：容器化建置收斂至單一根目錄 Dockerfile (落實 SSOT)
+
+- **改動原因**: 避免專案存在多份 Dockerfile 違反單一真實來源 (SSOT) 原則，並徹底解決 Render 等雲端 PaaS 平台在多模組專案中建置上下文 (Build Context) 解析偏差之問題
+- **具體內容**:
+  - 專案根目錄建立生產級 [`Dockerfile`](file:///Users/hsuche-cheng/Documents/project/survey-flow/Dockerfile)：支援 Eclipse Temurin 21 Alpine 多階段構建與全域路徑相容
+  - 徹底移除舊版 `backend/Dockerfile`，達成全專案僅有唯一合法 Docker 容器描述檔
+  - 更新 [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md)：同步技術棧至 TiDB Cloud、Render、Cloudflare Pages 與零信任雙權杖規格
+  - 透過 Git 分支閉環管線（feature ➔ development ➔ master）安全推送至遠端倉庫
+- **影響範圍**: `Dockerfile`, `backend/Dockerfile`, `README.md`, `backend/src/main/resources/application.properties`
+
 ## [2026-10-22 12:46] - 核心修復：資料庫初始數據腳本 (data.sql) 缺失 INSERT INTO 語句修復
 
 - **改動原因**: 使用者在 TiDB Cloud SQL Editor 執行 `data.sql` 時，第 304 號查詢報錯 `Parsing sql failed near '(21, 3, 'Q1', 'BOOLEAN'...'`，經排查為問卷三與問卷四第一道題目前漏寫 `INSERT INTO survey_questions`
