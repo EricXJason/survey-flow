@@ -3,6 +3,15 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 21:26] - 生產規格書 Mermaid ERD 語法修復與發布對齊
+
+- **改動原因**:
+  - 排查 GitHub 渲染 `README.md` 時因非標準 Mermaid 鍵值修飾詞 `UK_FK` 導致的富文本渲染失敗（`Parse error on line 57: Expecting 'ATTRIBUTE_WORD', '?', got 'COMMENT'`）。
+- **具體內容**:
+  - 修正 [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md) 與 [`docs/system-design/07-specs-database.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md) 中 `SURVEY_BASIC_INFO_CONFIGS` 與 `SUBMISSION_BASIC_INFOS` 的關聯欄位修飾鍵，將非標準之 `UK_FK` 統一改為 Mermaid 標準 `FK` 語法，確保 GitHub Rich Display 100% 正常渲染。
+- **影響範圍**:
+  - `README.md`, `docs/system-design/07-specs-database.md`, `docs/change-log.md`
+
 ## [2026-10-22 21:18] - 架構規範與核心工程大重構：資料庫 9 大實體資料表規格重繪、多分支 Switch 規範、前端 TS 零色票與題型統一視覺、ModelMapper 整合與後端全套單元測試擴充
 
 - **改動原因**:

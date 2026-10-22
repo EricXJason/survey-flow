@@ -151,7 +151,7 @@ erDiagram
 
     SURVEY_BASIC_INFO_CONFIGS {
         bigint id PK "設定流水號"
-        bigint survey_id UK_FK "關聯問卷編號"
+        bigint survey_id FK "關聯問卷編號"
         boolean collect_basic_info "是否啟用受訪者資料收集"
         boolean require_name "是否收集姓名"
         boolean require_gender "是否收集生理性別"
@@ -207,7 +207,7 @@ erDiagram
 
     SUBMISSION_BASIC_INFOS {
         bigint id PK "基本輪廓流水號"
-        bigint submission_id UK_FK "關聯填答主紀錄"
+        bigint submission_id FK "關聯填答主紀錄"
         varchar name "填報姓名(50)"
         varchar gender "性別(10)"
         varchar age_group "年齡級距(30)"
