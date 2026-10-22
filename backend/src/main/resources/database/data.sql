@@ -637,6 +637,7 @@ INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (205, 20, 19, NULL, '2026-10-12', NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (206, 20, 20, NULL, 'LINE Pay 點數折抵很方便，希望雙十一全館免運門檻能再調降一點。', NULL);
 
+INSERT INTO `survey_questions` (`id`, `survey_id`, `question_code`, `type`, `question_text`, `image_url`, `is_required`, `sort_order`, `min_rating`, `max_rating`, `created_at`, `updated_at`)
 VALUES (21, 3, 'Q1', 'BOOLEAN', '您在進行文獻檢索、數據統計或論文草稿撰寫時，是否已常態使用大型語言模型？', 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80', 1, 1, NULL, NULL, NOW(), NOW());
 
 
@@ -926,6 +927,7 @@ INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (311, 30, 29, NULL, '2026-12-10', NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (312, 30, 30, NULL, '建議教育部統一訂定 Prompt 揭露範本與引用標準，讓各系所有法可依。', NULL);
 
+INSERT INTO `survey_questions` (`id`, `survey_id`, `question_code`, `type`, `question_text`, `image_url`, `is_required`, `sort_order`, `min_rating`, `max_rating`, `created_at`, `updated_at`)
 VALUES (31, 4, 'Q1', 'BOOLEAN', '您在本次封測期間，是否已實際透過專屬分享連結在行動裝置完成過填答？', NULL, 1, 1, NULL, NULL, NOW(), NOW());
 
 

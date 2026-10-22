@@ -3,6 +3,16 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 12:46] - 核心修復：資料庫初始數據腳本 (data.sql) 缺失 INSERT INTO 語句修復
+
+- **改動原因**: 使用者在 TiDB Cloud SQL Editor 執行 `data.sql` 時，第 304 號查詢報錯 `Parsing sql failed near '(21, 3, 'Q1', 'BOOLEAN'...'`，經排查為問卷三與問卷四第一道題目前漏寫 `INSERT INTO survey_questions`
+- **具體內容**:
+  - `backend/src/main/resources/database/data.sql`:
+    - 於問卷三 Q21（第 640 行）前補齊 `INSERT INTO survey_questions (id, survey_id, question_code, type, question_text, image_url, is_required, sort_order, min_rating, max_rating, created_at, updated_at)`
+    - 於問卷四 Q31（第 930 行）前補齊 `INSERT INTO survey_questions (id, survey_id, question_code, type, question_text, image_url, is_required, sort_order, min_rating, max_rating, created_at, updated_at)`
+  - 全量語法校驗：594 條 SQL 語句 100% 通過語法結構校驗，無任何語法孤立錯誤
+- **影響範圍**: `backend/src/main/resources/database/data.sql`
+
 ## [2026-10-22 12:25] - 核心修復：圖片傳輸容量突破 (50MB) 與前端畫布智慧壓縮管線
 
 - **改動原因**: 徹底解決使用者反饋之圖片上傳潛在破口（Tomcat 預設 2MB 上限導致手機高畫質相片 Base64 傳輸中斷、編輯模式遺失封面圖片更新）
