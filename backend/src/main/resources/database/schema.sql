@@ -197,18 +197,4 @@ CREATE TABLE `submission_answers` (
     CONSTRAINT `fk_answers_option` FOREIGN KEY (`option_id`) REFERENCES `survey_options` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='受訪者各題詳細作答答案表';
 
--- 11. 初始化系統最高管理員預設帳號 (admin / 密碼: Admin123!)
-INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `full_name`, `phone`, `identity_card`, `role`, `status`, `created_at`, `updated_at`)
-VALUES (
-    1,
-    'admin',
-    'admin@surveyflow.com',
-    '$argon2id$v=19$m=4096,t=3,p=1$4u8prALaBK1aC7DVJVg/+g$YoCtbfr0dHvdLvrlYsJ1BHw04HpeH0KTdb50iK3RAQA',
-    '系統最高管理員',
-    '0912345678',
-    'A123456789',
-    'ROLE_ADMIN',
-    'ACTIVE',
-    NOW(),
-    NOW()
-);
+

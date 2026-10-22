@@ -137,7 +137,6 @@ flowchart LR
 | `backend/pom.xml` | 配置檔 | Maven 專案建置檔，宣告 Java 21、Spring Boot 4.1.1、JJWT 0.12.6 與 MySQL 依賴。 | Maven 建置管線 |
 | `backend/src/main/resources/application.properties` | 配置檔 | 系統主設定檔，定義 MySQL 連線池、Argon2id 參數、JWT 密鑰與 SQL 日誌層級。 | Spring Boot 容器 |
 | `com/surveyflow/SurveyFlowApplication.java` | 進入點 | Spring Boot 啟動類別，標註 `@SpringBootApplication` 與 `@EnableJpaAuditing`。 | JVM 啟動進入點 |
-| `com/surveyflow/config/UserCredentialSynchronizer.java` | 初始化 | 啟動時自動同步 `application.properties` 帳密至 MySQL，並校正字元集防亂碼。 | 帳號安全初始化 |
 
 ### 4.2 REST 控制器層 (`com.surveyflow.controller/`)
 

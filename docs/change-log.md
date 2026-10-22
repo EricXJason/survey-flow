@@ -3,6 +3,20 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-23 00:30] - Clean Code & KISS 深度落實：schema.sql 純淨 100% DDL、種子 DML 權責分離與刪除 UserCredentialSynchronizer
+
+- **改動原因**:
+  - 排查並落實使用者對架構職責分工與過度工程之審查要求：
+    1. `schema.sql` 職責必須純粹為 DDL，嚴禁混入 `INSERT INTO users`，所有種子資料（包含 admin 與 testuser）100% 集中於 `data.sql`（SSOT 原則）。
+    2. 評估並移除 [`UserCredentialSynchronizer.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/config/UserCredentialSynchronizer.java)：該類別於啟動期覆寫資料庫帳密，破壞會員「修改密碼」之業務狀態，且增加不必要的 Argon2id 冷啟動運算延遲，屬典型之 YAGNI 違反與過度工程反模式。
+- **具體內容**:
+  - **DDL 純淨化**：自 [`backend/src/main/resources/database/schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql) 徹底移除 `INSERT INTO users`，維持 100% 純結構定義。
+  - **刪除上帝同步器**：刪除 `UserCredentialSynchronizer.java`，並自 `application.properties` 清理已無作用之 `app.security.admin` 帳密配置。
+  - **架構手冊同步**：自 [`docs/system-design/04-architecture.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/04-architecture.md) 移除該檔案說明。
+  - **測試驗證**：後端 28/28 單元與整合測試 100% BUILD SUCCESS。
+- **影響範圍**:
+  - `backend/src/main/resources/database/schema.sql`, `backend/src/main/java/com/surveyflow/config/`, `application.properties`, `04-architecture.md`, `docs/change-log.md`
+
 ## [2026-10-23 00:23] - 資料庫 Schema 極致防呆與純粹最終版：整庫刪建 (DROP DATABASE) 徹底消滅 1051/1007 Warning
 
 - **改動原因**:
