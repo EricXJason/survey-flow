@@ -3,6 +3,16 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 13:36] - CI/CD 核心修復：解除 Maven Wrapper 忽略限制與前端 Lockfile 同步
+
+- **改動原因**: GitHub Actions CI 管線與雲端 Docker 容器在構建時回報缺少 `mvnw` 與前端 lockfile 不同步錯誤
+- **具體內容**:
+  - 修復 [`.gitignore`](file:///Users/hsuche-cheng/Documents/project/survey-flow/.gitignore)：取消對 `backend/mvnw` 與 `backend/.mvn/wrapper/` 的忽略，正式將 Maven Wrapper 納入版本控制，確保雲端無預先安裝 Maven 環境下亦可自主執行
+  - 同步前端依賴樹：執行 `npm i --package-lock-only` 同步 `package-lock.json` 與 `@angular/material` 鎖定版本
+  - CI 管線增強：於 [`.github/workflows/ci.yml`](file:///Users/hsuche-cheng/Documents/project/survey-flow/.github/workflows/ci.yml) 前端安裝步驟配置 `npm ci || npm install` 雙軌容錯
+  - 成果全量同步推送至 `feature`、`development` 與 `master` 分支
+- **影響範圍**: `.gitignore`, `.github/workflows/ci.yml`, `backend/mvnw`, `backend/.mvn/wrapper/maven-wrapper.jar`, `frontend/package-lock.json`
+
 ## [2026-10-22 13:30] - 架構重構：容器化建置收斂至單一根目錄 Dockerfile (落實 SSOT)
 
 - **改動原因**: 避免專案存在多份 Dockerfile 違反單一真實來源 (SSOT) 原則，並徹底解決 Render 等雲端 PaaS 平台在多模組專案中建置上下文 (Build Context) 解析偏差之問題
