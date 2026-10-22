@@ -179,7 +179,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (1, 1, '192.168.1.10', 145, '2026-10-10 14:20:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (1, 1, '陳建宇', '男', '25-34歲', '0911222333', 'jy.chen@example.com', '資訊科技業', NULL);
+VALUES (1, 1, '陳建宇', 1,  '25-34歲', '0911222333', 'jy.chen@example.com', '資訊科技業', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (1, 1, 1, 1, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (2, 1, 2, 3, NULL, NULL);
@@ -215,7 +215,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (3, 1, '192.168.1.12', 8, '2026-10-11 10:15:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (3, 3, '路人甲', '男', '25-34歲', '0987654321', NULL, '自由業', NULL);
+VALUES (3, 3, '路人甲', 1,  '25-34歲', '0987654321', NULL, '自由業', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (22, 3, 1, 1, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (23, 3, 2, 4, NULL, NULL);
@@ -232,7 +232,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (4, 1, '192.168.1.13', 190, '2026-10-11 11:05:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (4, 4, '林雅婷', '女', '35-44歲', '0922333444', 'yt.lin@example.com', '金融保險業', NULL);
+VALUES (4, 4, '林雅婷', 2,  '35-44歲', '0922333444', 'yt.lin@example.com', '金融保險業', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (33, 4, 1, 1, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (34, 4, 2, 3, NULL, NULL);
@@ -250,7 +250,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (5, 1, '192.168.1.14', 35, '2026-10-12 09:30:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (5, 5, '阿明', '男', '25-34歲', '0912345678', 'none@example.com', '餐飲業', NULL);
+VALUES (5, 5, '阿明', 1,  '25-34歲', '0912345678', 'none@example.com', '餐飲業', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (43, 5, 1, 2, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (44, 5, 2, 5, NULL, NULL);
@@ -301,7 +301,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (8, 1, '192.168.1.17', 75, '2026-10-13 16:22:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (8, 8, '使用者', '女', '35-44歲', '0933999888', 'user@gmail.com', '專業服務業', NULL);
+VALUES (8, 8, '使用者', 2,  '35-44歲', '0933999888', 'user@gmail.com', '專業服務業', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (70, 8, 1, 1, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (71, 8, 2, 3, NULL, NULL);
@@ -319,7 +319,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (9, 1, '192.168.1.18', 60, '2026-10-13 18:05:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (9, 9, '小王', '男', '25-34歲', '0944555666', NULL, '電子科技業', NULL);
+VALUES (9, 9, '小王', 1,  '25-34歲', '0944555666', NULL, '電子科技業', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (80, 9, 1, 1, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (81, 9, 2, 4, NULL, NULL);
@@ -336,7 +336,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (10, 1, '192.168.1.19', 110, '2026-10-13 20:45:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`)
-VALUES (10, 10, '張小姐', '女', '45歲以上', '0955666777', 'ms.chang@example.com', '製造業', NULL);
+VALUES (10, 10, '張小姐', 2,  '45歲以上', '0955666777', 'ms.chang@example.com', '製造業', NULL);
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (96, 10, 1, 2, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (97, 10, 2, 4, NULL, NULL);
@@ -750,7 +750,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (21, 3, '192.168.1.10', 6, '2026-10-10 14:20:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (21, 21, '小明', '男', NULL, NULL, 'test@gmail.com', NULL, NULL, '企業管理學系', '企二甲', 'B11001001');
+VALUES (21, 21, '小明', 1,  NULL, NULL, 'test@gmail.com', NULL, NULL, '企業管理學系', '企二甲', 'B11001001');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (211, 21, 21, 34, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (212, 21, 22, 37, NULL, NULL);
@@ -784,7 +784,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (23, 3, '192.168.1.12', 180, '2026-10-11 10:15:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (23, 23, '林宏達', '男', NULL, NULL, 'hd.lin@cs.edu.tw', NULL, NULL, '資訊工程學系', '碩一', 'R11292045');
+VALUES (23, 23, '林宏達', 1,  NULL, NULL, 'hd.lin@cs.edu.tw', NULL, NULL, '資訊工程學系', '碩一', 'R11292045');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (229, 23, 21, 34, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (230, 23, 22, 36, NULL, NULL);
@@ -803,7 +803,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (24, 3, '192.168.1.13', 5, '2026-10-11 11:05:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (24, 24, 'asdf', '男', NULL, NULL, 'asdf@asdf.com', NULL, NULL, '電機工程學系', '電四丙', 'B10901234');
+VALUES (24, 24, 'asdf', 1,  NULL, NULL, 'asdf@asdf.com', NULL, NULL, '電機工程學系', '電四丙', 'B10901234');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (240, 24, 21, 34, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (241, 24, 22, 37, NULL, NULL);
@@ -820,7 +820,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (25, 3, '192.168.1.14', 240, '2026-10-12 09:30:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (25, 25, '陳靜儀', '女', NULL, NULL, 'cy.chen@med.edu.tw', NULL, NULL, '臨床醫學研究所', '博二', 'D11142008');
+VALUES (25, 25, '陳靜儀', 2,  NULL, NULL, 'cy.chen@med.edu.tw', NULL, NULL, '臨床醫學研究所', '博二', 'D11142008');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (249, 25, 21, 34, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (250, 25, 22, 36, NULL, NULL);
@@ -841,7 +841,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (26, 3, '192.168.1.15', 40, '2026-10-12 15:50:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (26, 26, '反對AI者', '女', NULL, NULL, 'anti.ai@edu.tw', NULL, NULL, '哲學系', '哲四甲', 'B10910055');
+VALUES (26, 26, '反對AI者', 2,  NULL, NULL, 'anti.ai@edu.tw', NULL, NULL, '哲學系', '哲四甲', 'B10910055');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (262, 26, 21, 35, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (263, 26, 22, 37, NULL, NULL);
@@ -858,7 +858,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (27, 3, '192.168.1.16', 65, '2026-10-13 13:10:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (27, 27, '張家豪', '男', NULL, NULL, 'jh.chang@ntu.edu.tw', NULL, NULL, '機械工程學系', '機三甲', 'B11050012');
+VALUES (27, 27, '張家豪', 1,  NULL, NULL, 'jh.chang@ntu.edu.tw', NULL, NULL, '機械工程學系', '機三甲', 'B11050012');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (271, 27, 21, 34, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (272, 27, 22, 36, NULL, NULL);
@@ -876,7 +876,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (28, 3, '192.168.1.17', 25, '2026-10-13 17:25:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (28, 28, '教授饒了我', '男', NULL, NULL, 'helpme@mail.com', NULL, NULL, '經濟學系', '經四乙', 'B10930077');
+VALUES (28, 28, '教授饒了我', 1,  NULL, NULL, 'helpme@mail.com', NULL, NULL, '經濟學系', '經四乙', 'B10930077');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (281, 28, 21, 34, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (282, 28, 22, 37, NULL, NULL);
@@ -894,7 +894,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (29, 3, '192.168.1.18', 12, '2026-10-13 19:40:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (29, 29, '王大明', '男', NULL, NULL, 'dm.wang@test.com', NULL, NULL, '外國語文學系', '外二甲', 'B11110022');
+VALUES (29, 29, '王大明', 1,  NULL, NULL, 'dm.wang@test.com', NULL, NULL, '外國語文學系', '外二甲', 'B11110022');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (291, 29, 21, 34, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (292, 29, 22, 37, NULL, NULL);
@@ -911,7 +911,7 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 VALUES (30, 3, '192.168.1.19', 195, '2026-10-13 20:45:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`, `academic_major`, `class_name`, `student_id`)
-VALUES (30, 30, '黃雅芳', '女', NULL, NULL, 'yf.huang@nccu.edu.tw', NULL, NULL, '語言學研究所', '碩二', 'R11214002');
+VALUES (30, 30, '黃雅芳', 2,  NULL, NULL, 'yf.huang@nccu.edu.tw', NULL, NULL, '語言學研究所', '碩二', 'R11214002');
 
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (300, 30, 21, 34, NULL, NULL);
 INSERT INTO `submission_answers` (`id`, `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`) VALUES (301, 30, 22, 36, NULL, NULL);
@@ -1660,51 +1660,51 @@ INSERT INTO `submissions` (`id`, `survey_id`, `ip_address`, `duration_seconds`, 
 (100, 24, '192.168.1.140', 160, '2026-10-13 16:25:00');
 
 INSERT INTO `submission_basic_infos` (`id`, `submission_id`, `name`, `gender`, `age_group`, `phone`, `email`, `industry`, `residence`) VALUES
-(41, 41, '王彥鈞', '男', '25-34歲', NULL, 'yj.wang@uni.edu.tw', '教育與研究', '臺北市大安區'),
-(42, 42, '張書瑜', '女', '18-24歲', NULL, 'sy.chang@ntu.edu.tw', '大專院校學生', '新北市中和區'),
-(43, 43, '李威霆', '男', '18-24歲', NULL, 'wt.lee@nccu.edu.tw', '大專院校學生', '桃園市中壢區'),
-(44, 44, '蔡佩容', '女', '20-24歲', '0943445566', 'pj.tsai@tech.edu.tw', '電子資訊業', '新竹市東區'),
-(45, 45, '劉家豪', '男', '20-24歲', '0954556677', 'jh.liu@semi.com.tw', '半導體製造業', '臺中市西屯區'),
-(46, 46, '陳品妍', '女', '20-24歲', '0965667788', 'py.chen@poly.edu.tw', '精密製造業', '高雄市前鎮區'),
-(47, 50, '周子安', '男', '30-39歲', NULL, 'za.chou@studio.design', '數位創意設計', '臺北市信義區'),
-(48, 51, '趙若涵', '女', '25-34歲', NULL, 'rh.chao@uxlab.io', '軟體網路業', '新北市新店區'),
-(49, 52, '廖建宏', '男', '35-44歲', NULL, 'jh.liao@agency.com', '整合行銷設計', '臺中市南屯區'),
-(50, 53, '徐詠晴', '女', '28-35歲', NULL, 'yc.hsu@global.corp', '跨國科技業', '臺北市中山區'),
-(51, 54, '謝承恩', '男', '35-45歲', NULL, 'ce.hsieh@cloud.org', '資訊服務業', '桃園市桃園區'),
-(52, 55, '郭婷雅', '女', '25-34歲', NULL, 'ty.kuo@fintech.tw', '數位金融業', '新北市三重區'),
-(53, 56, NULL, '男', '30-39歲', NULL, NULL, '金融保險業', '臺北市松山區'),
-(54, 57, NULL, '女', '25-34歲', NULL, NULL, '軟體工程師', '新北市板橋區'),
-(55, 58, NULL, '男', '40-49歲', NULL, NULL, '律師會計業', '臺中市西屯區'),
-(56, 59, NULL, '女', '20-29歲', NULL, NULL, '零售電商', '臺北市信義區'),
-(57, 60, NULL, '男', '30-39歲', NULL, NULL, '製造業', '臺南市東區'),
-(58, 61, NULL, '女', '40-49歲', NULL, NULL, '醫療生技', '高雄市新興區'),
-(59, 62, '曾致遠', '男', '25-34歲', NULL, 'cy.tseng@green.org', '綠能科技業', '臺南市東區'),
-(60, 63, '潘郁璇', '女', '18-24歲', NULL, 'yh.pan@esg.tw', '大專院校學生', '臺北市文山區'),
-(61, 64, '邱柏翔', '男', '35-44歲', NULL, 'ps.chiu@retail.com', '連鎖零售業', '高雄市左營區'),
-(62, 65, '賴孟潔', '女', '28-35歲', '0985667788', 'mj.lai@opensource.tw', '軟體開源生態', '臺北市松山區'),
-(63, 66, '楊哲睿', '男', '24-30歲', '0916778899', 'cr.yang@dev.io', '雲端架構開發', '新竹縣竹北市'),
-(64, 67, '許雅婷', '女', '30-38歲', '0927889900', 'yt.hsu@ai.tech', '演算法工程', '臺中市北區'),
-(65, 71, '何冠宇', '男', '30-45歲', '0938990011', 'ky.ho@logistics.tw', '物流供應鏈', '新北市汐止區'),
-(66, 72, '柯怡安', '女', '25-35歲', '0949001122', 'ya.ko@ecom.tw', '電子商務運營', '桃園市蘆竹區'),
-(67, 73, '盧柏儒', '男', '40-55歲', '0950112233', 'pr.lu@fresh.tw', '生鮮冷鏈批發', '彰化縣員林市'),
-(68, 74, '葉語彤', '女', '30-40歲', '0961223344', 'yt.yeh@ev.owner.tw', '電子製造研發', '臺中市南區'),
-(69, 75, '方宇軒', '男', '35-48歲', '0972334455', 'yh.fang@auto.tw', '綠色運輸顧問', '臺北市內湖區'),
-(70, 76, '蕭雅筑', '女', '28-38歲', '0983445566', 'yc.hsiao@energy.tw', '綠能電網工程', '嘉義市東區'),
-(71, 77, '沈冠廷', '男', '32-42歲', NULL, 'kt.shen@enterprise.tw', '企業架構核心組', '臺北市中正區'),
-(72, 78, '胡若薇', '女', '26-34歲', NULL, 'rw.hu@saas.tw', '分散式系統組', '新北市土城區'),
-(73, 79, '余宏偉', '男', '38-50歲', NULL, 'hw.yu@corp.tw', '系統整合技術處', '高雄市苓雅區'),
-(74, 80, '鄧涵予', '女', '55-64歲', '0947889900', NULL, '退休公職長輩', '屏東縣屏東市'),
-(75, 81, '彭文瑞', '男', '65歲以上', '0958990011', NULL, '高齡樂活照護', '苗栗縣頭份市'),
-(76, 82, '薛詠真', '女', '45-54歲', '0969001122', NULL, '家庭長照照護者', '宜蘭縣羅東鎮'),
-(77, 83, NULL, '女', '25-34歲', NULL, NULL, '廣告公關業', '臺北市大安區'),
-(78, 84, NULL, '男', '35-44歲', NULL, NULL, '金融投顧業', '新北市新莊區'),
-(79, 85, NULL, '女', '18-24歲', NULL, NULL, '大專院校學生', '臺中市南區'),
-(80, 89, '蘇柏凱', '男', '25-34歲', '0970112233', 'pk.su@cyber.gov.tw', '資安與公共治理', '臺北市大同區'),
-(81, 90, '鐘孟容', '女', '35-44歲', '0981223344', 'mj.chung@civic.tw', '公共行政法治', '新北市永和區'),
-(82, 91, '簡宏宇', '男', '20-29歲', '0912334455', 'hy.chien@crypto.tw', '密碼學與資安研發', '新竹市北區'),
-(83, 92, '羅佳敏', '女', '30-39歲', '0923445566', 'cm.lo@parent.tw', '全職自由接案家長', '桃園市八德區'),
-(84, 93, '董家瑋', '男', '35-45歲', '0934556677', 'cw.tung@edu.tw', '中等教育教師', '臺中市西區'),
-(85, 94, '白芷涵', '女', '32-40歲', '0945667788', 'ch.pai@kids.tw', '幼兒親職推廣', '臺南市永康區'),
+(41, 41, '王彥鈞', 1,  '25-34歲', NULL, 'yj.wang@uni.edu.tw', '教育與研究', '臺北市大安區'),
+(42, 42, '張書瑜', 2,  '18-24歲', NULL, 'sy.chang@ntu.edu.tw', '大專院校學生', '新北市中和區'),
+(43, 43, '李威霆', 1,  '18-24歲', NULL, 'wt.lee@nccu.edu.tw', '大專院校學生', '桃園市中壢區'),
+(44, 44, '蔡佩容', 2,  '20-24歲', '0943445566', 'pj.tsai@tech.edu.tw', '電子資訊業', '新竹市東區'),
+(45, 45, '劉家豪', 1,  '20-24歲', '0954556677', 'jh.liu@semi.com.tw', '半導體製造業', '臺中市西屯區'),
+(46, 46, '陳品妍', 2,  '20-24歲', '0965667788', 'py.chen@poly.edu.tw', '精密製造業', '高雄市前鎮區'),
+(47, 50, '周子安', 1,  '30-39歲', NULL, 'za.chou@studio.design', '數位創意設計', '臺北市信義區'),
+(48, 51, '趙若涵', 2,  '25-34歲', NULL, 'rh.chao@uxlab.io', '軟體網路業', '新北市新店區'),
+(49, 52, '廖建宏', 1,  '35-44歲', NULL, 'jh.liao@agency.com', '整合行銷設計', '臺中市南屯區'),
+(50, 53, '徐詠晴', 2,  '28-35歲', NULL, 'yc.hsu@global.corp', '跨國科技業', '臺北市中山區'),
+(51, 54, '謝承恩', 1,  '35-45歲', NULL, 'ce.hsieh@cloud.org', '資訊服務業', '桃園市桃園區'),
+(52, 55, '郭婷雅', 2,  '25-34歲', NULL, 'ty.kuo@fintech.tw', '數位金融業', '新北市三重區'),
+(53, 56, NULL, 1,  '30-39歲', NULL, NULL, '金融保險業', '臺北市松山區'),
+(54, 57, NULL, 2,  '25-34歲', NULL, NULL, '軟體工程師', '新北市板橋區'),
+(55, 58, NULL, 1,  '40-49歲', NULL, NULL, '律師會計業', '臺中市西屯區'),
+(56, 59, NULL, 2,  '20-29歲', NULL, NULL, '零售電商', '臺北市信義區'),
+(57, 60, NULL, 1,  '30-39歲', NULL, NULL, '製造業', '臺南市東區'),
+(58, 61, NULL, 2,  '40-49歲', NULL, NULL, '醫療生技', '高雄市新興區'),
+(59, 62, '曾致遠', 1,  '25-34歲', NULL, 'cy.tseng@green.org', '綠能科技業', '臺南市東區'),
+(60, 63, '潘郁璇', 2,  '18-24歲', NULL, 'yh.pan@esg.tw', '大專院校學生', '臺北市文山區'),
+(61, 64, '邱柏翔', 1,  '35-44歲', NULL, 'ps.chiu@retail.com', '連鎖零售業', '高雄市左營區'),
+(62, 65, '賴孟潔', 2,  '28-35歲', '0985667788', 'mj.lai@opensource.tw', '軟體開源生態', '臺北市松山區'),
+(63, 66, '楊哲睿', 1,  '24-30歲', '0916778899', 'cr.yang@dev.io', '雲端架構開發', '新竹縣竹北市'),
+(64, 67, '許雅婷', 2,  '30-38歲', '0927889900', 'yt.hsu@ai.tech', '演算法工程', '臺中市北區'),
+(65, 71, '何冠宇', 1,  '30-45歲', '0938990011', 'ky.ho@logistics.tw', '物流供應鏈', '新北市汐止區'),
+(66, 72, '柯怡安', 2,  '25-35歲', '0949001122', 'ya.ko@ecom.tw', '電子商務運營', '桃園市蘆竹區'),
+(67, 73, '盧柏儒', 1,  '40-55歲', '0950112233', 'pr.lu@fresh.tw', '生鮮冷鏈批發', '彰化縣員林市'),
+(68, 74, '葉語彤', 2,  '30-40歲', '0961223344', 'yt.yeh@ev.owner.tw', '電子製造研發', '臺中市南區'),
+(69, 75, '方宇軒', 1,  '35-48歲', '0972334455', 'yh.fang@auto.tw', '綠色運輸顧問', '臺北市內湖區'),
+(70, 76, '蕭雅筑', 2,  '28-38歲', '0983445566', 'yc.hsiao@energy.tw', '綠能電網工程', '嘉義市東區'),
+(71, 77, '沈冠廷', 1,  '32-42歲', NULL, 'kt.shen@enterprise.tw', '企業架構核心組', '臺北市中正區'),
+(72, 78, '胡若薇', 2,  '26-34歲', NULL, 'rw.hu@saas.tw', '分散式系統組', '新北市土城區'),
+(73, 79, '余宏偉', 1,  '38-50歲', NULL, 'hw.yu@corp.tw', '系統整合技術處', '高雄市苓雅區'),
+(74, 80, '鄧涵予', 2,  '55-64歲', '0947889900', NULL, '退休公職長輩', '屏東縣屏東市'),
+(75, 81, '彭文瑞', 1,  '65歲以上', '0958990011', NULL, '高齡樂活照護', '苗栗縣頭份市'),
+(76, 82, '薛詠真', 2,  '45-54歲', '0969001122', NULL, '家庭長照照護者', '宜蘭縣羅東鎮'),
+(77, 83, NULL, 2,  '25-34歲', NULL, NULL, '廣告公關業', '臺北市大安區'),
+(78, 84, NULL, 1,  '35-44歲', NULL, NULL, '金融投顧業', '新北市新莊區'),
+(79, 85, NULL, 2,  '18-24歲', NULL, NULL, '大專院校學生', '臺中市南區'),
+(80, 89, '蘇柏凱', 1,  '25-34歲', '0970112233', 'pk.su@cyber.gov.tw', '資安與公共治理', '臺北市大同區'),
+(81, 90, '鐘孟容', 2,  '35-44歲', '0981223344', 'mj.chung@civic.tw', '公共行政法治', '新北市永和區'),
+(82, 91, '簡宏宇', 1,  '20-29歲', '0912334455', 'hy.chien@crypto.tw', '密碼學與資安研發', '新竹市北區'),
+(83, 92, '羅佳敏', 2,  '30-39歲', '0923445566', 'cm.lo@parent.tw', '全職自由接案家長', '桃園市八德區'),
+(84, 93, '董家瑋', 1,  '35-45歲', '0934556677', 'cw.tung@edu.tw', '中等教育教師', '臺中市西區'),
+(85, 94, '白芷涵', 2,  '32-40歲', '0945667788', 'ch.pai@kids.tw', '幼兒親職推廣', '臺南市永康區'),
 (86, 98, NULL, NULL, '25-34歲', NULL, NULL, '自由業', '臺北市中正區'),
 (87, 99, NULL, NULL, '35-44歲', NULL, NULL, '製造工程', '新竹市東區'),
 (88, 100, NULL, NULL, '45-54歲', NULL, NULL, '商業貿易', '臺中市南屯區');

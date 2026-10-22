@@ -520,6 +520,31 @@ export class SurveyRunnerComponent implements OnInit {
   }
 
   /**
+   * 判斷指定表單控制項是否處於不合法狀態且已被觸碰或編輯過
+   * 支援受訪者在輸入文字或離開焦點時，立即呈現紅字與紅框警示
+   * @param fieldKey 控制項名稱
+   * @returns boolean 是否應即刻呈現紅字與紅框
+   */
+  public isFieldInvalid(fieldKey: string): boolean {
+    const ctrl = this.runnerFormGroup.get(fieldKey);
+    if (!ctrl) return false;
+    return ctrl.invalid && (ctrl.touched || ctrl.dirty);
+  }
+
+  /**
+   * 處理欄位失去焦點 (Blur) 事件
+   * 當使用者離開 input/select 時，即刻標記為 touched 並觸發驗證，與登入頁面即時紅字標準對齊
+   * @param fieldKey 控制項名稱
+   */
+  public onFieldBlur(fieldKey: string): void {
+    const ctrl = this.runnerFormGroup.get(fieldKey);
+    if (ctrl) {
+      ctrl.markAsTouched();
+      ctrl.updateValueAndValidity();
+    }
+  }
+
+  /**
    * 取得特定複選題在表單中的 FormArray
    * @param questionUid 複選題的 UID
    * @returns 該題對應的 FormArray

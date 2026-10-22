@@ -48,10 +48,10 @@ public class User {
     @Column(name = "full_name", nullable = false, length = 50)
     private String fullName;
 
-    @Column(length = 20)
+    @Column(columnDefinition = "CHAR(10)", unique = true)
     private String phone;
 
-    @Column(name = "identity_card", length = 20)
+    @Column(name = "identity_card", columnDefinition = "CHAR(10)", unique = true)
     private String identityCard;
 
     @Enumerated(EnumType.STRING)

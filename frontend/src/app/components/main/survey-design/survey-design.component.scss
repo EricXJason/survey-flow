@@ -2,42 +2,13 @@
   display: block;
   min-height: calc(100vh - var(--header-h) - 15rem);
   background: var(--c-surface);
-  transition: background-color 0.35s ease;
-
-  /* 根據 12 大問卷主題分類動態切換主體背景底色 */
-  &:has([data-category='顧客滿意度']) { background: #f0f7ff; }
-  &:has([data-category='產品體驗研究']) { background: #f5f3ff; }
-  &:has([data-category='市場商業調研']) { background: #f0f9ff; }
-  &:has([data-category='品牌行銷與推廣']) { background: #f1f4ff; }
-  &:has([data-category='售後服務與支援']) { background: #f0fdff; }
-  &:has([data-category='員工與職場文化']) { background: #f0fdfa; }
-  &:has([data-category='活動與會後回饋']) { background: #fffbeb; }
-  &:has([data-category='教育與培訓評鑑']) { background: #ecfdf5; }
-  &:has([data-category='學術專題研究']) { background: #f8fafc; }
-  &:has([data-category='健康與生活型態']) { background: #fff1f2; }
-  &:has([data-category='公共政策與民意']) { background: #faf5ff; }
-  &:has([data-category='社群互動與綜合']) { background: #fff7ed; }
 }
 
 .design-shell {
   width: 100%;
   min-height: 100%;
   padding-block: clamp(var(--sp-6), 4vw, var(--sp-12));
-  transition: background-color 0.35s ease;
-
-  /* 雙重保證：針對內部容器同步響應主題背景色 */
-  &[data-category='顧客滿意度'] { background: #f0f7ff; }
-  &[data-category='產品體驗研究'] { background: #f5f3ff; }
-  &[data-category='市場商業調研'] { background: #f0f9ff; }
-  &[data-category='品牌行銷與推廣'] { background: #f1f4ff; }
-  &[data-category='售後服務與支援'] { background: #f0fdff; }
-  &[data-category='員工與職場文化'] { background: #f0fdfa; }
-  &[data-category='活動與會後回饋'] { background: #fffbeb; }
-  &[data-category='教育與培訓評鑑'] { background: #ecfdf5; }
-  &[data-category='學術專題研究'] { background: #f8fafc; }
-  &[data-category='健康與生活型態'] { background: #fff1f2; }
-  &[data-category='公共政策與民意'] { background: #faf5ff; }
-  &[data-category='社群互動與綜合'] { background: #fff7ed; }
+  background: var(--c-surface);
 }
 
 .design-wrapper {

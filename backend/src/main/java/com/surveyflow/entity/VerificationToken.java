@@ -36,6 +36,9 @@ public class VerificationToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @Column(nullable = false, length = 100)
     private String email;
 
@@ -48,7 +51,7 @@ public class VerificationToken {
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
-    @Column(name = "is_used", nullable = false)
+    @Column(name = "is_used", nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     @Builder.Default
     private Boolean isUsed = false;
 

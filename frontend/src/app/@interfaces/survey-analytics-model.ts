@@ -105,6 +105,14 @@ export interface QuestionAnalyticsItem {
     averageLength: number;
     totalCount: number;
   };
+  /** 是否為前置條件解鎖之分支題目 */
+  isConditionTriggered?: boolean;
+  /** 前置觸發條件說明 */
+  triggerConditionDescription?: string;
+  /** 符合觸發條件之受訪者人數 */
+  triggeredEligibleCount?: number;
+  /** 在符合觸發條件受訪者中的有效作答率 (0.0 ~ 100.0) */
+  triggeredResponseRate?: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -643,9 +643,11 @@
     overflow-x: visible !important;
   }
 
+  ::ng-deep .survey-table,
   .survey-table {
     display: block !important;
     width: 100% !important;
+    max-width: 100% !important;
     min-width: 0 !important;
 
     thead,
@@ -658,6 +660,7 @@
       flex-direction: column !important;
       gap: 1.4rem !important;
       width: 100% !important;
+      max-width: 100% !important;
     }
 
     .mat-mdc-row {
@@ -675,6 +678,7 @@
       min-height: 0 !important;
       box-sizing: border-box !important;
       width: 100% !important;
+      max-width: 100% !important;
       transition: all 0.2s ease !important;
 
       &:hover {
@@ -754,7 +758,7 @@
 
       .action-btn-group {
         display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
+        grid-template-columns: repeat(auto-fit, minmax(7.2rem, 1fr)) !important;
         width: 100% !important;
         gap: 0.8rem !important;
 
@@ -762,7 +766,7 @@
           justify-content: center !important;
           height: 3.8rem !important;
           font-size: 1.35rem !important;
-          padding: 0 !important;
+          padding: 0 0.8rem !important;
           width: 100% !important;
         }
       }
@@ -1983,6 +1987,75 @@
   border: 1px solid #fecaca;
   padding: 0.2rem 0.7rem;
   border-radius: var(--r-full);
+}
+
+.condition-branch-badge {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0369a1;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  padding: 0.2rem 0.75rem;
+  border-radius: var(--r-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.condition-trigger-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  padding: 1.2rem 1.6rem;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid #0284c7;
+  border-radius: var(--r-sm);
+  margin: 1.4rem 0 1rem 0;
+
+  .branch-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+    color: #0284c7;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+
+  .branch-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 1.35rem;
+    line-height: 1.5;
+    color: var(--c-neutral-800);
+
+    .branch-title {
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+    }
+
+    .branch-desc {
+      color: #334155;
+    }
+
+    .branch-rate-text {
+      font-size: 1.25rem;
+      color: #475569;
+      margin-top: 0.2rem;
+
+      strong {
+        color: #0f172a;
+      }
+
+      .branch-note {
+        color: #64748b;
+        font-size: 1.2rem;
+        margin-left: 0.4rem;
+      }
+    }
+  }
 }
 
 .q-stats-pills {

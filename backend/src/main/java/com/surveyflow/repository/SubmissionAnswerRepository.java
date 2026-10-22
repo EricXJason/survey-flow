@@ -77,4 +77,12 @@ public interface SubmissionAnswerRepository extends JpaRepository<SubmissionAnsw
                    "WHERE s.survey_id = (SELECT survey_id FROM survey_questions WHERE id = :questionId) " +
                    "ORDER BY s.submitted_at ASC, s.id ASC", nativeQuery = true)
     List<Map<String, Object>> findStructuredTextAnswersByQuestionNative(@Param("questionId") Long questionId);
+
+    /**
+     * 原生 SQL 查詢特定選項被勾選之總次數
+     * @param optionId 選項 ID
+     * @return 勾選次數
+     */
+    @Query(value = "SELECT COUNT(id) FROM submission_answers WHERE option_id = :optionId", nativeQuery = true)
+    Long countSelectionsByOptionIdNative(@Param("optionId") Long optionId);
 }

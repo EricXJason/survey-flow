@@ -113,14 +113,13 @@
               <input
                 type="text"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('name')"
+                (blur)="onFieldBlur('name')"
                 formControlName="name"
                 maxlength="10"
                 placeholder="請輸入中文姓名"
               />
-              @if (
-                runnerFormGroup.get("name")?.invalid &&
-                runnerFormGroup.get("name")?.touched
-              ) {
+              @if (isFieldInvalid('name')) {
                 <span class="field-error">請輸入 2 至 6 字中文姓名</span>
               }
             </div>
@@ -129,16 +128,18 @@
           @if (survey.basicInfoRequirements.requireGender) {
             <div class="field-item">
               <label class="field-label">性別 <span class="req-star">*</span></label>
-              <select formControlName="gender" class="field-select">
+              <select
+                formControlName="gender"
+                class="field-select"
+                [class.has-error]="isFieldInvalid('gender')"
+                (blur)="onFieldBlur('gender')"
+              >
                 <option value="" disabled selected>請選擇性別</option>
                 <option value="male">男性</option>
                 <option value="female">女性</option>
                 <option value="other">其他／不便透露</option>
               </select>
-              @if (
-                runnerFormGroup.get("gender")?.invalid &&
-                runnerFormGroup.get("gender")?.touched
-              ) {
+              @if (isFieldInvalid('gender')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -150,6 +151,8 @@
               <input
                 type="number"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('age')"
+                (blur)="onFieldBlur('age')"
                 formControlName="age"
                 min="1"
                 max="120"
@@ -157,10 +160,7 @@
                 oninput="if(this.value.length>3) this.value=this.value.slice(0,3)"
                 placeholder="請填寫您的年齡（例如：22）"
               />
-              @if (
-                runnerFormGroup.get("age")?.invalid &&
-                runnerFormGroup.get("age")?.touched
-              ) {
+              @if (isFieldInvalid('age')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -169,11 +169,14 @@
           @if (survey.basicInfoRequirements.requireBirthday) {
             <div class="field-item">
               <label class="field-label">生日 <span class="req-star">*</span></label>
-              <input type="date" class="field-input" formControlName="birthday" />
-              @if (
-                runnerFormGroup.get("birthday")?.invalid &&
-                runnerFormGroup.get("birthday")?.touched
-              ) {
+              <input
+                type="date"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('birthday')"
+                (blur)="onFieldBlur('birthday')"
+                formControlName="birthday"
+              />
+              @if (isFieldInvalid('birthday')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -185,13 +188,12 @@
               <input
                 type="number"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('height')"
+                (blur)="onFieldBlur('height')"
                 formControlName="height"
                 placeholder="例如：175"
               />
-              @if (
-                runnerFormGroup.get("height")?.invalid &&
-                runnerFormGroup.get("height")?.touched
-              ) {
+              @if (isFieldInvalid('height')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -203,13 +205,12 @@
               <input
                 type="number"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('weight')"
+                (blur)="onFieldBlur('weight')"
                 formControlName="weight"
                 placeholder="例如：65"
               />
-              @if (
-                runnerFormGroup.get("weight")?.invalid &&
-                runnerFormGroup.get("weight")?.touched
-              ) {
+              @if (isFieldInvalid('weight')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -221,14 +222,13 @@
               <input
                 type="tel"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('mobilePhone')"
+                (blur)="onFieldBlur('mobilePhone')"
                 formControlName="mobilePhone"
                 maxlength="10"
                 placeholder="例如：0912345678"
               />
-              @if (
-                runnerFormGroup.get("mobilePhone")?.invalid &&
-                runnerFormGroup.get("mobilePhone")?.touched
-              ) {
+              @if (isFieldInvalid('mobilePhone')) {
                 <span class="field-error">格式須為 09 開頭 10 碼電話</span>
               }
             </div>
@@ -240,13 +240,12 @@
               <input
                 type="tel"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('homePhone')"
+                (blur)="onFieldBlur('homePhone')"
                 formControlName="homePhone"
                 placeholder="例如：02-12345678"
               />
-              @if (
-                runnerFormGroup.get("homePhone")?.invalid &&
-                runnerFormGroup.get("homePhone")?.touched
-              ) {
+              @if (isFieldInvalid('homePhone')) {
                 <span class="field-error">格式須為室內電話格式</span>
               }
             </div>
@@ -258,14 +257,13 @@
               <input
                 type="email"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('email')"
+                (blur)="onFieldBlur('email')"
                 formControlName="email"
                 maxlength="100"
                 placeholder="例如：user@university.edu.tw"
               />
-              @if (
-                runnerFormGroup.get("email")?.invalid &&
-                runnerFormGroup.get("email")?.touched
-              ) {
+              @if (isFieldInvalid('email')) {
                 <span class="field-error">請輸入正確的電子信箱格式</span>
               }
             </div>
@@ -277,13 +275,12 @@
               <input
                 type="text"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('registeredAddress')"
+                (blur)="onFieldBlur('registeredAddress')"
                 formControlName="registeredAddress"
                 placeholder="請輸入完整戶籍地址"
               />
-              @if (
-                runnerFormGroup.get("registeredAddress")?.invalid &&
-                runnerFormGroup.get("registeredAddress")?.touched
-              ) {
+              @if (isFieldInvalid('registeredAddress')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -295,14 +292,13 @@
               <input
                 type="text"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('residentialAddress')"
+                (blur)="onFieldBlur('residentialAddress')"
                 formControlName="residentialAddress"
                 maxlength="100"
                 placeholder="請輸入現居居住地址"
               />
-              @if (
-                runnerFormGroup.get("residentialAddress")?.invalid &&
-                runnerFormGroup.get("residentialAddress")?.touched
-              ) {
+              @if (isFieldInvalid('residentialAddress')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -311,11 +307,15 @@
           @if (survey.basicInfoRequirements.requireDepartment) {
             <div class="field-item">
               <label class="field-label">所屬單位 <span class="req-star">*</span></label>
-              <input type="text" class="field-input" formControlName="department" placeholder="例如：人文社會學院" />
-              @if (
-                runnerFormGroup.get("department")?.invalid &&
-                runnerFormGroup.get("department")?.touched
-              ) {
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('department')"
+                (blur)="onFieldBlur('department')"
+                formControlName="department"
+                placeholder="例如：人文社會學院"
+              />
+              @if (isFieldInvalid('department')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -324,11 +324,15 @@
           @if (survey.basicInfoRequirements.requireAcademicMajor) {
             <div class="field-item">
               <label class="field-label">就讀科系 <span class="req-star">*</span></label>
-              <input type="text" class="field-input" formControlName="academicMajor" placeholder="例如：資訊管理系 / 企管系" />
-              @if (
-                runnerFormGroup.get("academicMajor")?.invalid &&
-                runnerFormGroup.get("academicMajor")?.touched
-              ) {
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('academicMajor')"
+                (blur)="onFieldBlur('academicMajor')"
+                formControlName="academicMajor"
+                placeholder="例如：資訊管理系 / 企管系"
+              />
+              @if (isFieldInvalid('academicMajor')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -337,11 +341,15 @@
           @if (survey.basicInfoRequirements.requireClassName) {
             <div class="field-item">
               <label class="field-label">班級名稱 <span class="req-star">*</span></label>
-              <input type="text" class="field-input" formControlName="className" placeholder="例如：碩一甲班" />
-              @if (
-                runnerFormGroup.get("className")?.invalid &&
-                runnerFormGroup.get("className")?.touched
-              ) {
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('className')"
+                (blur)="onFieldBlur('className')"
+                formControlName="className"
+                placeholder="例如：碩一甲班"
+              />
+              @if (isFieldInvalid('className')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -350,11 +358,15 @@
           @if (survey.basicInfoRequirements.requireStudentId) {
             <div class="field-item">
               <label class="field-label">學號 <span class="req-star">*</span></label>
-              <input type="text" class="field-input" formControlName="studentId" placeholder="例如：R12345678" />
-              @if (
-                runnerFormGroup.get("studentId")?.invalid &&
-                runnerFormGroup.get("studentId")?.touched
-              ) {
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('studentId')"
+                (blur)="onFieldBlur('studentId')"
+                formControlName="studentId"
+                placeholder="例如：R12345678"
+              />
+              @if (isFieldInvalid('studentId')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -363,11 +375,15 @@
           @if (survey.basicInfoRequirements.requireEmployeeId) {
             <div class="field-item">
               <label class="field-label">員工編號 <span class="req-star">*</span></label>
-              <input type="text" class="field-input" formControlName="employeeId" placeholder="例如：EMP-0921" />
-              @if (
-                runnerFormGroup.get("employeeId")?.invalid &&
-                runnerFormGroup.get("employeeId")?.touched
-              ) {
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('employeeId')"
+                (blur)="onFieldBlur('employeeId')"
+                formControlName="employeeId"
+                placeholder="例如：EMP-0921"
+              />
+              @if (isFieldInvalid('employeeId')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -379,14 +395,13 @@
               <input
                 type="text"
                 class="field-input"
+                [class.has-error]="isFieldInvalid('nationalId')"
+                (blur)="onFieldBlur('nationalId')"
                 formControlName="nationalId"
                 maxlength="10"
                 placeholder="例如：A123456789"
               />
-              @if (
-                runnerFormGroup.get("nationalId")?.invalid &&
-                runnerFormGroup.get("nationalId")?.touched
-              ) {
+              @if (isFieldInvalid('nationalId')) {
                 <span class="field-error">身分證字號格式檢核未通過</span>
               }
             </div>
@@ -395,7 +410,13 @@
           @if (survey.basicInfoRequirements.requireJobIndustry) {
             <div class="field-item">
               <label class="field-label">產業領域 <span class="req-star">*</span></label>
-              <select formControlName="jobIndustry" class="field-select" (change)="onIndustryChange($event)">
+              <select
+                formControlName="jobIndustry"
+                class="field-select"
+                [class.has-error]="isFieldInvalid('jobIndustry')"
+                (blur)="onFieldBlur('jobIndustry')"
+                (change)="onIndustryChange($event)"
+              >
                 <option value="" disabled selected>請選擇產業領域</option>
                 <option value="資訊科技／半導體軟體">資訊科技／半導體軟體</option>
                 <option value="金融財務／銀行保險">金融財務／銀行保險</option>
@@ -423,10 +444,7 @@
                   style="margin-top: 0.8rem;"
                 />
               }
-              @if (
-                runnerFormGroup.get("jobIndustry")?.invalid &&
-                runnerFormGroup.get("jobIndustry")?.touched
-              ) {
+              @if (isFieldInvalid('jobIndustry')) {
                 <span class="field-error">請選擇或填寫產業領域</span>
               }
             </div>
@@ -435,11 +453,15 @@
           @if (survey.basicInfoRequirements.requireJobTitle) {
             <div class="field-item">
               <label class="field-label">職稱 <span class="req-star">*</span></label>
-              <input type="text" class="field-input" formControlName="jobTitle" placeholder="例如：資深研發工程師" />
-              @if (
-                runnerFormGroup.get("jobTitle")?.invalid &&
-                runnerFormGroup.get("jobTitle")?.touched
-              ) {
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('jobTitle')"
+                (blur)="onFieldBlur('jobTitle')"
+                formControlName="jobTitle"
+                placeholder="例如：資深研發工程師"
+              />
+              @if (isFieldInvalid('jobTitle')) {
                 <span class="field-error">此欄位為必填項目</span>
               }
             </div>
@@ -518,6 +540,8 @@
                   @case ("text") {
                     <textarea
                       class="field-textarea"
+                      [class.has-error]="isFieldInvalid(q.uid)"
+                      (blur)="onFieldBlur(q.uid)"
                       [formControlName]="q.uid"
                       rows="3"
                       placeholder="請在此輸入您的回答內容..."
@@ -589,6 +613,8 @@
                     <input
                       type="time"
                       class="field-input field-input-time"
+                      [class.has-error]="isFieldInvalid(q.uid)"
+                      (blur)="onFieldBlur(q.uid)"
                       [formControlName]="q.uid"
                       [attr.min]="q.hasTimeLimit && q.minTime ? q.minTime : null"
                       [attr.max]="q.hasTimeLimit && q.maxTime ? q.maxTime : null"
@@ -601,6 +627,8 @@
                     <input
                       type="date"
                       class="field-input field-input-date"
+                      [class.has-error]="isFieldInvalid(q.uid)"
+                      (blur)="onFieldBlur(q.uid)"
                       [formControlName]="q.uid"
                       [attr.min]="q.hasDateLimit && q.minDate ? q.minDate : null"
                       [attr.max]="q.hasDateLimit && q.maxDate ? q.maxDate : null"
@@ -611,10 +639,7 @@
                 }
               </div>
 
-              @if (
-                runnerFormGroup.get(q.uid)?.invalid &&
-                runnerFormGroup.get(q.uid)?.touched
-              ) {
+              @if (isFieldInvalid(q.uid)) {
                 <div class="field-error mt-2">此題為必填項目，請完成選填或輸入</div>
               }
             </article>

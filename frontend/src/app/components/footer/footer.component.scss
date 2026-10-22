@@ -111,6 +111,7 @@
 .system-env-strip {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.6rem;
   font-size: 1.1rem;
   color: var(--c-neutral-500);
@@ -119,9 +120,12 @@
   padding: 0.35rem 0.8rem;
   border-radius: var(--r-xs);
   margin-top: 0.4rem;
+  max-width: 100%;
+  box-sizing: border-box;
 
   .env-item {
     font-weight: 600;
+    white-space: nowrap;
   }
 
   .env-sep {

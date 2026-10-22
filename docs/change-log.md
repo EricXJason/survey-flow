@@ -3,6 +3,56 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-23 00:13] - 資料庫 SQL 檔案唯一路徑 (SSOT) 規範入庫、種子性別標準化與專案整潔化發布
+
+- **改動原因**:
+  - 排查並落實使用者核心規範要求：
+    1. 資料庫結構與種子資料永遠常駐於 `backend/src/main/resources/database/`（`schema.sql` 與 `data.sql`），現在是、未來也是！
+    2. 寫入 MD 規範，刪除專案根目錄多餘之暫存 SQL 檔案，確保專案目錄絕對整潔。
+    3. 全面標準化種子資料 `data.sql` 之受訪者生理性別為數值代碼（1:男, 2:女, 0:未指定），確保一鍵匯入完全相容 `TINYINT UNSIGNED`。
+    4. 執行生產環境部署一條龍發布至 `master`。
+- **具體內容**:
+  - **規範寫入**：於 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md)、[`docs/system-design/07-specs-database.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md)、[`docs/system-design/04-architecture.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/04-architecture.md) 與 [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md) 中正式明訂「全系統關聯式資料庫結構與種子資料唯一真實存放路徑永遠在 `backend/src/main/resources/database/`（`schema.sql` 與 `data.sql`），現在是、未來也是！嚴禁在專案根目錄或其他位置散落多餘的 SQL 檔案」。
+  - **資料庫 SQL 同步更新**：
+    - [`backend/src/main/resources/database/schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql)：同步收納最新 9 大表 DDL、`CHAR(10)` UNIQUE、`TINYINT(1)`、DEFAULT 值、方案 A 全量覆蓋與方案 B 增量更新。
+    - [`backend/src/main/resources/database/data.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/data.sql)：受訪者性別精確標準化為數值 `1`（男）與 `2`（女），杜絕型別不符問題。
+    - 刪除根目錄暫存之 `database-schema.sql`，還原專案乾淨樹狀拓撲。
+- **影響範圍**:
+  - `backend/src/main/resources/database/`, `AGENTS.md`, `README.md`, `docs/system-design/`, `docs/change-log.md`
+
+## [2026-10-22 22:45] - KISS / YAGNI / Clean Code 大落實：拔除魔術字串邏輯、前端上帝類 SRP 模組化拆解、資料庫定長 CHAR(10) / TINYINT 規範實作與全量 DDL 腳本發布
+
+- **改動原因**:
+  - 排查並落實使用者深度代碼品質與資料庫規範要求：
+    1. 消除難以閱讀、晦澀難解的代碼：徹底拔除類似 `targetAuthorId === 'testuser' || targetUserId === '2' || currentId === '2'` 之魔術字串與 mock 分支。
+    2. 解決前端上帝類別 (God Class)：拆解膨脹至近 900 行的 `SurveyAnalyticsService` 與逾 700 行的 `UserEmitterService`，落實 SRP 單一職責原則。
+    3. 資料庫型別與 3NF 審視：將身分證字號與手機欄位評估並落地為定長 `CHAR(10)` 且於會員表強制 `UNIQUE`；性別改為符合國際標準之 `TINYINT UNSIGNED DEFAULT 0`；布林型別明確宣告為 `TINYINT(1)` 並指定 `DEFAULT`；修復 ERD 黑色空欄位與無效連線；提供可一鍵暴力覆蓋執行的 SQL 腳本。
+    4. 規範嚴格寫入 MD 文件手冊並在專案真實程式碼中實作。
+- **具體內容**:
+  - **KISS / Clean Code 代碼淨化與魔術字串清除**：
+    - 在 [`survey-analytics.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/survey-analytics.service.ts) 中，將 `canAccessAnalytics` 重構為純淨、直觀的自明商務判斷 `authorId === String(currentUserId)`，徹底清除所有 `'testuser'` 與 `'2'` 等晦澀寫法。
+    - 於 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) 增補「KISS, YAGNI, Clean Code 與消滅上帝類/魔術代碼鐵律」。
+  - **前端上帝類別徹底拆解 (SRP 單一責任原則)**：
+    - **`SurveyAnalyticsService` 拆解**：
+      - 新增 [`survey-export.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/survey-export.service.ts)：專職 CSV (UTF-8 BOM)、Excel、SPSS、JSON 格式化與下載。
+      - 新增 [`survey-analytics-fallback.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/survey-analytics-fallback.service.ts)：專職離線/無後端降級報表與擬真統計生成。
+      - 原主服務精簡至 360 行，專注於報表數據獲取與 API 轉換。
+    - **`UserEmitterService` 拆解**：
+      - 新增 [`auth-action.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/auth-action.service.ts)：專職登入、註冊、登出、忘記密碼與個人資料維護。
+      - 新增 [`survey-action.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/survey-action.service.ts)：專職問卷儲存發布、刪除、公開狀態切換、時限設定與填答提交。
+      - [`user-emitter.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/user-emitter.service.ts) 縮減至不到 90 行的輕量 Facade 門面服務，向後 100% 相容所有既有組件調用。
+  - **資料庫型別、約束與實體層優化**：
+    - **型別優化**：會員表之 `phone` 與 `identity_card` 改為定長 `CHAR(10)` 並建立 `UNIQUE` 約束；受訪者基本資料表之 `national_id` 與 `phone` 亦對齊為 `CHAR(10)`。
+    - **性別 TINYINT**：資料表欄位定義為 `TINYINT UNSIGNED DEFAULT 0`；建立後端 [`GenderConverter.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/common/converter/GenderConverter.java) 實現 JPA 與資料庫之自動雙向型別轉換。
+    - **布林 TINYINT(1)**：`is_active`, `is_public`, `is_open`, `is_required`, `is_used` 均明確設定 `TINYINT(1)` 與 `DEFAULT` 預設值。
+    - **資料庫腳本產出**：建立根目錄 [`database-schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/database-schema.sql)，提供全量重建（方案 A，暴力一鍵執行）與增量更新（方案 B，平滑 ALTER）雙版本 DDL。
+  - **文件矩陣同步對齊**：
+    - 規格書 [`07-specs-database.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md)：更新 Mermaid ERD、實體字典與 3NF 檢驗。
+    - 架構書 [`04-architecture.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/04-architecture.md)：補齊新拆分之專職服務與 Facade 職責分工。
+    - 根目錄 [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md)：同步更新 Mermaid ERD 拓撲。
+- **影響範圍**:
+  - `frontend/src/app/@services/`, `backend/src/main/java/com/surveyflow/`, `database-schema.sql`, `AGENTS.md`, `README.md`, `docs/system-design/`
+
 ## [2026-10-22 21:26] - 生產規格書 Mermaid ERD 語法修復與發布對齊
 
 - **改動原因**:

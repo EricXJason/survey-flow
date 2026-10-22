@@ -787,6 +787,11 @@
                     @if (q.isRequired) {
                       <span class="req-badge">必填</span>
                     }
+                    @if (q.isConditionTriggered) {
+                      <span class="condition-branch-badge" title="本題目為分支條件題，需受訪者在前置題目中選取特定選項方會解鎖顯示">
+                        🔀 分支條件題
+                      </span>
+                    }
                   </div>
                   <!-- Google 表單風格：真實回覆數量、跳過/未回答與精確作答率標籤 -->
                   <div class="q-stats-pills">
@@ -816,6 +821,26 @@
                     }
                   </div>
                 </div>
+
+                @if (q.isConditionTriggered) {
+                  <div class="condition-trigger-banner" role="note" aria-label="分支題目條件說明">
+                    <svg class="branch-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+                      <polyline points="16 3 21 3 21 8"></polyline>
+                      <line x1="4" y1="20" x2="21" y2="3"></line>
+                      <polyline points="21 16 21 21 16 21"></polyline>
+                      <line x1="15" y1="15" x2="21" y2="21"></line>
+                      <line x1="4" y1="4" x2="9" y2="9"></line>
+                    </svg>
+                    <div class="branch-content">
+                      <div class="branch-title">分支條件解鎖說明</div>
+                      <div class="branch-desc">{{ q.triggerConditionDescription || '本題依據前置題目之特定選項條件解鎖顯示。' }}</div>
+                      <div class="branch-rate-text">
+                        符合前置條件之受訪者共 <strong>{{ q.triggeredEligibleCount ?? q.totalAnswerCount }}</strong> 人，有效作答率為 <strong>{{ q.triggeredResponseRate ?? 100 }}%</strong>
+                        <span class="branch-note">（其餘未觸發條件之受訪者依分支邏輯自動跳過，屬正常問卷流轉，非漏填）</span>
+                      </div>
+                    </div>
+                  </div>
+                }
 
                 <h3 class="q-question-text">{{ q.description || q.questionText || ('題目 ' + (idx + 1)) }}</h3>
 

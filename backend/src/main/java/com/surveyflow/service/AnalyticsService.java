@@ -205,12 +205,41 @@ public class AnalyticsService {
     private List<QuestionStatDto> calculateQuestionStats(Survey survey, long totalResponses) {
         List<QuestionStatDto> stats = new ArrayList<>();
 
+        // 建立前置解鎖條件快查表 (目標題 questionCode -> 觸發源資訊)
+        Map<String, String[]> triggerInfoMap = new HashMap<>(); // key -> [parentText, optText, optCountStr]
+        for (SurveyQuestion parentQ : survey.getQuestions()) {
+            if (parentQ.getOptions() != null) {
+                for (SurveyOption opt : parentQ.getOptions()) {
+                    if (opt.getTriggerQuestionUid() != null && !opt.getTriggerQuestionUid().isBlank()) {
+                        String targetUid = opt.getTriggerQuestionUid().trim();
+                        Long count = answerRepository.countSelectionsByOptionIdNative(opt.getId());
+                        long c = count != null ? count : 0L;
+                        triggerInfoMap.put(targetUid, new String[]{
+                                parentQ.getQuestionText(),
+                                opt.getOptionText(),
+                                String.valueOf(c)
+                        });
+                    }
+                }
+            }
+        }
+
         for (SurveyQuestion q : survey.getQuestions()) {
             QuestionStatDto.QuestionStatDtoBuilder builder = QuestionStatDto.builder()
                     .questionId(q.getId())
                     .questionCode(q.getQuestionCode())
                     .questionText(q.getQuestionText())
                     .type(q.getType());
+
+            // 檢查是否為分支條件解鎖題目
+            String qCode = q.getQuestionCode();
+            if (qCode != null && triggerInfoMap.containsKey(qCode.trim())) {
+                String[] info = triggerInfoMap.get(qCode.trim());
+                long eligibleCount = Long.parseLong(info[2]);
+                builder.isConditionTriggered(true)
+                        .triggerConditionDescription("依據前置題「" + info[0] + "」選取「" + info[1] + "」時解鎖開啟")
+                        .triggeredEligibleCount(eligibleCount);
+            }
 
             if (q.getType() == QuestionType.SINGLE || q.getType() == QuestionType.MULTI || q.getType() == QuestionType.BOOLEAN) {
                 Map<String, Long> counts = new HashMap<>();
@@ -410,7 +439,18 @@ public class AnalyticsService {
                         .textFeedbacks(new ArrayList<>(structuredFeedbacks.stream().limit(100).collect(Collectors.toList())));
             }
 
-            stats.add(builder.build());
+            QuestionStatDto itemDto = builder.build();
+            if (Boolean.TRUE.equals(itemDto.getIsConditionTriggered()) && itemDto.getTriggeredEligibleCount() != null) {
+                long eligible = itemDto.getTriggeredEligibleCount();
+                long ans = itemDto.getTotalAnswers() != null ? itemDto.getTotalAnswers() : 0L;
+                if (eligible > 0) {
+                    double rate = Math.round(((double) ans / eligible) * 1000.0) / 10.0;
+                    itemDto.setTriggeredResponseRate(Math.min(100.0, rate));
+                } else {
+                    itemDto.setTriggeredResponseRate(100.0);
+                }
+            }
+            stats.add(itemDto);
         }
 
         return stats;

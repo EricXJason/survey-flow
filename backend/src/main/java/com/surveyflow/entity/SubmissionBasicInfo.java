@@ -35,7 +35,8 @@ public class SubmissionBasicInfo {
     @Column(length = 50)
     private String name;
 
-    @Column(length = 10)
+    @Convert(converter = com.surveyflow.common.converter.GenderConverter.class)
+    @Column(name = "gender", columnDefinition = "TINYINT UNSIGNED DEFAULT 0")
     private String gender;
 
     @Column(name = "age_group", length = 30)
@@ -44,13 +45,13 @@ public class SubmissionBasicInfo {
     @Column(length = 20)
     private String birthday;
 
-    @Column(name = "national_id", length = 20)
+    @Column(name = "national_id", columnDefinition = "CHAR(10)")
     private String nationalId;
 
-    @Column(length = 20)
+    @Column(name = "phone", columnDefinition = "CHAR(10)")
     private String phone;
 
-    @Column(name = "home_phone", length = 30)
+    @Column(name = "home_phone", length = 20)
     private String homePhone;
 
     @Column(length = 100)

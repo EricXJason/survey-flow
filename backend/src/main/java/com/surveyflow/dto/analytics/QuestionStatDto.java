@@ -69,4 +69,17 @@ public class QuestionStatDto {
     /** 開放式文字反饋清單抽樣 (支援結構化物件包含 content, respondentName, submittedAt) */
     @Builder.Default
     private List<Object> textFeedbacks = new ArrayList<>();
+
+    /** 是否為前置條件解鎖之分支題目 */
+    @Builder.Default
+    private Boolean isConditionTriggered = false;
+
+    /** 前置觸發條件說明 */
+    private String triggerConditionDescription;
+
+    /** 符合觸發條件之受訪者人數 */
+    private Long triggeredEligibleCount;
+
+    /** 在符合觸發條件受訪者中的有效作答率 (0.0 ~ 100.0) */
+    private Double triggeredResponseRate;
 }

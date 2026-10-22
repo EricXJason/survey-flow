@@ -81,10 +81,14 @@ flowchart LR
 | 檔案路徑 | 具體用途與責任描述 | 聯動關係 |
 | :--- | :--- | :--- |
 | `api-client.service.ts` | 封裝 HTTP 請求管線，自動在 Header 注入 Bearer Token，並處理 401 攔截與 API 錯誤。 | 後端所有 REST 端點 |
-| `user-state.service.ts` | 基於 Angular Signals 實現使用者身份狀態追蹤（訪客/會員/管理員），與 SessionStorage 雙向同步。 | `Header`, `UserEmitter` |
+| `user-state.service.ts` | 基於 Angular Signals 實現使用者身份狀態追蹤（訪客/會員/管理員），與 SessionStorage 雙向同步。 | `Header`, `AuthAction` |
 | `survey-getter.service.ts`| 問卷資料存取服務，向後端取得大廳問卷、個人問卷與全站問卷清單，支援優雅降級回退。 | 後端 `/api/surveys` |
-| `survey-analytics.service.ts`| 前端數據分析計算服務，負責指標聚合、圖表百分比計算與 CSV/Excel/JSON 匯出管線。 | `SurveyManagement` |
-| `user-emitter.service.ts` | 使用者核心業務派發中心，集中協調登入、註冊、登出、發布與二次確認對話框回呼。 | `DialogService` |
+| `auth-action.service.ts` | 會員認證與帳號行為專職服務，落實 SRP 單一責任，處理登入、註冊、登出、忘記密碼與個人資料更新。 | `ApiClientService`, `UserStateService` |
+| `survey-action.service.ts` | 問卷生命週期專職服務，落實 SRP 單一責任，處理問卷儲存、發布、刪除、公開時限切換與填答提交。 | `ApiClientService`, `SurveyGetterService` |
+| `user-emitter.service.ts` | 輕量化門面服務 (Facade Pattern)，對齊舊有呼叫端契約，委派調用 `AuthAction` 與 `SurveyAction`。 | 各 UI 元件向後相容調用 |
+| `survey-analytics.service.ts`| 前端數據分析核心服務，專職報表資料讀取、題型指標聚合與權限驗證，消滅上帝類別。 | `SurveyManagementComponent` |
+| `survey-export.service.ts` | 報表檔案匯出專職服務，落實 SRP 單一責任，處理 CSV (UTF-8 BOM)、Excel、SPSS、JSON 格式化與下載。 | `SurveyAnalyticsService` |
+| `survey-analytics-fallback.service.ts` | 離線/無後端降級報表生成專職服務，專職擬真題目統計、滿意度分數與受訪者輪廓生成。 | `SurveyAnalyticsService` |
 | `dialog.service.ts` | 全域確認對話框排程服務，基於 RxJS Subject 支援 noticeMode、checkMode 與倒數自動關閉。 | `DialogComponent` |
 | `validation.service.ts` | 集中式表單驗證服務，實作身分證字號雙向權重校驗（Modulo 10）、臺灣手機號與密碼強度。 | 前端所有輸入表單 |
 | `utility.service.ts` | 通用輔助工具，提供平滑捲動 (`scrollToTopSmooth`)、隨機 ID 生成與文字安全過濾。 | 全域 UI 元件 |
@@ -194,11 +198,12 @@ flowchart LR
 
 ### 4.7 資料庫結構與種子腳本 (`backend/src/main/resources/database/`)
 
+> **唯一真實來源 (SSOT) 鐵律**: 全系統關聯式資料庫結構與種子資料永遠且僅能存放於此目錄（`schema.sql` 與 `data.sql`），現在是、未來也是！嚴格禁止在專案根目錄散落額外 SQL 檔案。
+
 | 檔案路徑 | 具體用途與責任描述 |
 | :--- | :--- |
-| `schema.sql` | 8 張正規化資料表結構之 DDL 腳本，包含外鍵級聯約束與效能索引。 |
-| `data.sql` | 系統預設 12 位會員帳號（含 10 位跨領域專家）、24 筆高擬真問卷專案（100% 覆蓋 12 大主題與 7 大題型）與 100 筆真實填答數據之 DML 種子重設腳本。 |
-| `init.sql` | 一鍵全量重置與初始化腳本，支援 MySQL CLI 直接整庫重建。 |
+| `schema.sql` | 9 大正規化資料表結構之 DDL 腳本，嚴格遵循第三正規化 (3NF)、CHAR(10) 定長唯一索引、TINYINT 狀態與級聯約束（含方案 A 全量覆蓋與方案 B 增量更新）。 |
+| `data.sql` | 系統預設 12 位會員帳號（含管理員與 10 位領域專家）、4 筆高品質統計問卷專案與真實填答數據之 DML 種子重設腳本（性別全面標準化為 TINYINT UNSIGNED 1/2/0）。 |
 
 ---
 

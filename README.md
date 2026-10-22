@@ -97,15 +97,16 @@ stateDiagram-v2
 %%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'attributeBackgroundColorOdd': '#060a14', 'attributeBackgroundColorEven': '#0b0f19' }, 'themeCSS': '.er.relationshipLabelBox { fill: none !important; stroke: none !important; display: none !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }' }}%%
 erDiagram
     USERS ||--o{ SURVEYS : "建立者與問卷"
-    USERS ||--o{ VERIFICATION_TOKENS : "電子郵件驗證"
-    SURVEYS ||--|| SURVEY_BASIC_INFO_CONFIGS : "基本資料收集設定"
-    SURVEYS ||--o{ SURVEY_QUESTIONS : "問卷包含題目"
-    SURVEY_QUESTIONS ||--o{ SURVEY_OPTIONS : "題目包含選項"
-    SURVEYS ||--o{ SUBMISSIONS : "問卷填答紀錄"
-    SUBMISSIONS ||--|| SUBMISSION_BASIC_INFOS : "受訪者填報輪廓"
-    SUBMISSIONS ||--o{ SUBMISSION_ANSWERS : "填答作答明細"
-    SURVEY_QUESTIONS ||--o{ SUBMISSION_ANSWERS : "關聯題目"
-    SURVEY_OPTIONS ||--o{ SUBMISSION_ANSWERS : "關聯選項"
+    USERS ||--o{ SURVEYS : "1對多發起問卷"
+    USERS |o--o{ VERIFICATION_TOKENS : "1對多OTP權杖(選填關聯)"
+    SURVEYS ||--|| SURVEY_BASIC_INFO_CONFIGS : "1對1收集配置"
+    SURVEYS ||--o{ SURVEY_QUESTIONS : "1對多問卷題目"
+    SURVEY_QUESTIONS ||--o{ SURVEY_OPTIONS : "1對多題目選項"
+    SURVEYS ||--o{ SUBMISSIONS : "1對多填答主紀錄"
+    SUBMISSIONS ||--|| SUBMISSION_BASIC_INFOS : "1對1受訪者輪廓"
+    SUBMISSIONS ||--o{ SUBMISSION_ANSWERS : "1對多答案明細"
+    SURVEY_QUESTIONS ||--o{ SUBMISSION_ANSWERS : "題目作答關聯"
+    SURVEY_OPTIONS |o--o{ SUBMISSION_ANSWERS : "選項選取關聯(選擇題可選)"
 
     USERS {
         bigint id PK "會員唯一流水號"
@@ -113,22 +114,23 @@ erDiagram
         varchar email UK "電子郵件(100)"
         varchar password_hash "Argon2id密碼雜湊(255)"
         varchar full_name "真實姓名(50)"
-        varchar phone "聯絡手機(20)"
-        varchar identity_card "身分證字號(20)"
-        varchar role "權限角色(ROLE_ADMIN/ROLE_USER/ROLE_GUEST)"
-        varchar status "帳號狀態(ACTIVE/DISABLED)"
+        char phone UK "定長聯絡手機(10)"
+        char identity_card UK "定長身分證統一編號(10)"
+        varchar role "預設ROLE_USER 權限(20)"
+        varchar status "預設ACTIVE 狀態(20)"
         datetime created_at "建立時間"
-        datetime updated_at "最後更新時間"
+        datetime updated_at "最後異動時間"
         datetime deleted_at "軟刪除時間"
     }
 
     VERIFICATION_TOKENS {
         bigint id PK "驗證碼流水號"
+        bigint user_id FK "關聯會員流水號(可為NULL)"
         varchar email "驗證信箱(100)"
-        varchar code "時效性驗證碼(10)"
+        varchar code "6至10位時效驗證碼(10)"
         varchar token_type "驗證類型(REGISTER/FORGOT_PASSWORD)"
         datetime expires_at "過期時效"
-        boolean is_used "是否已核銷使用"
+        tinyint is_used "預設0 TINYINT(1) 是否已核銷"
         datetime created_at "生成時間"
     }
 
@@ -137,41 +139,41 @@ erDiagram
         bigint user_id FK "發起人會員編號"
         varchar title "問卷標題(150)"
         text description "問卷前言說明"
-        varchar category "12大主題分類(50)"
-        boolean is_public_to_lobby "是否公開於問卷大廳"
-        boolean is_open "是否開放填答中"
-        longtext cover_image_url "封面圖片URL或Base64"
+        varchar category "預設綜合調查 12大主題分類(50)"
+        tinyint is_public_to_lobby "預設1 TINYINT(1) 是否公開大廳"
+        tinyint is_open "預設1 TINYINT(1) 是否開放填答"
+        longtext cover_image_url "封面宣傳圖URL或Base64"
         datetime start_date "開放填答起始日期"
         datetime end_date "填答截止日期"
-        int view_count "瀏覽閱覽次數"
+        int view_count "預設0 瀏覽閱覽次數"
         datetime created_at "建立時間"
-        datetime updated_at "更新時間"
+        datetime updated_at "最後更新時間"
         datetime deleted_at "軟刪除時間"
     }
 
     SURVEY_BASIC_INFO_CONFIGS {
-        bigint id PK "設定流水號"
-        bigint survey_id FK "關聯問卷編號"
-        boolean collect_basic_info "是否啟用受訪者資料收集"
-        boolean require_name "是否收集姓名"
-        boolean require_gender "是否收集生理性別"
-        boolean require_age "是否收集年齡層"
-        boolean require_birthday "是否收集生日"
-        boolean require_national_id "是否收集身分證字號"
-        boolean require_phone "是否收集行動電話"
-        boolean require_home_phone "是否收集市內電話"
-        boolean require_email "是否收集電子信箱"
-        boolean require_industry "是否收集產業類別"
-        boolean require_job_title "是否收集職稱"
-        boolean require_department "是否收集任職部門"
-        boolean require_employee_id "是否收集員工編號"
-        boolean require_academic_major "是否收集科系所"
-        boolean require_class_name "是否收集班級名稱"
-        boolean require_student_id "是否收集學號"
-        boolean require_height "是否收集身高"
-        boolean require_weight "是否收集體重"
-        boolean require_residence "是否收集居住城市"
-        boolean require_registered_address "是否收集戶籍地址"
+        bigint id PK "配置設定流水號"
+        bigint survey_id FK "所屬問卷編號(1對1唯一)"
+        tinyint collect_basic_info "預設1 TINYINT(1) 啟用輪廓收集"
+        tinyint require_name "預設1 TINYINT(1) 收集姓名"
+        tinyint require_gender "預設1 TINYINT(1) 收集生理性別"
+        tinyint require_age "預設1 TINYINT(1) 收集年齡層"
+        tinyint require_birthday "預設0 TINYINT(1) 收集生日"
+        tinyint require_national_id "預設0 TINYINT(1) 收集身分證號"
+        tinyint require_phone "預設0 TINYINT(1) 收集行動電話"
+        tinyint require_home_phone "預設0 TINYINT(1) 收集住家市話"
+        tinyint require_email "預設0 TINYINT(1) 收集電子信箱"
+        tinyint require_industry "預設0 TINYINT(1) 收集所屬產業"
+        tinyint require_job_title "預設0 TINYINT(1) 收集職位職稱"
+        tinyint require_department "預設0 TINYINT(1) 收集服務部門"
+        tinyint require_employee_id "預設0 TINYINT(1) 收集員工工號"
+        tinyint require_academic_major "預設0 TINYINT(1) 收集就讀科系"
+        tinyint require_class_name "預設0 TINYINT(1) 收集就讀班級"
+        tinyint require_student_id "預設0 TINYINT(1) 收集學生學號"
+        tinyint require_height "預設0 TINYINT(1) 收集受訪者身高"
+        tinyint require_weight "預設0 TINYINT(1) 收集受訪者體重"
+        tinyint require_residence "預設0 TINYINT(1) 收集居住縣市"
+        tinyint require_registered_address "預設0 TINYINT(1) 收集戶籍地址"
     }
 
     SURVEY_QUESTIONS {
@@ -181,61 +183,61 @@ erDiagram
         varchar type "題型(SINGLE/MULTI/BOOLEAN/RATING/TEXT/TIME/DATE)"
         varchar question_text "題目主體敘述(500)"
         longtext image_url "題目附加附圖"
-        boolean is_required "是否為必填題目"
-        int sort_order "題目排列順序"
-        int min_rating "評分量表最小值(0或1)"
-        int max_rating "評分量表最大值(5或10)"
+        tinyint is_required "預設1 TINYINT(1) 是否必填"
+        int sort_order "預設1 題目排列順序"
+        int min_rating "預設1 評分量表最小值(0或1)"
+        int max_rating "預設5 評分量表最大值(5或10)"
         datetime created_at "建立時間"
-        datetime updated_at "更新時間"
+        datetime updated_at "最後更新時間"
     }
 
     SURVEY_OPTIONS {
         bigint id PK "選項唯一流水號"
         bigint question_id FK "所屬題目編號"
         varchar option_text "選項文字內容(255)"
-        int sort_order "選項排列順序"
-        varchar trigger_question_uid "條件跳題解鎖目標題目代碼"
+        int sort_order "預設1 選項排列順序"
+        varchar trigger_question_uid "條件跳題解鎖目標題目UID(50)"
     }
 
     SUBMISSIONS {
         bigint id PK "填答主紀錄流水號"
-        bigint survey_id FK "填答之問卷編號"
+        bigint survey_id FK "作答之問卷編號"
         varchar ip_address "受訪者IP位址(45)"
         int duration_seconds "作答耗時秒數"
-        datetime submittedAt "提交作答時間"
+        datetime submitted_at "提交作答時間戳"
     }
 
     SUBMISSION_BASIC_INFOS {
         bigint id PK "基本輪廓流水號"
-        bigint submission_id FK "關聯填答主紀錄"
-        varchar name "填報姓名(50)"
-        varchar gender "性別(10)"
+        bigint submission_id FK "關聯填答主紀錄(1對1唯一)"
+        varchar name "填報真實姓名(50)"
+        tinyint gender "預設0 生理性別(0:未指定,1:男,2:女,3:其他)"
         varchar age_group "年齡級距(30)"
-        varchar birthday "生日(20)"
-        varchar national_id "身分證號(20)"
-        varchar phone "手機門號(20)"
-        varchar home_phone "市話(30)"
-        varchar email "電子郵件(100)"
-        varchar industry "產業別(50)"
-        varchar job_title "職稱(50)"
-        varchar department "部門(50)"
-        varchar employee_id "員工代號(50)"
-        varchar academic_major "系所(50)"
-        varchar class_name "班別(50)"
-        varchar student_id "學號(50)"
-        varchar height "身高(20)"
-        varchar weight "體重(20)"
-        varchar residence "現居地(50)"
-        varchar registered_address "戶籍地址(100)"
+        varchar birthday "出生年月日(20)"
+        char national_id "定長身分證統一編號(10)"
+        char phone "定長聯絡手機(10)"
+        varchar home_phone "住家市話(20)"
+        varchar email "聯絡電子信箱(100)"
+        varchar industry "所屬產業(50)"
+        varchar job_title "擔任職稱(50)"
+        varchar department "任職部門(50)"
+        varchar employee_id "公司員工代號(50)"
+        varchar academic_major "修讀系所(50)"
+        varchar class_name "班別班級(50)"
+        varchar student_id "在校學號(50)"
+        double height "身高數據cm"
+        double weight "體重數據kg"
+        varchar residence "居住縣市(50)"
+        varchar registered_address "戶籍地址(200)"
     }
 
     SUBMISSION_ANSWERS {
-        bigint id PK "填答明細流水號"
-        bigint submission_id FK "所屬填答主紀錄編號"
-        bigint question_id FK "關聯之題目編號"
-        bigint option_id FK "選取之選項編號(非選擇題為NULL)"
-        text text_answer "簡答或日期時間填答文字"
-        int rating_value "量表評分值"
+        bigint id PK "作答明細流水號"
+        bigint submission_id FK "所屬填答主紀錄"
+        bigint question_id FK "作答之題目編號"
+        bigint option_id FK "選取之選項編號(可選0..1)"
+        text text_answer "簡答題文字或日期時間字串"
+        int rating_value "量表評分分值(1至10)"
     }
 ```
 
@@ -299,9 +301,10 @@ survey-flow/
 ### 前置需求
 - **Node.js**: `24.x` (或相容之 LTS 版本)
 - **Java JDK**: `21` (建議 Eclipse Temurin 21)
-- **MySQL 資料庫**: `8.0+` 或可存取之 TiDB Cloud 執行個體
+- **MySQL 資料庫**: `8.0+` 或可存取之 TiDB Cloud 執行個體（唯一結構與種子腳本永遠位於 `backend/src/main/resources/database/`）
 
-### 步驟 1: 後端 Spring Boot 啟動
+### 步驟 1: 資料庫初始化與後端 Spring Boot 啟動
+- **資料庫初始化 (SSOT)**: 直接在 TiDB Cloud 或 MySQL 執行 [`backend/src/main/resources/database/schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql)（內含全量方案 A 與增量方案 B）與可選的 [`data.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/data.sql)。
 ```bash
 cd backend
 # 執行全套單元測試驗證 (28/28 PASS，包含 Controller 與 Service)
