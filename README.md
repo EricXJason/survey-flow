@@ -3,9 +3,9 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **專案定位**: 企業級全端問卷引擎與數據視覺化分析平台。支援動態題目編排、條件跳題解鎖、多層級作答防護、統計圖表即時聚合與權限控管。  
 > **語言與執行環境版本**:
-> - **前端 (Frontend)**: Node.js 24.18.0 / Angular 19.0.0 / TypeScript 5.6.2 / Angular CDK 19.2.19
-> - **後端 (Backend)**: Java 21.0.12 / Spring Boot 4.1.1 / Spring Security 6.x / JJWT 0.12.6
-> - **持久化資料庫 (Database)**: MySQL 8.0.36
+> - **前端 (Frontend)**: Node.js 20.x / Angular 19.0.0 / TypeScript 5.6.2 / Angular CDK 19.2.19 (Cloudflare Pages 託管)
+> - **後端 (Backend)**: Java 21 / Spring Boot 4.1.1 / Spring Security 6.x / JJWT 0.12.6 (Render Docker 容器化)
+> - **持久化資料庫 (Database)**: TiDB Cloud Serverless (相容 MySQL 8.0 協定，分散式資料庫)
 
 ---
 
@@ -17,10 +17,14 @@ SurveyFlow 採**前後端完全解耦架構**，前端與後端分別專注於�
 - **領域驅動與分層隔離 (DDD & Layered Architecture)**:
   - **後端**: 嚴格遵守 `Controller ➔ Service ➔ Repository ➔ Entity` 物理隔離，DTO 作為外部資料傳輸介質，防止資料庫實體洩漏。
   - **前端**: 採用 Angular 核心 Signals 反應式狀態流，搭配依賴注入 (DI) 與模組化 Service 負責資料與防呆檢核。
-- **無狀態認證與企業級資安 (Stateless Security)**:
-  - 雙 Token 認證（Access Token 15 分鐘 + Refresh Token 7 天旋轉機制）。
+- **無狀態認證與零信任資安 (Zero-Trust Security)**:
+  - 零信任雙 Token 認證：15 分鐘短效 Access Token + 7 天長效 Refresh Token（支援 HttpOnly Cookie 傳輸與防重放輪替 Rotation，搭配高效記憶體黑名單微秒級吊銷）。
   - 密碼採用國際資安標準 **Argon2id** 雜湊演算法加密。
   - API 統一回傳格式與全域例外攔截機制（`GlobalExceptionHandler`）。
+- **現代雲端與全自動 CI/CD 管線**:
+  - **Docker 容器化**: 後端採用 Eclipse Temurin 21 Alpine 多階段構建，運行非 root 輕量容器。
+  - **雲端託管架構**: Render (後端 Web Service) + Cloudflare Pages (前端 Anycast CDN) + TiDB Cloud Serverless (雲端持久化)。
+  - **GitHub Actions**: 代碼推送自動執行雙軌 CI 單元測試與自動化建置。
 - **零橫向拖曳 RWD 與 WCAG 2.2 無障礙相容**:
   - 表格卡片化流體適應，在各式行動裝置螢幕下保證零破版、免橫向滾動。
 
