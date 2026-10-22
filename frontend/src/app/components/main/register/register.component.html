@@ -3,217 +3,277 @@
     <!-- 頁頭資訊 -->
     <header class="auth-header">
       <div class="auth-badge-wrap">
-        <span class="auth-badge">建立帳號</span>
+        <span class="auth-badge">{{ isVerifyingEmail ? '信箱驗證' : '建立帳號' }}</span>
       </div>
-      <h1 class="auth-title">會員註冊</h1>
-      <p class="auth-subtitle">加入 SurveyFlow，開啟您的專業線上問卷設計與數據管理體驗</p>
+      <h1 class="auth-title">{{ isVerifyingEmail ? '電子信箱驗證' : '會員註冊' }}</h1>
+      <p class="auth-subtitle">
+        {{ isVerifyingEmail ? '請輸入發送至您信箱的 6 位數安全啟用碼以開通帳號' : '加入 SurveyFlow，開啟您的專業線上問卷設計與數據管理體驗' }}
+      </p>
     </header>
 
-    <!-- 註冊表單：統一平衡雙欄結構 -->
-    <form [formGroup]="formBuilderGroup" (ngSubmit)="checkRegisterData()" novalidate class="register-form">
-      
-      <!-- 區塊一：帳號與安全設定 -->
-      <section class="form-section-block">
-        <div class="form-section-title">帳號與安全設定</div>
-        <div class="form-grid-2col">
-          <!-- 帳號 -->
-          <div class="form-group">
-            <label for="reg-username">帳號 <span class="required-star">*</span></label>
-            <input
-              id="reg-username"
-              type="text"
-              formControlName="username"
-              maxlength="12"
-              placeholder="請輸入 6 至 12 碼英數字"
-              autocomplete="username"
-              [attr.aria-invalid]="formBuilderGroup.get('username')?.invalid && formBuilderGroup.get('username')?.touched"
-            />
-            @if (formBuilderGroup.get("username")?.invalid && formBuilderGroup.get("username")?.touched) {
-              <span class="field-error" role="alert">請輸入 6 至 12 碼有效英數字帳號</span>
-            }
-          </div>
-
-          <!-- 生理性別 -->
-          <div class="form-group gender-group">
-            <fieldset class="radio-fieldset">
-              <legend class="fieldset-legend">生理性別 <span class="required-star">*</span></legend>
-              <div class="radio-group" role="radiogroup">
-                <label class="radio-label">
-                  <input type="radio" value="male" formControlName="gender" />
-                  <span>男</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" value="female" formControlName="gender" />
-                  <span>女</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" value="other" formControlName="gender" />
-                  <span>其他</span>
-                </label>
-              </div>
-            </fieldset>
-            @if (formBuilderGroup.get("gender")?.invalid && formBuilderGroup.get("gender")?.touched) {
-              <span class="field-error" role="alert">請選擇生理性別</span>
-            }
-          </div>
-
-          <!-- 設定密碼 -->
-          <div class="form-group">
-            <label for="reg-password">設定密碼 <span class="required-star">*</span></label>
-            <input
-              id="reg-password"
-              type="password"
-              formControlName="password"
-              maxlength="16"
-              placeholder="8 至 16 碼（含大小寫字母、數字及符號）"
-              autocomplete="new-password"
-              (copy)="$event.preventDefault()"
-              (cut)="$event.preventDefault()"
-              [attr.aria-invalid]="formBuilderGroup.get('password')?.invalid && formBuilderGroup.get('password')?.touched"
-            />
-            @if (formBuilderGroup.get("password")?.invalid && formBuilderGroup.get("password")?.touched) {
-              <span class="field-error" role="alert">密碼須為 8–16 碼且包含大小寫字母、數字及特殊符號</span>
-            }
-          </div>
-
-          <!-- 確認密碼 -->
-          <div class="form-group">
-            <label for="reg-confirm-password">確認密碼 <span class="required-star">*</span></label>
-            <input
-              id="reg-confirm-password"
-              type="password"
-              formControlName="confirmPassword"
-              maxlength="16"
-              placeholder="再次輸入密碼核對"
-              autocomplete="new-password"
-              (paste)="$event.preventDefault()"
-              (copy)="$event.preventDefault()"
-              (cut)="$event.preventDefault()"
-              [attr.aria-invalid]="(formBuilderGroup.get('confirmPassword')?.invalid || formBuilderGroup.hasError('passwordMismatch')) && formBuilderGroup.get('confirmPassword')?.touched"
-            />
-            @if ((formBuilderGroup.get("confirmPassword")?.invalid || formBuilderGroup.hasError("passwordMismatch")) && formBuilderGroup.get("confirmPassword")?.touched) {
-              <span class="field-error" role="alert">確認密碼未填寫或與設定密碼不一致</span>
-            }
-          </div>
-        </div>
-      </section>
-
-      <!-- 區塊二：個人基本資訊 -->
-      <section class="form-section-block">
-        <div class="form-section-title">個人基本資訊</div>
-        <div class="form-grid-2col">
-          <!-- 真實姓名 -->
-          <div class="form-group">
-            <label for="reg-name">真實姓名 <span class="required-star">*</span></label>
-            <input
-              id="reg-name"
-              type="text"
-              formControlName="name"
-              maxlength="6"
-              placeholder="2 至 6 字中文姓名"
-              autocomplete="name"
-              [attr.aria-invalid]="formBuilderGroup.get('name')?.invalid && formBuilderGroup.get('name')?.touched"
-            />
-            @if (formBuilderGroup.get("name")?.invalid && formBuilderGroup.get("name")?.touched) {
-              <span class="field-error" role="alert">請輸入 2 至 6 字中文真實姓名</span>
-            }
-          </div>
-
-          <!-- 身分證字號 -->
-          <div class="form-group">
-            <label for="reg-national-id">身分證字號 <span class="required-star">*</span></label>
-            <input
-              id="reg-national-id"
-              type="text"
-              formControlName="nationalId"
-              maxlength="10"
-              placeholder="例如：A123456789"
-              [attr.aria-invalid]="formBuilderGroup.get('nationalId')?.invalid && formBuilderGroup.get('nationalId')?.touched"
-            />
-            @if (formBuilderGroup.get("nationalId")?.invalid && formBuilderGroup.get("nationalId")?.touched) {
-              <span class="field-error" role="alert">請輸入正確身分證字號</span>
-            }
-          </div>
-
-          <!-- 電子信箱 -->
-          <div class="form-group">
-            <label for="reg-email">電子信箱 <span class="required-star">*</span></label>
-            <input
-              id="reg-email"
-              type="email"
-              formControlName="email"
-              placeholder="例如：user@example.com"
-              autocomplete="email"
-              [attr.aria-invalid]="formBuilderGroup.get('email')?.invalid && formBuilderGroup.get('email')?.touched"
-            />
-            @if (formBuilderGroup.get("email")?.invalid && formBuilderGroup.get("email")?.touched) {
-              <span class="field-error" role="alert">請輸入正確電子信箱</span>
-            }
-          </div>
-
-          <!-- 手機號碼 -->
-          <div class="form-group">
-            <label for="reg-phone">手機號碼 <span class="required-star">*</span></label>
-            <input
-              id="reg-phone"
-              type="tel"
-              formControlName="phone"
-              maxlength="10"
-              placeholder="例如：0912345678"
-              autocomplete="tel"
-              [attr.aria-invalid]="formBuilderGroup.get('phone')?.invalid && formBuilderGroup.get('phone')?.touched"
-            />
-            @if (formBuilderGroup.get("phone")?.invalid && formBuilderGroup.get("phone")?.touched) {
-              <span class="field-error" role="alert">請輸入 09 開頭 10 碼手機</span>
-            }
-          </div>
-
-          <!-- 出生日期 -->
-          <div class="form-group">
-            <label for="reg-birthday">出生日期 <span class="required-star">*</span></label>
-            <input
-              id="reg-birthday"
-              type="date"
-              formControlName="birthday"
-              min="1900-01-01"
-              [max]="maxBirthday"
-              [attr.aria-invalid]="formBuilderGroup.get('birthday')?.invalid && formBuilderGroup.get('birthday')?.touched"
-            />
-            @if (formBuilderGroup.get("birthday")?.invalid && formBuilderGroup.get("birthday")?.touched) {
-              <span class="field-error" role="alert">請選擇出生日期</span>
-            }
-          </div>
-
-          <!-- 身分職業 -->
-          <div class="form-group">
-            <label for="reg-role">身分職業 <span class="required-star">*</span></label>
-            <select
-              id="reg-role"
-              formControlName="role"
-              [attr.aria-invalid]="formBuilderGroup.get('role')?.invalid && formBuilderGroup.get('role')?.touched"
-            >
-              <option value="" disabled selected>請選擇身分職業</option>
-              @for (c of careerOptions; track c.value) {
-                <option [value]="c.value">{{ c.label }}</option>
+    @if (!isVerifyingEmail) {
+      <!-- 步驟 1: 註冊資料填寫表單 -->
+      <form [formGroup]="formBuilderGroup" (ngSubmit)="checkRegisterData()" novalidate class="register-form">
+        
+        <!-- 區塊一：帳號與安全設定 -->
+        <section class="form-section-block">
+          <div class="form-section-title">帳號與安全設定</div>
+          <div class="form-grid-2col">
+            <!-- 帳號 -->
+            <div class="form-group">
+              <label for="reg-username">帳號 <span class="required-star">*</span></label>
+              <input
+                id="reg-username"
+                type="text"
+                formControlName="username"
+                maxlength="12"
+                placeholder="請輸入 6 至 12 碼英數字"
+                autocomplete="username"
+                [attr.aria-invalid]="formBuilderGroup.get('username')?.invalid && formBuilderGroup.get('username')?.touched"
+              />
+              @if (formBuilderGroup.get("username")?.invalid && formBuilderGroup.get("username")?.touched) {
+                <span class="field-error" role="alert">請輸入 6 至 12 碼有效英數字帳號</span>
               }
-            </select>
-            @if (formBuilderGroup.get("role")?.invalid && formBuilderGroup.get("role")?.touched) {
-              <span class="field-error" role="alert">請選擇一個身分職業</span>
-            }
+            </div>
+
+            <!-- 生理性別 -->
+            <div class="form-group gender-group">
+              <fieldset class="radio-fieldset">
+                <legend class="fieldset-legend">生理性別 <span class="required-star">*</span></legend>
+                <div class="radio-group" role="radiogroup">
+                  <label class="radio-label">
+                    <input type="radio" value="male" formControlName="gender" />
+                    <span>男</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" value="female" formControlName="gender" />
+                    <span>女</span>
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" value="other" formControlName="gender" />
+                    <span>其他</span>
+                  </label>
+                </div>
+              </fieldset>
+              @if (formBuilderGroup.get("gender")?.invalid && formBuilderGroup.get("gender")?.touched) {
+                <span class="field-error" role="alert">請選擇生理性別</span>
+              }
+            </div>
+
+            <!-- 設定密碼 -->
+            <div class="form-group">
+              <label for="reg-password">登入密碼 <span class="required-star">*</span></label>
+              <input
+                id="reg-password"
+                type="password"
+                formControlName="password"
+                maxlength="16"
+                placeholder="8 至 16 碼高強度密碼"
+                autocomplete="new-password"
+                (copy)="$event.preventDefault()"
+                (cut)="$event.preventDefault()"
+                [attr.aria-invalid]="formBuilderGroup.get('password')?.invalid && formBuilderGroup.get('password')?.touched"
+              />
+              @if (formBuilderGroup.get("password")?.invalid && formBuilderGroup.get("password")?.touched) {
+                <span class="field-error" role="alert">
+                  須為 8 至 16 碼，且同時包含英文大小寫、數字與特殊符號（&#64;$!%*?&._-#）
+                </span>
+              }
+            </div>
+
+            <!-- 確認密碼 -->
+            <div class="form-group">
+              <label for="reg-confirm-password">確認密碼 <span class="required-star">*</span></label>
+              <input
+                id="reg-confirm-password"
+                type="password"
+                formControlName="confirmPassword"
+                maxlength="16"
+                placeholder="請再次輸入密碼核對"
+                autocomplete="new-password"
+                (paste)="$event.preventDefault()"
+                (copy)="$event.preventDefault()"
+                (cut)="$event.preventDefault()"
+                [attr.aria-invalid]="(formBuilderGroup.get('confirmPassword')?.invalid || formBuilderGroup.hasError('passwordMismatch')) && formBuilderGroup.get('confirmPassword')?.touched"
+              />
+              @if ((formBuilderGroup.get("confirmPassword")?.invalid || formBuilderGroup.hasError("passwordMismatch")) && formBuilderGroup.get("confirmPassword")?.touched) {
+                <span class="field-error" role="alert">確認密碼未填寫或與密碼不相符</span>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- 區塊二：個人基本資訊 -->
+        <section class="form-section-block">
+          <div class="form-section-title">個人基本資訊</div>
+          <div class="form-grid-2col">
+            <!-- 真實中文姓名 -->
+            <div class="form-group">
+              <label for="reg-name">真實中文姓名 <span class="required-star">*</span></label>
+              <input
+                id="reg-name"
+                type="text"
+                formControlName="name"
+                maxlength="6"
+                placeholder="例如：王小明（2 至 6 字）"
+                autocomplete="name"
+                [attr.aria-invalid]="formBuilderGroup.get('name')?.invalid && formBuilderGroup.get('name')?.touched"
+              />
+              @if (formBuilderGroup.get("name")?.invalid && formBuilderGroup.get("name")?.touched) {
+                <span class="field-error" role="alert">請輸入 2 至 6 字之繁體中文姓名</span>
+              }
+            </div>
+
+            <!-- 出生日期 -->
+            <div class="form-group">
+              <label for="reg-birthday">出生日期 <span class="required-star">*</span></label>
+              <input
+                id="reg-birthday"
+                type="date"
+                formControlName="birthday"
+                [max]="maxBirthday"
+                autocomplete="bday"
+                [attr.aria-invalid]="formBuilderGroup.get('birthday')?.invalid && formBuilderGroup.get('birthday')?.touched"
+              />
+              @if (formBuilderGroup.get("birthday")?.invalid && formBuilderGroup.get("birthday")?.touched) {
+                <span class="field-error" role="alert">請選擇出生日期且不得晚於今日</span>
+              }
+            </div>
+
+            <!-- 中華民國身分證字號 -->
+            <div class="form-group">
+              <label for="reg-national-id">身分證字號 <span class="required-star">*</span></label>
+              <input
+                id="reg-national-id"
+                type="text"
+                formControlName="nationalId"
+                maxlength="10"
+                placeholder="首字英文大寫＋9 碼數字"
+                autocomplete="off"
+                [attr.aria-invalid]="formBuilderGroup.get('nationalId')?.invalid && formBuilderGroup.get('nationalId')?.touched"
+              />
+              @if (formBuilderGroup.get("nationalId")?.invalid && formBuilderGroup.get("nationalId")?.touched) {
+                <span class="field-error" role="alert">請輸入格式合規之身分證字號</span>
+              }
+            </div>
+
+            <!-- 聯絡電話 / 手機 -->
+            <div class="form-group">
+              <label for="reg-phone">手機門號 <span class="required-star">*</span></label>
+              <input
+                id="reg-phone"
+                type="tel"
+                formControlName="phone"
+                maxlength="10"
+                placeholder="例如：0912345678"
+                autocomplete="tel"
+                [attr.aria-invalid]="formBuilderGroup.get('phone')?.invalid && formBuilderGroup.get('phone')?.touched"
+              />
+              @if (formBuilderGroup.get("phone")?.invalid && formBuilderGroup.get("phone")?.touched) {
+                <span class="field-error" role="alert">請輸入 09 開頭之 10 碼臺灣手機門號</span>
+              }
+            </div>
+
+            <!-- 電子信箱 -->
+            <div class="form-group">
+              <label for="reg-email">電子信箱 <span class="required-star">*</span></label>
+              <input
+                id="reg-email"
+                type="email"
+                formControlName="email"
+                placeholder="例如：user@example.com (將接收驗證碼)"
+                autocomplete="email"
+                [attr.aria-invalid]="formBuilderGroup.get('email')?.invalid && formBuilderGroup.get('email')?.touched"
+              />
+              @if (formBuilderGroup.get("email")?.invalid && formBuilderGroup.get("email")?.touched) {
+                <span class="field-error" role="alert">請輸入格式正確之電子信箱</span>
+              }
+            </div>
+
+            <!-- 身分職業 -->
+            <div class="form-group">
+              <label for="reg-role">身分職業 <span class="required-star">*</span></label>
+              <select
+                id="reg-role"
+                formControlName="role"
+                [attr.aria-invalid]="formBuilderGroup.get('role')?.invalid && formBuilderGroup.get('role')?.touched"
+              >
+                <option value="" disabled selected>請選擇身分職業</option>
+                @for (c of careerOptions; track c.value) {
+                  <option [value]="c.value">{{ c.label }}</option>
+                }
+              </select>
+              @if (formBuilderGroup.get("role")?.invalid && formBuilderGroup.get("role")?.touched) {
+                <span class="field-error" role="alert">請選擇一個身分職業</span>
+              }
+            </div>
+          </div>
+        </section>
+
+        <!-- 底部操作按鈕與引導 -->
+        <div class="form-actions-footer">
+          <button type="submit" class="btn btn-primary btn-submit-reg" [disabled]="isSubmitting">
+            {{ isSubmitting ? '正在送出註冊並寄發驗證信...' : '確認送出並接收驗證碼' }}
+          </button>
+          <div class="card-bottom-nav">
+            <span>已經有會員帳號？</span>
+            <a routerLink="/log-in" class="btn-link font-bold">直接前往登入</a>
           </div>
         </div>
-      </section>
+      </form>
+    } @else {
+      <!-- 步驟 2: 電子信箱 6 碼驗證面板 -->
+      <div class="verify-email-panel">
+        <div class="verify-icon-wrap" aria-hidden="true">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+          </svg>
+        </div>
 
-      <!-- 底部操作按鈕與引導 -->
-      <div class="form-actions-footer">
-        <button type="submit" class="btn btn-primary btn-submit-reg">
-          確認送出註冊
-        </button>
-        <div class="card-bottom-nav">
-          <span>已經有會員帳號？</span>
-          <a routerLink="/log-in" class="btn-link font-bold">直接前往登入</a>
+        <h2 class="verify-title">請驗證您的電子信箱</h2>
+        <p class="verify-desc">
+          我們已將 6 位數安全啟用碼寄送至您的信箱：<br/>
+          <span class="user-email-badge">{{ registeredEmail }}</span>
+        </p>
+
+        <div class="form-group code-input-group">
+          <label for="reg-verify-code">6 位數啟用驗證碼</label>
+          <input
+            id="reg-verify-code"
+            type="text"
+            [(ngModel)]="verificationCode"
+            maxlength="6"
+            placeholder="000000"
+            autocomplete="one-time-code"
+            class="code-input"
+          />
+        </div>
+
+        <div class="verify-actions">
+          <button
+            type="button"
+            class="btn btn-primary btn-block"
+            (click)="submitEmailVerification()"
+            [disabled]="isSubmittingCode || verificationCode.trim().length !== 6"
+          >
+            {{ isSubmittingCode ? '正在開通帳號...' : '驗證開通並直接登入' }}
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-ghost btn-block"
+            (click)="resendVerificationCode()"
+            [disabled]="resendCountdown > 0"
+          >
+            {{ resendCountdown > 0 ? ('重新發送驗證信 (' + resendCountdown + 's)') : '重新發送驗證碼' }}
+          </button>
+
+          <button type="button" class="btn btn-ghost btn-block" (click)="backToRegisterForm()">
+            返回修改註冊資料
+          </button>
         </div>
       </div>
-    </form>
+    }
   </div>
 </div>

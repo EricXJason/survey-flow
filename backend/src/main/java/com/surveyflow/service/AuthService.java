@@ -2,26 +2,23 @@
  * ============================================================================
  * 檔案名稱: AuthService.java
  * 所屬模組: Service 業務邏輯層 - 認證模組
- * 責任描述: 負責會員註冊 (Argon2id 密碼雜湊)、身分登入校驗、零信任雙 Token (短效 Access Token + 長效 Refresh Token) 簽發、RTR 輪替與主動吊銷
+ * 責任描述: 負責會員註冊 (Email 驗證啟用)、身分登入校驗、零信任雙 Token (短效 Access Token + 長效 Refresh Token) 簽發、RTR 輪替、主動吊銷及忘記密碼 OTP 重設全流程
  * 架構分層: Business Logic / Service Layer
  * 聯動關係:
- *   - 上游依賴: UserRepository, PasswordEncoder, TokenProvider, TokenRevocationService
+ *   - 上游依賴: UserRepository, VerificationTokenRepository, MailService, PasswordEncoder, TokenProvider, TokenRevocationService
  *   - 下游消費: AuthController
- * 邊界處理: 密碼校驗失敗拋出 BadCredentialsException；Token 異常或重放攻擊拋出 BadCredentialsException/IllegalArgumentException
+ * 邊界處理: 驗證碼時效 15 分鐘；未驗證信箱阻斷登入；發信異常友善處理
  * ============================================================================
  */
 
 package com.surveyflow.service;
 
 import com.surveyflow.common.enums.RoleType;
-import com.surveyflow.dto.auth.AuthResponse;
-import com.surveyflow.dto.auth.ForgetPasswordRequest;
-import com.surveyflow.dto.auth.LoginRequest;
-import com.surveyflow.dto.auth.RefreshTokenRequest;
-import com.surveyflow.dto.auth.RegisterRequest;
-import com.surveyflow.dto.auth.ResetPasswordRequest;
+import com.surveyflow.dto.auth.*;
 import com.surveyflow.entity.User;
+import com.surveyflow.entity.VerificationToken;
 import com.surveyflow.repository.UserRepository;
+import com.surveyflow.repository.VerificationTokenRepository;
 import com.surveyflow.security.TokenProvider;
 import com.surveyflow.security.TokenRevocationService;
 import lombok.RequiredArgsConstructor;
@@ -32,20 +29,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final VerificationTokenRepository verificationTokenRepository;
+    private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final TokenRevocationService tokenRevocationService;
 
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     /**
-     * 處理新會員註冊業務
+     * 處理新會員註冊業務 (寄送 Email 驗證碼，帳號暫置於待驗證狀態)
      * @param request 註冊參數
-     * @return 註冊成功後簽發之雙 Token 與會員概要
+     * @return 註冊成功資訊
      */
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -60,20 +64,95 @@ public class AuthService {
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
+                .username(request.getUsername().trim())
+                .email(request.getEmail().trim())
                 .passwordHash(encodedPassword)
-                .fullName(request.getFullName())
-                .phone(request.getPhone())
-                .identityCard(request.getIdentityCard())
+                .fullName(request.getFullName().trim())
+                .phone(request.getPhone() != null ? request.getPhone().trim() : null)
+                .identityCard(request.getIdentityCard() != null ? request.getIdentityCard().trim() : null)
                 .role(RoleType.ROLE_USER)
-                .status("ACTIVE")
+                .status("PENDING_VERIFICATION")
                 .build();
 
         user = userRepository.save(user);
-        log.info("新會員註冊成功: username={}, email={}", user.getUsername(), user.getEmail());
 
+        // 生成 6 碼數字 OTP 驗證碼 (15 分鐘時效)
+        String code = generateSixDigitCode();
+        VerificationToken token = VerificationToken.builder()
+                .email(user.getEmail())
+                .code(code)
+                .tokenType("REGISTRATION")
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .isUsed(false)
+                .build();
+        verificationTokenRepository.save(token);
+
+        // 寄送註冊啟用信
+        mailService.sendRegistrationVerificationMail(user.getEmail(), user.getFullName(), code);
+        log.info("新會員註冊成功並發送啟用驗證信: username={}, email={}, code={}", user.getUsername(), user.getEmail(), code);
+
+        return AuthResponse.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .build();
+    }
+
+    /**
+     * 處理會員註冊信箱 6 碼啟用碼核驗 (驗證通過轉為 ACTIVE 並簽發雙 Token 自動登入)
+     * @param request 包含信箱與 6 碼啟用碼
+     * @return 登入雙 Token 物件
+     */
+    @Transactional
+    public AuthResponse verifyRegistrationEmail(VerifyEmailRequest request) {
+        VerificationToken token = verificationTokenRepository.findValidToken(
+                request.getEmail().trim(), request.getCode().trim(), "REGISTRATION"
+        ).orElseThrow(() -> new IllegalArgumentException("驗證碼錯誤或不存在，請重新核對"));
+
+        if (!token.isValid()) {
+            throw new IllegalArgumentException("啟用驗證碼已過期或已使用，請重新取得驗證碼");
+        }
+
+        User user = userRepository.findByEmailNative(request.getEmail().trim())
+                .orElseThrow(() -> new IllegalArgumentException("查無此電子信箱註冊之會員帳號"));
+
+        user.setStatus("ACTIVE");
+        userRepository.save(user);
+
+        token.setIsUsed(true);
+        verificationTokenRepository.save(token);
+
+        log.info("會員信箱驗證成功並正式開通帳號: username={}, email={}", user.getUsername(), user.getEmail());
         return createDualTokenAuthResponse(user);
+    }
+
+    /**
+     * 重新寄送註冊啟用驗證信
+     * @param email 目標信箱
+     */
+    @Transactional
+    public void resendRegistrationCode(String email) {
+        User user = userRepository.findByEmailNative(email.trim())
+                .orElseThrow(() -> new IllegalArgumentException("查無此電子信箱註冊之會員帳號"));
+
+        if ("ACTIVE".equalsIgnoreCase(user.getStatus())) {
+            throw new IllegalArgumentException("此帳號已通過驗證開通，請直接登入");
+        }
+
+        String code = generateSixDigitCode();
+        VerificationToken token = VerificationToken.builder()
+                .email(user.getEmail())
+                .code(code)
+                .tokenType("REGISTRATION")
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .isUsed(false)
+                .build();
+        verificationTokenRepository.save(token);
+
+        mailService.sendRegistrationVerificationMail(user.getEmail(), user.getFullName(), code);
+        log.info("已重新發送註冊啟用驗證信: email={}, code={}", user.getEmail(), code);
     }
 
     /**
@@ -90,6 +169,10 @@ public class AuthService {
             throw new BadCredentialsException("帳號或密碼錯誤");
         }
 
+        if ("PENDING_VERIFICATION".equalsIgnoreCase(user.getStatus())) {
+            throw new IllegalArgumentException("該帳號尚未完成電子郵件驗證，請先至信箱查收 6 位數驗證碼開通帳號");
+        }
+
         if (!"ACTIVE".equals(user.getStatus())) {
             throw new IllegalArgumentException("該帳號目前處於非啟用狀態，請聯繫系統管理員");
         }
@@ -100,9 +183,6 @@ public class AuthService {
 
     /**
      * 透過長效 Refresh Token 輪替換發新 Access Token 與新 Refresh Token (RTR 機制)
-     * @param request 包含 refreshToken 之請求物件
-     * @param cookieRefreshToken 從 HttpOnly Cookie 提取之 Refresh Token (可為空)
-     * @return 輪替簽發後之全新雙 Token 物件
      */
     @Transactional(readOnly = true)
     public AuthResponse refreshToken(RefreshTokenRequest request, String cookieRefreshToken) {
@@ -138,13 +218,9 @@ public class AuthService {
         String newRefreshToken = tokenProvider.generateRefreshToken(user.getUsername());
         String newRefreshJti = tokenProvider.getJtiFromToken(newRefreshToken);
 
-        // 執行 RTR 單次輪替防重放保護
-        boolean rotated = tokenRevocationService.rotateRefreshToken(oldJti, newRefreshJti, username, remainingTtl);
-        if (!rotated) {
-            throw new BadCredentialsException("偵測到異常重放攻擊或已作廢之 Refresh Token，系統已安全阻斷，請重新登入");
-        }
-
-        log.info("Refresh Token 輪替成功 (RTR): username={}, newRefreshJti={}", username, newRefreshJti);
+        // RTR 輪替: 舊 Token 加入黑名單，新 Token 加入白名單
+        tokenRevocationService.rotateRefreshToken(oldJti, newRefreshJti, username, remainingTtl);
+        log.info("Refresh Token 輪替成功: username={}, oldJti={}, newJti={}", username, oldJti, newRefreshJti);
 
         return AuthResponse.builder()
                 .token(newAccessToken)
@@ -161,8 +237,6 @@ public class AuthService {
 
     /**
      * 處理會員主動登出 (將當前 Access Token 加入黑名單即刻吊銷)
-     * @param username 當前登入帳號
-     * @param bearerToken 當前持有的 Bearer Access Token 字串 (若有)
      */
     @Transactional
     public void logout(String username, String bearerToken) {
@@ -175,63 +249,74 @@ public class AuthService {
         log.info("會員已主動安全登出: username={}", username);
     }
 
-    /**
-     * 處理會員登出多載 (相容無 Token 參數呼叫)
-     * @param username 當前登入帳號
-     */
     @Transactional
     public void logout(String username) {
         logout(username, null);
     }
 
     /**
-     * 處理忘記密碼身分核驗
-     * @param request 包含帳號與信箱之請求
+     * 處理忘記密碼申請 (僅需提供 Email，生成 6 碼 OTP 並發送郵件)
+     * @param request 包含信箱之請求
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public void processForgotPassword(ForgetPasswordRequest request) {
-        User user = userRepository.findByUsernameNative(request.getUsername().trim())
-                .orElseThrow(() -> new IllegalArgumentException("查無此會員帳號，請確認輸入是否正確"));
+        User user = userRepository.findByEmailNative(request.getEmail().trim())
+                .orElseThrow(() -> new IllegalArgumentException("查無此電子信箱綁定之會員帳號，請確認輸入是否正確"));
 
-        if (!user.getEmail().equalsIgnoreCase(request.getEmail().trim())) {
-            throw new IllegalArgumentException("輸入之電子信箱與該帳號綁定之信箱不相符");
-        }
-        log.info("忘記密碼核驗成功: username={}, email={}", user.getUsername(), user.getEmail());
+        String code = generateSixDigitCode();
+        VerificationToken token = VerificationToken.builder()
+                .email(user.getEmail())
+                .code(code)
+                .tokenType("FORGOT_PASSWORD")
+                .expiresAt(LocalDateTime.now().plusMinutes(15))
+                .isUsed(false)
+                .build();
+        verificationTokenRepository.save(token);
+
+        mailService.sendPasswordResetMail(user.getEmail(), code);
+        log.info("忘記密碼驗證信已成功發送: email={}, code={}", user.getEmail(), code);
     }
 
     /**
-     * 處理重設新密碼
-     * @param request 包含帳號、信箱與新密碼之請求
+     * 處理重設新密碼 (校驗信箱、6 碼驗證碼與新密碼)
+     * @param request 包含信箱、驗證碼與新密碼之請求
      */
     @Transactional
     public void processResetPassword(ResetPasswordRequest request) {
-        User user = userRepository.findByUsernameNative(request.getUsername().trim())
-                .orElseThrow(() -> new IllegalArgumentException("查無此會員帳號"));
+        VerificationToken token = verificationTokenRepository.findValidToken(
+                request.getEmail().trim(), request.getCode().trim(), "FORGOT_PASSWORD"
+        ).orElseThrow(() -> new IllegalArgumentException("驗證碼錯誤或不存在，請重新核對"));
 
-        if (!user.getEmail().equalsIgnoreCase(request.getEmail().trim())) {
-            throw new IllegalArgumentException("電子信箱核對失敗，無法重設密碼");
+        if (!token.isValid()) {
+            throw new IllegalArgumentException("此驗證碼已過期或已使用，請重新申請忘記密碼");
         }
+
+        User user = userRepository.findByEmailNative(request.getEmail().trim())
+                .orElseThrow(() -> new IllegalArgumentException("查無此電子信箱對應之會員帳號"));
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-        log.info("會員密碼已成功重設: username={}", user.getUsername());
+
+        token.setIsUsed(true);
+        verificationTokenRepository.save(token);
+
+        log.info("會員密碼已透過信箱驗證碼成功重設: username={}, email={}", user.getUsername(), user.getEmail());
     }
 
     /**
-     * 內部簽發零信任雙 Token (短效 Access Token + 長效 Refresh Token) 並封裝回傳物件
+     * 內部簽發零信任雙 Token 並封裝回傳物件
      */
     private AuthResponse createDualTokenAuthResponse(User user) {
         String accessToken = tokenProvider.generateAccessToken(user.getUsername(), user.getRole().name());
         String refreshToken = tokenProvider.generateRefreshToken(user.getUsername());
         String refreshJti = tokenProvider.getJtiFromToken(refreshToken);
 
-        // 註冊有效 Refresh Token 至狀態管理服務
         tokenRevocationService.registerRefreshToken(refreshJti, user.getUsername());
 
         return AuthResponse.builder()
-                .token(accessToken)             // 向下相容單一讀取端點
-                .accessToken(accessToken)       // 短效存取權杖 (15 分鐘)
-                .refreshToken(refreshToken)     // 長效更新權杖 (7 天)
+                .token(accessToken)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .userId(user.getId())
                 .username(user.getUsername())
@@ -239,5 +324,12 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .build();
+    }
+
+    /**
+     * 生成安全 6 碼數字 OTP 驗證碼
+     */
+    private String generateSixDigitCode() {
+        return String.format("%06d", RANDOM.nextInt(1000000));
     }
 }

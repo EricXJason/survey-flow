@@ -20,6 +20,7 @@ import com.surveyflow.dto.auth.LoginRequest;
 import com.surveyflow.dto.auth.RefreshTokenRequest;
 import com.surveyflow.dto.auth.RegisterRequest;
 import com.surveyflow.dto.auth.ResetPasswordRequest;
+import com.surveyflow.dto.auth.VerifyEmailRequest;
 import com.surveyflow.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -102,19 +103,49 @@ public class AuthController {
     }
 
     /**
-     * 忘記密碼身分核驗端點 (公開)
-     * @param request 帳號與信箱
+     * 會員註冊信箱 6 碼啟用碼核驗端點 (公開)
+     * @param request 包含信箱與 6 碼驗證碼
+     * @return 驗證通過開通帳號並直接簽發雙 Token 登入
+     */
+    @PostMapping({"/api/public/auth/verify-email", "/api/auth/verify-email"})
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        AuthResponse response = authService.verifyRegistrationEmail(request);
+        ResponseCookie cookie = buildRefreshTokenCookie(response.getRefreshToken(), 7 * 24 * 3600L);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(ApiResponse.ok(response, "電子信箱驗證成功，帳號已正式開通！"));
+    }
+
+    /**
+     * 重新寄送註冊啟用驗證碼端點 (公開)
+     * @param payload 包含 email 鍵值
+     * @return 寄發結果
+     */
+    @PostMapping({"/api/public/auth/resend-verification", "/api/auth/resend-verification"})
+    public ResponseEntity<ApiResponse<Void>> resendVerification(@RequestBody java.util.Map<String, String> payload) {
+        String email = payload.get("email");
+        if (!org.springframework.util.StringUtils.hasText(email)) {
+            throw new IllegalArgumentException("請提供欲重新寄發之電子信箱");
+        }
+        authService.resendRegistrationCode(email);
+        return ResponseEntity.ok(ApiResponse.ok("啟用驗證碼已重新寄發至您的電子信箱"));
+    }
+
+    /**
+     * 忘記密碼身分核驗與寄發 OTP 端點 (公開，僅需提供 Email)
+     * @param request 包含信箱之請求
      * @return 核驗結果
      */
     @PostMapping({"/api/public/auth/forget-password", "/api/auth/forget-password"})
     public ResponseEntity<ApiResponse<Void>> forgetPassword(@Valid @RequestBody ForgetPasswordRequest request) {
         authService.processForgotPassword(request);
-        return ResponseEntity.ok(ApiResponse.ok("身分核驗通過，已寄發重設密碼驗證信"));
+        return ResponseEntity.ok(ApiResponse.ok("已發送 6 位數安全驗證碼至您的電子信箱，請查收以完成重設"));
     }
 
     /**
-     * 會員重設新密碼端點 (公開)
-     * @param request 包含帳號、信箱與新密碼
+     * 會員重設新密碼端點 (公開，校驗信箱、6 碼驗證碼與新密碼)
+     * @param request 包含信箱、驗證碼與新密碼
      * @return 重設結果
      */
     @PostMapping({"/api/public/auth/reset-password", "/api/auth/reset-password"})

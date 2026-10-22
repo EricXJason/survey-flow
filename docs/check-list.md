@@ -96,7 +96,7 @@
   - [x] **數據分析報表受訪者人口特徵輪廓全端對齊 (`demographics`)**: `SurveyAnalyticsService` 實作 `DemographicsDto` 至前端 `DemographicStats` 之精準轉譯管線，打通性別比、年齡層金字塔與前五大任職產業之全端展示。
   - [x] **大廳與會員後台分頁器 Setter 響應式綁定 (`lobby.component.ts`, `user-management.component.ts`)**: 採用 setter 模式確保 `@if` 延遲渲染時自動完成 `dataSource.paginator` 與 `sort` 綁定，徹底修復分頁失效與統計為 0 缺陷。
   - [x] **受訪者與訪客資料全量統計與結構化展示 (`SubmissionAnswerRepository`, `survey-analytics.service.ts`, `survey-management.component.html`)**: 透過 `submissions` 主表 LEFT JOIN 確保每一筆填答者完整呈現，未留姓名者自動賦予「訪客」標籤，未填文字者呈現未填寫反饋，杜絕漏單或錯誤排除。
-  - [ ] **整合 JavaMailSender 真實 SMTP 寄信服務 (忘記密碼驗證信)**: 串接真實郵件發送服務或寄發帶時效性之安全重設 Token 連結，取代目前僅於後端 Log 印出核驗之過渡機制。
+  - [x] **整合 JavaMailSender 真實 Gmail SMTP 寄信服務 (忘記密碼與註冊啟用驗證信)**: 串接 Gmail SMTP 發送安全 HTML 繁中驗證信，配合 `verification_tokens` 資料表管理 15 分鐘時效之 6 碼 OTP 驗證碼。
 
 ---
 
@@ -109,8 +109,8 @@
 - [x] **平台官方首頁**: 建立 `HomeComponent` 與 `HeroComponent`，包含 macOS 擬真問卷即時預覽視窗與特色介紹。
   - [x] **首頁 Hero 區塊 PC 模式 100% 視窗精確貼合**: 桌面端 (>=1025px) 高度精確對齊 `calc(100vh - var(--header-h, 6rem))`，在 PC 模式 100% 縮放下首屏完整呈現 Hero 全部內容，徹底杜絕下方區塊露底。
   - [x] **會員登出自動導向產品首頁**: `UserEmitterService.emitLogout()` 登出後跳轉由 `/lobby` 修正導向產品首頁 `/home`。
-  - [ ] **忘記密碼純 Email 流程與真實郵件收信驗證**: 忘記密碼頁面由原本「帳號+信箱」簡化為「僅需提供 Email」，後端發送時效性重設碼至信箱進行新密碼更換。
-  - [ ] **新會員註冊 Email 信箱驗證啟用機制**: 註冊完成後寄送驗證信，需完成信箱驗證確認後方可正式開通帳號。
+  - [x] **忘記密碼純 Email 流程與真實郵件收信驗證**: 忘記密碼頁面簡化為「僅需提供 Email」，後端發送 15 分鐘時效 6 碼重設碼至信箱進行新密碼更換。
+  - [x] **新會員註冊 Email 信箱驗證啟用機制**: 註冊完成後即刻寄發 6 碼啟用碼，前端呈現驗證碼啟用面板（具 60 秒防刷倒數），驗證通過後自動開通帳號並登入。
 - [x] **問卷公開大廳 (`LobbyComponent`)**: 建立 `LobbyComponent`，支援現代化下拉式主題分類篩選、即時關鍵字模糊搜尋、⌘K 快捷鍵聚焦、Angular Material Table 排序與分頁。
   - [x] **表格資訊架構純化與冗贅欄位移除**: 徹底剔除大廳資料表格中之冗餘「狀態」欄位（大廳皆為公開問卷），保留完整寬度予有效時限以等寬數字排版；起訖時間完整呈現（支援 `常態開放` 與 `YYYY/MM/DD HH:mm ~ YYYY/MM/DD HH:mm`）。
 - [x] **問卷設計工作台**: 建立 `SurveyDesignComponent`，支援問卷標題、分類、期限、受訪者身分欄位開關、動態題目增刪改、多維度量表題型、題目 UID 動態跳題解鎖與即時預覽模式（修復前言說明重複紅字問題）。

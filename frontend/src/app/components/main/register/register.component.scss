@@ -297,3 +297,102 @@
     font-weight: 700;
   }
 }
+
+/* ── 信箱驗證啟用面板 ── */
+.verify-email-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: 1.6rem 0;
+
+  .verify-icon-wrap {
+    width: 6.4rem;
+    height: 6.4rem;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f172a;
+    margin-bottom: 2rem;
+  }
+
+  .verify-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  .verify-desc {
+    font-size: 1.5rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin: 0 0 2.4rem;
+
+    .user-email-badge {
+      display: inline-block;
+      margin-top: 0.6rem;
+      font-weight: 700;
+      color: #0f172a;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 0.4rem 1.2rem;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 1.5rem;
+    }
+  }
+
+  .code-input-group {
+    width: 100%;
+    margin-bottom: 2.4rem;
+
+    label {
+      display: block;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 0.8rem;
+    }
+
+    .code-input {
+      text-align: center;
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: 8px;
+      font-family: monospace;
+      padding: 1.2rem 1.6rem;
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+
+      &:focus {
+        border-color: #0f172a;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+        outline: none;
+      }
+    }
+  }
+
+  .verify-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 100%;
+
+    .btn-block {
+      width: 100%;
+    }
+  }
+}
+

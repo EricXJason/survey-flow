@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `survey_questions`;
 DROP TABLE IF EXISTS `survey_basic_info_configs`;
 DROP TABLE IF EXISTS `surveys`;
 DROP TABLE IF EXISTS `refresh_tokens`; -- 清理歷史遺留之雙 Token 旋轉控制表
+DROP TABLE IF EXISTS `verification_tokens`;
 DROP TABLE IF EXISTS `users`;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -208,4 +209,22 @@ CREATE TABLE IF NOT EXISTS `submission_answers` (
     CONSTRAINT `fk_answers_question` FOREIGN KEY (`question_id`) REFERENCES `survey_questions` (`id`) ON DELETE CASCADE,
     CONSTRAINT `fk_answers_option` FOREIGN KEY (`option_id`) REFERENCES `survey_options` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='題目回答明細表 (支援高效報表聚合)';
+
+-- ----------------------------------------------------------------------------
+-- 9. 電子郵件安全驗證碼表 (verification_tokens)
+-- 說明: 儲存會員註冊啟用與忘記密碼之時效性 6 碼驗證碼 (OTP)
+-- ----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `verification_tokens` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主鍵識別碼',
+    `email` VARCHAR(100) NOT NULL COMMENT '目標電子信箱',
+    `code` VARCHAR(10) NOT NULL COMMENT '6 碼數字安全驗證碼',
+    `token_type` VARCHAR(30) NOT NULL COMMENT '驗證碼用途類型 (FORGOT_PASSWORD / REGISTRATION)',
+    `expires_at` DATETIME NOT NULL COMMENT '驗證碼過期時間戳',
+    `is_used` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已使用核銷 (0: 否, 1: 是)',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+    PRIMARY KEY (`id`),
+    INDEX `idx_vt_email_type` (`email`, `token_type`),
+    INDEX `idx_vt_code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='電子郵件安全驗證碼表';
+
 

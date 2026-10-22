@@ -3,6 +3,31 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 10:55] - 安全與業務升級：全端電子郵件驗證體系 (Gmail SMTP、純 Email 忘記密碼 6 碼 OTP、新會員信箱驗證啟用)
+
+- **改動原因**: 依據使用者指示，將忘記密碼流程全面簡化為「僅需提供 Email」，建立真實郵件收信 6 碼安全驗證碼 (OTP) 重設機制；新會員註冊增加 Email 驗證啟用流程，核驗通過後開通帳號並直接簽發雙 Token 自動登入；整合 Google 官方 Gmail SMTP 服務
+- **具體內容**:
+  - **後端安全與通訊架構**:
+    - **`pom.xml`**: 引入 `spring-boot-starter-mail` 官方郵件依賴
+    - **`application.properties`**: 建立區塊 9 配置 Gmail SMTP 伺服器參數（`smtp.gmail.com:587`）與外部化環境變數
+    - **`VerificationToken.java` & `VerificationTokenRepository.java`**: 建立驗證碼持久化實體與資料存取層，管理 15 分鐘時效 6 碼 OTP 與使用狀態核銷
+    - **`schema.sql`**: 新增 `verification_tokens` 資料表結構與索引定義
+    - **`MailService.java`**: 實作精美科技風格繁中 HTML 驗證信樣板（密碼重設與新會員啟用）
+    - **`AuthService.java` & `AuthController.java`**:
+      - 實作 `processForgotPassword`（僅查核 Email 並發送 6 碼重設碼）
+      - 實作 `processResetPassword`（核對 6 碼 OTP 並透過 Argon2id 安全更新密碼）
+      - 升級 `register`（帳號預設為 `PENDING_VERIFICATION` 並寄送 6 碼啟用信）
+      - 新增 `/api/public/auth/verify-email`（核驗 6 碼開通帳號並直接簽發雙 Token 登入）
+      - 新增 `/api/public/auth/resend-verification`（重新寄發啟用驗證碼）
+    - **單元測試**: 全量更新 `AuthServiceTest.java` 覆蓋信箱啟用、OTP 核驗與忘記密碼，16/16 測試全數 PASS
+  - **前端互動與流程重構**:
+    - **`forget-password.component`**: 移除帳號輸入欄位，僅保留「註冊電子信箱」，點擊後發送 6 碼驗證碼並無縫導航至重設頁面
+    - **`reset-password.component`**: 新增信箱與 6 碼驗證碼輸入，支援 URL queryParams 自動預填，密碼一致性雙向核驗後更新並導向登入
+    - **`register.component`**: 升級為雙步驟架構（資料填寫 ➔ 6 碼啟用碼面板），具備 60 秒防刷重新寄發倒數，開通後自動存儲雙 Token 進入大廳
+  - **文檔同步**:
+    - **`docs/check-list.md`**: 標記 Gmail SMTP、忘記密碼純 Email 與註冊信箱啟用驗證碼項目為已完成
+- **影響範圍**: 後端認證層、前端註冊/忘記密碼/重設密碼頁面、資料庫結構與文檔庫
+
 ## [2026-10-22 10:30] - UI/UX 優化：登出自動導向首頁、首頁 Hero 於 PC 模式 100% 精準貼合視窗
 
 - **改動原因**: 依據使用者指示，將會員登出導航目的地改為官方首頁 (`/home`)；調整首頁 Hero 主視覺於桌面 PC 模式 (>=1025px) 100% 縮放下之高度比例，確保首屏完整呈現主視覺且不見下方次區塊露底
