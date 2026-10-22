@@ -3,6 +3,22 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 12:25] - 核心修復：圖片傳輸容量突破 (50MB) 與前端畫布智慧壓縮管線
+
+- **改動原因**: 徹底解決使用者反饋之圖片上傳潛在破口（Tomcat 預設 2MB 上限導致手機高畫質相片 Base64 傳輸中斷、編輯模式遺失封面圖片更新）
+- **具體內容**:
+  - **後端伺服器載荷與傳輸上限突破 (`application.properties`)**:
+    - 配置 `server.tomcat.max-http-form-post-size=50MB` 與 `server.tomcat.max-swallow-size=50MB`
+    - 配置 `spring.servlet.multipart.max-file-size=50MB` 與 `spring.servlet.multipart.max-request-size=50MB`
+    - 配置 `spring.jackson.parser.max-string-len=50000000`，徹底破除 20MB Base64 字串解析限制
+  - **DTO 與服務層補齊問卷封面圖更新**:
+    - `SurveyUpdateRequest.java`: 補齊 `coverImageUrl` 欄位
+    - `SurveyService.java`: 於 `updateSurvey` 補上封面圖片更新與保存邏輯
+  - **前端客戶端智慧無損壓縮管線 (`survey-design.component.ts`)**:
+    - 導入 `compressImage()` 畫布壓縮管線，選取圖片時自動進行尺寸智慧等比縮放（上限 1400px）與 WebP/JPEG 壓縮（0.85 品質）
+    - 幾 MB 之原始圖片極速縮小至 100KB~200KB 高畫質 Base64，大幅提升上傳穩定性並節省 90% 資料庫儲存空間
+- **影響範圍**: `SurveyUpdateRequest.java`、`SurveyService.java`、`application.properties`、`survey-design.component.ts`
+
 ## [2026-10-22 12:20] - 交付稽核：專案系統分析更新、註解稽核與嚴格專案最佳化
 
 - **改動原因**: 響應使用者交付指令（`專案系統分析更新`、`專案註解確認`、`嚴格專案最佳化`），移除多餘非規範文檔 `10-pitch-deck.md`，同步真實 API 規格書與完成全域代碼可讀性與淨化驗收

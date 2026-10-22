@@ -30,6 +30,7 @@ public class SurveyUpdateRequest {
 
     private String title;
     private String description;
+    private String coverImageUrl;
     private String category;
     private Boolean isPublicToLobby;
     private Boolean isOpen;

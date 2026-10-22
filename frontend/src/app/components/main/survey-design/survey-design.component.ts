@@ -287,22 +287,79 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * 智慧壓縮本機圖片至標準網頁高畫質尺寸並轉換為 Base64 DataURL
+   * 將大圖智慧縮放至最大 1400px 並進行優質壓縮 (0.85)，確保傳輸與渲染效率極致優化
+   * @param file 使用者選取之圖片檔案
+   * @param maxWidth 最大寬度限制 (預設 1400px)
+   * @param maxHeight 最大高度限制 (預設 1400px)
+   * @param quality 輸出品質 (預設 0.85)
+   * @returns Promise<string> 壓縮後的 Base64 DataURL 字串
+   */
+  private compressImage(
+    file: File,
+    maxWidth = 1400,
+    maxHeight = 1400,
+    quality = 0.85,
+  ): Promise<string> {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event: ProgressEvent<FileReader>) => {
+        const rawResult = event.target?.result as string;
+        if (!rawResult) {
+          resolve('');
+          return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            if (width / height > maxWidth / maxHeight) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(rawResult);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+          resolve(canvas.toDataURL(outputType, quality));
+        };
+        img.onerror = () => resolve(rawResult);
+        img.src = rawResult;
+      };
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /**
    * 處理問卷前言說明圖片上傳變更
-   * 讀取本機圖檔並轉換為 Base64 字串寫入表單，自動同步勾選狀態。
+   * 讀取本機圖檔並自動進行畫布縮放壓縮，轉換為標準 Base64 字串寫入表單，自動同步勾選狀態。
    * @param event 檔案選取事件
    */
-  protected onDescriptionImageChange(event: Event): void {
+  protected async onDescriptionImageChange(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
+      const base64 = await this.compressImage(file);
+      if (base64) {
         this.formBuilderGroup.patchValue({
           hasDescriptionImage: true,
-          descriptionImageBase64: reader.result as string,
+          descriptionImageBase64: base64,
         });
-      };
-      reader.readAsDataURL(file);
+      }
     }
   }
 
@@ -321,22 +378,21 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
 
   /**
    * 處理題目說明圖片上傳變更
-   * 讀取本機圖檔並轉換為 Base64 字串寫入該題目表單群組，自動同步啟用圖片。
+   * 讀取本機圖檔並自動進行畫布縮放壓縮，轉換為標準 Base64 字串寫入該題目表單群組，自動同步啟用圖片。
    * @param event 檔案選取事件
    * @param questionIndex 目標題目索引
    */
-  protected onQuestionImageChange(event: Event, questionIndex: number): void {
+  protected async onQuestionImageChange(event: Event, questionIndex: number): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
+      const base64 = await this.compressImage(file);
+      if (base64) {
         this.questionArray.at(questionIndex).patchValue({
           hasImage: true,
-          imageBase64: reader.result as string,
+          imageBase64: base64,
         });
-      };
-      reader.readAsDataURL(file);
+      }
     }
   }
 

@@ -148,6 +148,7 @@ public class SurveyService {
 
         if (request.getTitle() != null) survey.setTitle(request.getTitle());
         if (request.getDescription() != null) survey.setDescription(request.getDescription());
+        if (request.getCoverImageUrl() != null) survey.setCoverImageUrl(request.getCoverImageUrl());
         if (request.getCategory() != null) survey.setCategory(request.getCategory());
         if (request.getIsPublicToLobby() != null) survey.setIsPublicToLobby(request.getIsPublicToLobby());
         if (request.getIsOpen() != null) survey.setIsOpen(request.getIsOpen());
