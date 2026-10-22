@@ -1,6 +1,5 @@
 # SurveyFlow 全雲端無伺服器架構部署與維運手冊 (Cloud Deployment Guide)
 
-> **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **專案版本**: v1.0.0 (Production Ready)  
 > **技術棧**: Angular 19, Spring Boot 4.1.1, Java 21, TiDB Serverless, Render, Cloudflare Pages, GitHub Actions  
 > **更新日期**: 2026-10-22  

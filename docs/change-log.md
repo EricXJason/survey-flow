@@ -1,7 +1,20 @@
 # 修訂歷程記錄庫 (Change Log)
 
-> **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
+
+## [2026-10-23 00:35] - 全域協定核心指令「代碼最佳化」正式入庫、專案作者標記唯一規範（僅 README 允許）與全庫標籤淨化
+
+- **改動原因**:
+  - 排查並落實使用者核心規範要求：
+    1. 不用刻意標上專案作者，唯有專案根目錄 `README.md` 可以寫專案作者，寫入 MD 規範並在全專案執行清理。
+    2. 在 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) 核心交付矩陣中新增一級中斷指令 **`代碼最佳化`**，確保 100% 遵循 SOLID、Clean Code、KISS 與 YAGNI 原則。
+    3. 完成發布一條龍推送到 `master`。
+- **具體內容**:
+  - **指令入庫**：於 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) 第 0 節正式登記 **`代碼最佳化`** 指令，建立專屬 SOP 審核代碼庫、消除上帝類別與晦澀代碼。
+  - **規範寫入**：於 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) 第 3 節正式明訂「專案作者標記唯一規範 (Author Tag SSOT Invariant)」，嚴格禁止在任何代碼腳本、設定檔或 `docs/` 規格文件中刻意標註專案作者，唯一僅允許於 `README.md` 載明。
+  - **全庫標籤淨化**：實體掃描並清除了 `docs/system-design/*.md`、`docs/change-log.md`、`docs/check-list.md`、`docs/deployment-guide.md` 等 13 份文檔中的作者標註行，全專案僅保留根目錄 `README.md`。
+- **影響範圍**:
+  - `AGENTS.md`, `docs/`, `docs/change-log.md`
 
 ## [2026-10-23 00:30] - Clean Code & KISS 深度落實：schema.sql 純淨 100% DDL、種子 DML 權責分離與刪除 UserCredentialSynchronizer
 

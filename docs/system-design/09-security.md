@@ -1,6 +1,5 @@
 # 09. 全端資安防護、認證授權、加密與資料脫敏規格書 (Security & Data Protection Specifications)
 
-> **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **更新日期**: 2026-10-22  
 > **文件定位**: 規範 SurveyFlow 系統全域之認證授權架構、Argon2id 密碼雜湊、零信任雙權杖、機敏資料脫敏加密與 API 防護機制。
 

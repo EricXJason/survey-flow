@@ -1,6 +1,5 @@
 # 05. 核心業務流程與狀態機圖表 (Business Flowcharts & State Machines)
 
-> **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **圖表風格**: Tech HUD 深黑風格 (直線直角、無灰塊)  
 > **更新日期**: 2026-10-22  
 

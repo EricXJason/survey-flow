@@ -1,6 +1,5 @@
 # 03. 技術選型矩陣與版本理由 (Technology Stack & Decisions)
 
-> **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **系統環境**: Node.js 24.18.0, TypeScript 5.6.2, Angular 19.0.0, Java 21.0.12, Spring Boot 4.1.1, MySQL 8.0.36 協定 (TiDB)  
 > **更新日期**: 2026-10-22  
 > **文檔定位**: 專案全域技術選型與架構決策紀錄 (ADR)。接續身分權限，闡述支撐系統運作之軟體工程技術棧。

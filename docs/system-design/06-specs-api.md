@@ -1,6 +1,5 @@
 # 06. API 與通訊協定規格書 (API & Communication Specifications)
 
-> **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **通訊協定**: RESTful HTTPS API / JSON Payload (Spring Boot 4.1.1 Web API)  
 > **更新日期**: 2026-10-22  
 

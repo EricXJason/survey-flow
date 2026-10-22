@@ -1,6 +1,5 @@
 # 07. 實體資料模型與資料庫架構 (Database ERD & Storage Models)
 
-> **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **持久化架構**: TiDB Cloud (Serverless) / MySQL 8.0 分散式關聯式資料庫 + Spring Data JPA  
 > **更新日期**: 2026-10-22  
 > **規格標準**: 嚴格貫徹 3NF 正規化無冗餘原則、定長物理欄位優化、TINYINT(1) 物理布林映射，100% 嚴格對齊後端 9 大實體資料表 (`users`, `verification_tokens`, `surveys`, `survey_basic_info_configs`, `survey_questions`, `survey_options`, `submissions`, `submission_basic_infos`, `submission_answers`)

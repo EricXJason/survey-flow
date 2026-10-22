@@ -5,7 +5,6 @@
 -- 責任描述: TiDB Cloud Serverless / MySQL 8.0+ 資料庫終極結構腳本
 --           採用整庫乾淨重置 (DROP DATABASE -> CREATE DATABASE)，零殘留、零 Warning
 --           嚴格落實第三正規化 (3NF)、CHAR(10) 定長唯一索引、TINYINT 狀態與布林、全外鍵級聯
--- 專案作者: 許哲誠 (HSU, CHE-CHENG)
 -- 字元編碼: utf8mb4 / utf8mb4_unicode_ci
 -- ============================================================================
 
