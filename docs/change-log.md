@@ -3,6 +3,24 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 12:15] - 運維架構：本地與雲端生產雙軌部署準備 (TiDB + Render + Cloudflare Pages + Docker + CI/CD)
+
+- **改動原因**: 為正式雲端部署做全面準備，同時 100% 確保本機開發環境開箱即用不受任何影響（本地零設定、生產環境變數注入）
+- **具體內容**:
+  - **前端環境雙軌與 SPA 路由回退**:
+    - **`environment.ts` / `environment.prod.ts`**: 建立開發與生產環境檔，本地鎖定 `localhost:8080`，生產指向雲端 Render 後端
+    - **`angular.json`**: 配置 `fileReplacements` 於 `production` 自動置換
+    - **`api-client.service.ts`**: 採用 `environment.apiUrl` 取代寫死之 localhost
+    - **`_redirects`**: 建立 Cloudflare Pages 專用重定向規則（`/* /index.html 200`），解決深層路由重整 404
+  - **後端生產 Docker 容器化**:
+    - **`backend/Dockerfile`**: 實作輕量高效之多階段構建（Temurin 21 JDK 構建 + Temurin 21 JRE Alpine 運行），建立非 root `appuser` 安全執行，支援 Render 動態 `PORT` 與容器記憶體最適化
+    - **`backend/.dockerignore`**: 排除 target、git 與快取，大幅縮減 build context
+  - **自動化持續整合 (CI)**:
+    - **`.github/workflows/ci.yml`**: 建立 GitHub Actions 工作流，於推送或 PR 時自動執行後端 16 項單元測試與前端生產打包驗證
+  - **維運規格書更新**:
+    - **`docs/system-design/08-devops.md`**: 完整繪製本地與雲端雙軌 Mermaid HUD 架構圖，建立 TiDB、Render 與 Cloudflare 服務矩陣與環境變數對照表
+- **影響範圍**: 前後端環境設定檔、Dockerfile、GitHub Actions、Cloudflare Pages 重定向與系統維運規格書
+
 ## [2026-10-22 11:45] - 認證體驗重構：忘記密碼原頁通知、郵件直達連結與未驗證帳號閉環機制
 
 - **改動原因**: 依據使用者回饋改善認證互動體驗：忘記密碼改為寄出後原頁通知並由信件點擊專屬連結重設；採納方案 B 架構免增開 Table，徹底解決未開通帳號登入尷尬、重發驗證信與重複註冊卡死之痛點

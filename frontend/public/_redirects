@@ -1,0 +1,3 @@
+# Cloudflare Pages SPA Routing Redirects
+# 確保 Angular 任何客戶端深度路由 (如 /lobby, /verify-email) 在重新整理或直接存取時皆回退給 index.html 處理
+/*    /index.html   200

@@ -15,6 +15,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { UserStateService } from './user-state.service';
+import { environment } from '../../environments/environment';
 
 export interface ApiResponse<T> {
   status: number;
@@ -31,8 +32,8 @@ export class ApiClientService {
   private readonly http = inject(HttpClient);
   private readonly userState = inject(UserStateService);
 
-  /** 後端 API 基礎根路徑 */
-  public readonly baseUrl = 'http://localhost:8080';
+  /** 後端 API 基礎根路徑 (本地指向 localhost:8080，生產自動對接雲端 Render) */
+  public readonly baseUrl = environment.apiUrl;
 
   /**
    * 取得附加 JWT Bearer Token 之通訊標頭
