@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - master
+      - development
       - dev
       - feature
   pull_request:
     branches:
       - master
+      - development
       - dev
 
 jobs:

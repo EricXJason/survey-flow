@@ -24,7 +24,9 @@ SurveyFlow 採**前後端完全解耦架構**，前端與後端分別專注於�
 - **現代雲端與全自動 CI/CD 管線**:
   - **Docker 容器化**: 後端採用 Eclipse Temurin 21 Alpine 多階段構建，運行非 root 輕量容器。
   - **雲端託管架構**: Render (後端 Web Service) + Cloudflare Pages (前端 Anycast CDN) + TiDB Cloud Serverless (雲端持久化)。
+  - **無伺服器保活自動化**: 內建 GitHub Actions 定時保活工作流（`keep-alive.yml`），每 14 分鐘自動叩門探針，消除免費容器冷啟動（Cold Start）延遲。
   - **GitHub Actions**: 代碼推送自動執行雙軌 CI 單元測試與自動化建置。
+  - **標準部署手冊**: 完整雲端建置步驟詳見 [`docs/deployment-guide.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/deployment-guide.md)。
 - **零橫向拖曳 RWD 與 WCAG 2.2 無障礙相容**:
   - 表格卡片化流體適應，在各式行動裝置螢幕下保證零破版、免橫向滾動。
 
@@ -146,9 +148,13 @@ erDiagram
 survey-flow/
 ├── README.md                  # 專案總覽與全端整合指南
 ├── .gitignore                 # 統整全端忽略檔
-├── docs/                      # 規格與文檔庫
+├── .github/workflows/         # GitHub Actions 自動化管線
+│   ├── ci.yml                 # 雙軌 CI 單元測試與建構驗證
+│   └── keep-alive.yml         # Render 免費容器定時保活工作流
+├── docs/                      # 規格與文檔庫 (純臺灣繁體中文)
 │   ├── change-log.md          # 輕量修訂歷程 (常駐置頂)
 │   ├── check-list.md          # 功能驗收清單
+│   ├── deployment-guide.md    # 雲端自動化部署與維運手冊
 │   └── system-design/         # 系統架構規格書 (01-10)
 ├── frontend/                  # Angular 19 前端工程
 │   ├── src/app/               # 頁面與核心元件
