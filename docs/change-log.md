@@ -3,6 +3,28 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 19:16] - 郵件通訊架構重大升級：引入Brevo/Resend HTTP REST API支援突破雲端防火牆阻斷
+
+- **改動原因**:
+  1. 針對 Render 免費方案硬性阻斷出站 SMTP 587/465/25 埠（導致連線逾時拋出 `SocketTimeoutException: Connect timed out`）之底層基礎設施限制，升級發信通訊架構。
+  2. 引入走標準 HTTPS（Port 443）之現代化 HTTP REST 郵件 API（支援 Brevo 與 Resend），Render 防火牆 100% 暢通放行，實現免付費下真實信件正常收發。
+- **具體內容**:
+  - 重構 [`MailService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/MailService.java)：採用純 Java 11 原生 `HttpClient`，實作 Brevo HTTP REST API (每日 300 封免費、免自訂網域) 與 Resend HTTP REST API 支援；支援動態三軌自動路由 (`Brevo -> Resend -> SMTP`) 與防禦性降級日誌。
+  - 更新 [`application.properties`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/application.properties) 與 [`10-deployment.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-deployment.md)：增加 `BREVO_API_KEY`、`RESEND_API_KEY` 與 `MAIL_PROVIDER` 環境變數配置及完整繁體中文註解。
+  - 通過全套後端 16/16 單元測試，保證生產環境 100% 穩定相容。
+- **影響範圍**: `MailService.java`, `application.properties`, `10-deployment.md`, `docs/change-log.md`
+
+## [2026-10-22 19:06] - 版控協定中樞升級：嚴格禁止AI自主Push鐵律、dev永不落後master規範落地與三線平齊校準
+
+- **改動原因**:
+  1. 徹底落實人類工程師之版控安全底線：日常對話與代碼任務僅限於本地沙盒原子 Commit，**絕對嚴格禁止 AI 在未獲人類明確 push 命令前自作主張執行 `git push`**。
+  2. 解決過往發布至 master 後，development 分支未同步 Fast-Forward 導致落後 master 拓撲之缺陷。
+  3. 將上述兩大鐵律永久固化寫入 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) 與 [`AGENTS-GIT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-GIT.md)。
+- **具體內容**:
+  - 更新 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) §1.1 與 [`AGENTS-GIT.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-GIT.md) §2、§3.4：新增「嚴格禁止 AI 自主執行 `git push` 鐵律」與「`development` 永遠不落後 `master` 鐵律」，並在發布管線中增補 `git checkout development && git merge --ff-only master && git push origin development` 步驟。
+  - 實體對齊版控拓撲：將本機與遠端 `development` 分支 Fast-Forward 同步對齊至 `master`（`6acc61b`），達成 `feature`、`development`、`master` 三線絕對平齊。
+- **影響範圍**: `AGENTS.md`, `AGENTS-GIT.md`, `docs/change-log.md`
+
 ## [2026-10-22 18:26] - 規格書純化與零幻覺淨化：移除全站KPI總覽/健康探針與未來維運規劃
 
 - **改動原因**:

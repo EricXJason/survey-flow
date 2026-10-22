@@ -235,9 +235,10 @@ npm start
 | `FRONTEND_BASE_URL` | `https://survey-flow.pages.dev` | **必填** |
 | `MAIL_HOST` | `smtp.gmail.com` | 選填 (預設 gmail) |
 | `MAIL_PORT` | `587` | 選填 (預設 587) |
-| `MAIL_USERNAME` | 用於發送驗證信之 Gmail 信箱地址 | **必填 (若需發信)** |
-| `MAIL_PASSWORD` | Google 帳戶之 16 碼「應用程式密碼」 | **必填 (若需發信)** |
-| `MAIL_FROM` | 寄件人顯示信箱 (如 `no-reply@surveyflow.tw`) | 選填 |
+| `MAIL_USERNAME` | 用於發送驗證信之 Gmail 信箱地址 (SMTP 模式) | 選填 |
+| `MAIL_PASSWORD` | Google 帳戶之 16 碼「應用程式密碼」 (SMTP 模式) | 選填 |
+| `MAIL_FROM` | 寄件人顯示信箱 (如 `user46972@gmail.com`) | **必填 (發信來源)** |
+| `BREVO_API_KEY` | Brevo (原 Sendinblue) API 金鑰 (走 HTTPS 443 埠，推薦 Render 免費容器使用) | **推薦 (免費發信)** |
 
 ---
 

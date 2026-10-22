@@ -113,6 +113,9 @@ ENTRYPOINT ["sh", "-c", "exec java -XX:+UseContainerSupport -XX:MaxRAMPercentage
 | `MAIL_PASSWORD` | *(無預設值)* | Google 應用程式 16 碼安全密碼 (由環境變數注入) |
 | `MAIL_FROM` | `no-reply@surveyflow.tw` | 寄件人顯示信箱地址 |
 | `FRONTEND_BASE_URL` | `http://localhost:4200` | 前端根網址 (用於產生驗證信中之一鍵開通與密碼重設連結) |
+| `BREVO_API_KEY` | *(選填/雲端推薦)* | Brevo (原 Sendinblue) HTTP API 金鑰，走 HTTPS Port 443 突破 Render 免費方案 SMTP 阻斷限制 (每日免費 300 封) |
+| `RESEND_API_KEY` | *(選填/雲端推薦)* | Resend HTTP API 金鑰，走 HTTPS Port 443 突破 Render 免費方案 SMTP 阻斷限制 (每月免費 3,000 封) |
+| `MAIL_PROVIDER` | `AUTO` | 郵件提供商調度模式 (`AUTO`: 自動偵測 Brevo -> Resend -> SMTP, `BREVO`, `RESEND`, `SMTP`) |
 
 ---
 

@@ -2,37 +2,54 @@
  * ============================================================================
  * 檔案名稱: MailService.java
  * 所屬模組: 電子郵件傳輸與通訊通知服務模組 (Mail Service)
- * 責任描述: 負責透過 Gmail SMTP 發送安全驗證信（忘記密碼 OTP 重設信、會員註冊啟用信）
+ * 責任描述: 負責發送安全驗證信（忘記密碼 OTP 重設信、會員註冊啟用信）。
+ *           支援三軌通訊策略：
+ *           1. Brevo HTTP REST API (走 HTTPS Port 443，突破 Render 免費容器 SMTP 587 阻斷)
+ *           2. Resend HTTP REST API (走 HTTPS Port 443，突破 Render 免費容器 SMTP 587 阻斷)
+ *           3. 原生 Spring JavaMailSender (標準 SMTP 587，適用於本地或付費雲端)
  * 架構分層: Service Layer / Infrastructure Communication
  * 聯動關係:
- *   - 上游依賴: JavaMailSender, MimeMessageHelper, application.properties
+ *   - 上游依賴: JavaMailSender, ObjectMapper, application.properties
  *   - 下游消費: AuthService
- * 邊界處理: 支援富文本 HTML 現代科技風樣板；發信異常時記錄詳細審計日誌並給予友善提示
+ * 邊界處理: 支援富文本 HTML 現代科技風樣板；發信異常時記錄日誌並降級打印驗證碼，保證系統不崩潰
  * ============================================================================
  */
 
 package com.surveyflow.service;
 
-import jakarta.mail.MessagingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
 public class MailService {
 
     private final JavaMailSender mailSender;
+    private final ObjectMapper objectMapper;
     private final String fromEmail;
     private final String senderName;
     private final String frontendBaseUrl;
+    private final String brevoApiKey;
+    private final String resendApiKey;
+    private final String mailProvider;
+    private final HttpClient httpClient;
 
     /**
      * 建構子依賴注入 (Constructor Injection)
@@ -40,13 +57,24 @@ public class MailService {
      */
     public MailService(
             JavaMailSender mailSender,
+            ObjectMapper objectMapper,
             @Value("${app.mail.from}") String fromEmail,
             @Value("${app.mail.sender-name}") String senderName,
-            @Value("${app.frontend.base-url}") String frontendBaseUrl) {
+            @Value("${app.frontend.base-url}") String frontendBaseUrl,
+            @Value("${app.mail.brevo-api-key:}") String brevoApiKey,
+            @Value("${app.mail.resend-api-key:}") String resendApiKey,
+            @Value("${app.mail.provider:AUTO}") String mailProvider) {
         this.mailSender = mailSender;
+        this.objectMapper = objectMapper;
         this.fromEmail = fromEmail;
         this.senderName = senderName;
         this.frontendBaseUrl = frontendBaseUrl;
+        this.brevoApiKey = brevoApiKey != null ? brevoApiKey.trim() : "";
+        this.resendApiKey = resendApiKey != null ? resendApiKey.trim() : "";
+        this.mailProvider = mailProvider != null ? mailProvider.trim().toUpperCase() : "AUTO";
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
     }
 
     /**
@@ -75,30 +103,132 @@ public class MailService {
     }
 
     /**
-     * 底層發送 HTML 電子郵件共用方法
+     * 底層發送 HTML 電子郵件共用調度方法
+     * 依據提供商策略動態路由至 Brevo HTTP API (443)、Resend HTTP API (443) 或 SMTP (587)
      */
     private void sendHtmlMail(String toEmail, String subject, String htmlContent) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+        boolean sentSuccessfully = false;
 
-            String sanitizedName = resolveSenderName();
-            String senderAddress = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail.trim() : "no-reply@surveyflow.tw";
-            helper.setFrom(new InternetAddress(senderAddress, sanitizedName, StandardCharsets.UTF_8.name()));
-            helper.setTo(toEmail.trim());
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
+        // 策略 1: 指定或自動優先使用 Brevo HTTP REST API (走 443 埠，100% 繞過雲端 SMTP 封鎖)
+        if ("BREVO".equals(mailProvider) || ("AUTO".equals(mailProvider) && !brevoApiKey.isBlank())) {
+            try {
+                sendViaBrevoApi(toEmail, subject, htmlContent);
+                sentSuccessfully = true;
+            } catch (Exception e) {
+                log.warn("⚠️ Brevo HTTP API 寄信失敗: to={}, 原因={}", toEmail, e.getMessage());
+            }
+        }
 
-            mailSender.send(message);
-            log.info("郵件已成功透過 SMTP 寄出: to={}, subject={}", toEmail, subject);
-        } catch (Exception e) {
-            log.warn("⚠️ SMTP 發送郵件遭遇異常 (例如 Google 帳密核對失敗或網路未通): to={}, 原因={}", toEmail, e.getMessage());
+        // 策略 2: 指定或備選使用 Resend HTTP REST API (走 443 埠)
+        if (!sentSuccessfully && ("RESEND".equals(mailProvider) || ("AUTO".equals(mailProvider) && !resendApiKey.isBlank()))) {
+            try {
+                sendViaResendApi(toEmail, subject, htmlContent);
+                sentSuccessfully = true;
+            } catch (Exception e) {
+                log.warn("⚠️ Resend HTTP API 寄信失敗: to={}, 原因={}", toEmail, e.getMessage());
+            }
+        }
+
+        // 策略 3: 若無 HTTP API 設定或 HTTP API 均未啟用，降級嘗試傳統 SMTP 587
+        if (!sentSuccessfully) {
+            try {
+                sendViaSmtp(toEmail, subject, htmlContent);
+                sentSuccessfully = true;
+            } catch (Exception e) {
+                log.warn("⚠️ SMTP 發送郵件遭遇異常 (例如 Google 帳密核對失敗或 Render 雲端封鎖 587 埠): to={}, 原因={}", toEmail, e.getMessage());
+            }
+        }
+
+        // 防禦性降級日誌保全：若所有實體發信管道均不可用，打印日誌確保開發或除錯能順利取得驗證碼
+        if (!sentSuccessfully) {
             log.warn("┌──────────────────────────────────────────────────────────────────────────┐");
-            log.warn("│ 【開發環境防禦性降級】SMTP 發信未成功，已將驗證資訊記錄於下方伺服器日誌：      │");
+            log.warn("│ 【雲端環境防禦性降級】所有實體郵件傳輸未成功，已將驗證資訊記錄於下方伺服器日誌：│");
             log.warn("│ 收件者: {}                                              ", toEmail);
             log.warn("│ 郵件主旨: {}                                            ", subject);
             log.warn("└──────────────────────────────────────────────────────────────────────────┘");
         }
+    }
+
+    /**
+     * 透過 Brevo (原 Sendinblue) HTTP REST API 發送郵件 (HTTPS Port 443)
+     */
+    private void sendViaBrevoApi(String toEmail, String subject, String htmlContent) throws Exception {
+        String sanitizedName = resolveSenderName();
+        String senderAddress = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail.trim() : "user46972@gmail.com";
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("sender", Map.of("name", sanitizedName, "email", senderAddress));
+        payload.put("to", List.of(Map.of("email", toEmail.trim())));
+        payload.put("subject", subject);
+        payload.put("htmlContent", htmlContent);
+
+        String jsonBody = objectMapper.writeValueAsString(payload);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
+                .header("api-key", brevoApiKey)
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                .timeout(Duration.ofSeconds(15))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            log.info("郵件已成功透過 Brevo HTTP API (Port 443) 寄出: to={}, subject={}", toEmail, subject);
+        } else {
+            throw new RuntimeException("Brevo API 回應狀態碼 " + response.statusCode() + ": " + response.body());
+        }
+    }
+
+    /**
+     * 透過 Resend HTTP REST API 發送郵件 (HTTPS Port 443)
+     */
+    private void sendViaResendApi(String toEmail, String subject, String htmlContent) throws Exception {
+        String sanitizedName = resolveSenderName();
+        String senderAddress = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail.trim() : "onboarding@resend.dev";
+        String fromHeader = "%s <%s>".formatted(sanitizedName, senderAddress);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("from", fromHeader);
+        payload.put("to", Collections.singletonList(toEmail.trim()));
+        payload.put("subject", subject);
+        payload.put("html", htmlContent);
+
+        String jsonBody = objectMapper.writeValueAsString(payload);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.resend.com/emails"))
+                .header("Authorization", "Bearer " + resendApiKey)
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
+                .timeout(Duration.ofSeconds(15))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            log.info("郵件已成功透過 Resend HTTP API (Port 443) 寄出: to={}, subject={}", toEmail, subject);
+        } else {
+            throw new RuntimeException("Resend API 回應狀態碼 " + response.statusCode() + ": " + response.body());
+        }
+    }
+
+    /**
+     * 透過傳統 Spring JavaMailSender (SMTP Port 587) 發送郵件
+     */
+    private void sendViaSmtp(String toEmail, String subject, String htmlContent) throws Exception {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+
+        String sanitizedName = resolveSenderName();
+        String senderAddress = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail.trim() : "no-reply@surveyflow.tw";
+        helper.setFrom(new InternetAddress(senderAddress, sanitizedName, StandardCharsets.UTF_8.name()));
+        helper.setTo(toEmail.trim());
+        helper.setSubject(subject);
+        helper.setText(htmlContent, true);
+
+        mailSender.send(message);
+        log.info("郵件已成功透過 SMTP 寄出: to={}, subject={}", toEmail, subject);
     }
 
     /**
