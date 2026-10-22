@@ -5,9 +5,9 @@
  * 責任描述: 提供系統管理員 (ROLE_ADMIN) 專屬之全站會員管理、問卷稽核與全站維運數據 API
  * 架構分層: Presentation / Controller Layer
  * 聯動關係:
- *   - 上游依賴: UserRepository, SurveyRepository, SubmissionRepository, AnalyticsService
+ *   - 上游依賴: UserService, SurveyService, AnalyticsService
  *   - 下游消費: 前端 UserManagementComponent, SurveyManagementComponent (Admin 視角)
- * 邊界處理: 標註 @PreAuthorize("hasRole('ADMIN')") 進行嚴格角色防護，未授權者回傳 403
+ * 邊界處理: 嚴格遵循三層式架構 (Controller -> Service -> Repository)，控制器嚴禁直接存取資料倉儲；標註 @PreAuthorize("hasRole('ADMIN')") 進行權限防護
  * ============================================================================
  */
 
@@ -17,11 +17,6 @@ import com.surveyflow.common.ApiResponse;
 import com.surveyflow.dto.analytics.SurveyAnalyticsResponse;
 import com.surveyflow.dto.survey.SurveySummaryResponse;
 import com.surveyflow.dto.user.UserProfileResponse;
-import com.surveyflow.entity.Survey;
-import com.surveyflow.entity.User;
-import com.surveyflow.repository.SubmissionRepository;
-import com.surveyflow.repository.SurveyRepository;
-import com.surveyflow.repository.UserRepository;
 import com.surveyflow.service.AnalyticsService;
 import com.surveyflow.service.SurveyService;
 import com.surveyflow.service.UserService;
@@ -37,8 +32,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -48,13 +41,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final UserRepository userRepository;
-    private final SurveyRepository surveyRepository;
-    private final SubmissionRepository submissionRepository;
+    private final UserService userService;
     private final SurveyService surveyService;
     private final AnalyticsService analyticsService;
-
-    private final UserService userService;
 
     /**
      * 查詢全站會員分頁列表 (Admin 專屬)
@@ -64,8 +53,7 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<Page<UserProfileResponse>>> getAllUsers(
             @PageableDefault(size = 100, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<User> users = userRepository.findAllUsersForAdminNative(pageable);
-        Page<UserProfileResponse> responsePage = users.map(userService::convertToProfileResponse);
+        Page<UserProfileResponse> responsePage = userService.getAllUsersForAdmin(pageable);
         return ResponseEntity.ok(ApiResponse.ok(responsePage, "成功取得全站會員名冊"));
     }
 
@@ -79,29 +67,19 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> updateUserStatus(
             @PathVariable Long userId,
             @RequestParam String status) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
-        user.setStatus(status.toUpperCase());
-        userRepository.save(user);
+        userService.updateUserStatus(userId, status);
         log.info("管理員更新會員狀態: userId={}, status={}", userId, status);
         return ResponseEntity.ok(ApiResponse.ok("會員狀態已成功更新"));
     }
 
     /**
-     * 管理員刪除或停權特定會員
+     * 管理員刪除或停權特定會員 (軟刪除)
      * @param userId 會員識別碼
      * @return 操作確認回應
      */
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
-        if (user.getRole() == com.surveyflow.common.enums.RoleType.ROLE_ADMIN) {
-            throw new IllegalArgumentException("系統最高管理員帳號受保護，嚴禁刪除");
-        }
-        user.setDeletedAt(LocalDateTime.now());
-        user.setStatus("DELETED");
-        userRepository.save(user);
+        userService.deleteUserByAdmin(userId);
         log.info("管理員已將會員軟刪除: userId={}", userId);
         return ResponseEntity.ok(ApiResponse.ok("會員帳號已成功移除"));
     }
@@ -139,16 +117,7 @@ public class AdminController {
      */
     @GetMapping("/analytics/overview")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getPlatformOverview() {
-        long totalUsers = userRepository.count();
-        long totalSurveys = surveyRepository.count();
-        long totalSubmissions = submissionRepository.countTotalSubmissionsNative();
-
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("totalUsers", totalUsers);
-        stats.put("totalSurveys", totalSurveys);
-        stats.put("totalSubmissions", totalSubmissions);
-        stats.put("serverTime", LocalDateTime.now());
-
+        Map<String, Object> stats = analyticsService.getPlatformOverview();
         return ResponseEntity.ok(ApiResponse.ok(stats, "全站營運總覽統計取得成功"));
     }
 

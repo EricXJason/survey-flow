@@ -434,4 +434,23 @@ public class AnalyticsService {
             return 0L;
         }
     }
+
+    /**
+     * 全站維運與營運概覽統計 KPI (Admin 專屬業務邏輯)
+     * @return 全站統計數據 (總會員數、總問卷數、總填答數、伺服器時間)
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getPlatformOverview() {
+        long totalUsers = userRepository.count();
+        long totalSurveys = surveyRepository.count();
+        long totalSubmissions = submissionRepository.countTotalSubmissionsNative();
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalUsers", totalUsers);
+        stats.put("totalSurveys", totalSurveys);
+        stats.put("totalSubmissions", totalSubmissions);
+        stats.put("serverTime", java.time.LocalDateTime.now());
+
+        return stats;
+    }
 }

@@ -3,6 +3,17 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 11:00] - 架構治理重構：貫徹三層式軟體分層邊界（Controller 嚴禁直接依賴 Repository）
+
+- **改動原因**: 依據使用者檢驗與軟體工程規範，修復 Controller 層直接注入並調用 Repository 之分層架構違規，確保展示層 (Controller) 僅與業務邏輯層 (Service) 交互，資料倉儲存取 (Repository) 全面下沉並收斂至 Service 層
+- **具體內容**:
+  - **`AdminController.java`**: 徹底剔除直接依賴之 `UserRepository`、`SurveyRepository` 與 `SubmissionRepository`，所有管理員會員名冊查詢、狀態調整、軟刪除停權與全站營運 KPI 統計全部轉由 `UserService` 與 `AnalyticsService` 代理調用
+  - **`UserService.java`**: 新增 `getAllUsersForAdmin`、`updateUserStatus`、`deleteUserByAdmin` 三項管理員專屬商務邏輯方法
+  - **`AnalyticsService.java`**: 新增 `getPlatformOverview()` 全站統計運算方法，收斂總會員、總問卷與總填答數聚合查詢
+  - **`AdminControllerTest.java`**: 更新單元測試模擬對象，移除 Repository Mock，改為 Service Mock，確保測試層級契約與真實架構一致
+  - **`MailService.java`**: 增加防禦性降級日誌處理，當外部 SMTP 帳密授權核驗異常時避免阻斷註冊與忘記密碼主幹流程
+- **影響範圍**: 後端管理員模組、會員服務、分析服務與單元測試
+
 ## [2026-10-22 10:55] - 安全與業務升級：全端電子郵件驗證體系 (Gmail SMTP、純 Email 忘記密碼 6 碼 OTP、新會員信箱驗證啟用)
 
 - **改動原因**: 依據使用者指示，將忘記密碼流程全面簡化為「僅需提供 Email」，建立真實郵件收信 6 碼安全驗證碼 (OTP) 重設機制；新會員註冊增加 Email 驗證啟用流程，核驗通過後開通帳號並直接簽發雙 Token 自動登入；整合 Google 官方 Gmail SMTP 服務

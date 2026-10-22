@@ -2,7 +2,7 @@
  * ============================================================================
  * 檔案名稱: UserService.java
  * 所屬模組: Service 業務邏輯層 - 會員實體模組
- * 責任描述: 實現 User 實體專屬之個人檔案查詢、個人資料更新與登入密碼變更商務邏輯 (嚴格貫徹 SRP 原則)
+ * 責任描述: 實現 User 實體專屬之個人檔案查詢、個人資料更新、登入密碼變更及管理員會員管理商務邏輯 (嚴格貫徹分層架構與 SRP 原則)
  * 架構分層: Service Layer / Business Logic
  * 聯動關係:
  *   - 上游依賴: UserRepository, PasswordEncoder
@@ -12,6 +12,7 @@
 
 package com.surveyflow.service;
 
+import com.surveyflow.common.enums.RoleType;
 import com.surveyflow.dto.user.PasswordChangeRequest;
 import com.surveyflow.dto.user.UserProfileResponse;
 import com.surveyflow.dto.user.UserProfileUpdateRequest;
@@ -19,9 +20,13 @@ import com.surveyflow.entity.User;
 import com.surveyflow.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -82,6 +87,48 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
         log.info("會員密碼變更成功: username={}", username);
+    }
+
+    /**
+     * 查詢全站會員分頁列表 (Admin 專屬業務)
+     * @param pageable 分頁參數
+     * @return 會員分頁資料
+     */
+    @Transactional(readOnly = true)
+    public Page<UserProfileResponse> getAllUsersForAdmin(Pageable pageable) {
+        Page<User> users = userRepository.findAllUsersForAdminNative(pageable);
+        return users.map(this::convertToProfileResponse);
+    }
+
+    /**
+     * 修改特定會員帳號狀態 (ACTIVE / SUSPENDED)
+     * @param userId 會員識別碼
+     * @param status 新狀態
+     */
+    @Transactional
+    public void updateUserStatus(Long userId, String status) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
+        user.setStatus(status.toUpperCase());
+        userRepository.save(user);
+        log.info("管理員更新會員狀態: userId={}, status={}", userId, status);
+    }
+
+    /**
+     * 管理員刪除或停權特定會員 (軟刪除)
+     * @param userId 會員識別碼
+     */
+    @Transactional
+    public void deleteUserByAdmin(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
+        if (user.getRole() == RoleType.ROLE_ADMIN) {
+            throw new IllegalArgumentException("系統最高管理員帳號受保護，嚴禁刪除");
+        }
+        user.setDeletedAt(LocalDateTime.now());
+        user.setStatus("DELETED");
+        userRepository.save(user);
+        log.info("管理員已將會員軟刪除: userId={}", userId);
     }
 
     /**

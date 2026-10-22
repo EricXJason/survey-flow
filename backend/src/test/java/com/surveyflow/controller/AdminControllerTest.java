@@ -2,11 +2,11 @@
  * ============================================================================
  * 檔案名稱: AdminControllerTest.java
  * 所屬模組: Test 測試層 - 管理者端點 Web 測試
- * 責任描述: 採用 MockMvc standaloneSetup 測試 /api/admin/** 管理者端點之業務回應
+ * 責任描述: 採用 MockMvc standaloneSetup 測試 /api/admin/** 管理者端點之業務回應，驗證分層隔離
  * 架構分層: Test Layer / Web Test
  * 聯動關係:
  *   - 測試目標: AdminController
- *   - 模擬對象: UserRepository, SurveyRepository, SubmissionRepository, SurveyService, AnalyticsService
+ *   - 模擬對象: UserService, SurveyService, AnalyticsService
  * ============================================================================
  */
 
@@ -15,11 +15,9 @@ package com.surveyflow.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.surveyflow.common.GlobalExceptionHandler;
-import com.surveyflow.repository.SubmissionRepository;
-import com.surveyflow.repository.SurveyRepository;
-import com.surveyflow.repository.UserRepository;
 import com.surveyflow.service.AnalyticsService;
 import com.surveyflow.service.SurveyService;
+import com.surveyflow.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +31,9 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -44,13 +45,7 @@ class AdminControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private SurveyRepository surveyRepository;
-
-    @Mock
-    private SubmissionRepository submissionRepository;
+    private UserService userService;
 
     @Mock
     private SurveyService surveyService;
@@ -77,9 +72,12 @@ class AdminControllerTest {
     @Test
     @DisplayName("管理端點測試: 請求 /api/admin/analytics/overview 應回傳全站總體營運指標")
     void getPlatformOverview_Returns200() throws Exception {
-        when(userRepository.count()).thenReturn(25L);
-        when(surveyRepository.count()).thenReturn(10L);
-        when(submissionRepository.countTotalSubmissionsNative()).thenReturn(520L);
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalUsers", 25L);
+        stats.put("totalSurveys", 10L);
+        stats.put("totalSubmissions", 520L);
+
+        when(analyticsService.getPlatformOverview()).thenReturn(stats);
 
         mockMvc.perform(get("/api/admin/analytics/overview")
                         .contentType(MediaType.APPLICATION_JSON))
