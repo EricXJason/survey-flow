@@ -182,7 +182,9 @@ git checkout feature
 
 ### Q1: Render 免費方案冷啟動（Cold Start）延遲？
 - **原因**：Render 免費執行個體在無外部流量 15 分鐘後會自動休眠；下一次造訪需等待 30~50 秒進行容器喚醒。
-- **解法**：可使用免費之定時 Ping 工具（如 [UptimeRobot](https://uptimerobot.com) 或 [Cron-Job.org](https://cron-job.org)），每隔 10 分鐘向後端發送 HTTP GET 請求 `https://survey-flow-9gt6.onrender.com/actuator/health` 保持伺服器常駐喚醒。
+- **解法（專案已內建）**：
+  1. **GitHub Actions 雲端自動保活（已內建）**：專案已包含 [`.github/workflows/keep-alive.yml`](file:///Users/hsuche-cheng/Documents/project/survey-flow/.github/workflows/keep-alive.yml)，每 14 分鐘自動發送一次健康檢查探針至 `https://survey-flow-9gt6.onrender.com/actuator/health`，因本倉庫為 Public，享有全自動、無上限免費保活，Render 24 小時永遠在線秒開。
+  2. **備用外部機器人**：亦可搭配免費外部工具（如 [Cron-Job.org](https://cron-job.org) 或 [UptimeRobot](https://uptimerobot.com)），設定每 14 分鐘 Ping 一次後端 `/actuator/health`。
 
 ### Q2: 登入時提示 CORS 跨域阻擋錯誤？
 - **檢查點 1**：確認 Render 後台的 `CORS_ALLOWED_ORIGINS` 是否完整包含 Cloudflare Pages 網址（且末尾**不可有斜線**，例如 `https://survey-flow.pages.dev`）。

@@ -3,6 +3,15 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 15:05] - 維運自動化：配置 GitHub Actions 定時保活工作流 (keep-alive.yml)
+
+- **改動原因**: 防止 Render 免費 Web Service 容器在 15 分鐘無流量時自動休眠，消除 30~50 秒冷啟動（Cold Start）延遲
+- **具體內容**:
+  - 新增 [`.github/workflows/keep-alive.yml`](file:///Users/hsuche-cheng/Documents/project/survey-flow/.github/workflows/keep-alive.yml)：每 14 分鐘定期向 Render 後端 `/actuator/health` 發送 HTTP GET 探針；因專案為 Public 倉庫，享有 GitHub Actions 100% 免費無上限保活
+  - 更新 [`.github/workflows/ci.yml`](file:///Users/hsuche-cheng/Documents/project/survey-flow/.github/workflows/ci.yml)：將 `development` 分支納入 CI 自動測試與構建監聽名單
+  - 更新 [`docs/deployment-guide.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/deployment-guide.md)：於排錯章節詳細載明內建保活機制
+- **影響範圍**: `.github/workflows/keep-alive.yml`, `.github/workflows/ci.yml`, `docs/deployment-guide.md`, `docs/change-log.md`
+
 ## [2026-10-22 14:30] - 維運文檔完善：建立全雲端部署與維運手冊 (deployment-guide.md)
 
 - **改動原因**: 為專案現行之「Cloudflare Pages 邊緣前端 + Render Docker 後端 + TiDB Cloud 分散式資料庫」全自動化部署體系建立標準化實戰手冊
