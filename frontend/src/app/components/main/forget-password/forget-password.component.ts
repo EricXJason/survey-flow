@@ -41,6 +41,17 @@ export class ForgetPasswordComponent {
   /** 是否正在發送請求狀態 */
   protected isSubmitting = false;
 
+  /** 是否已成功發送重設郵件 */
+  protected emailSent = false;
+
+  /** 已發送之電子郵件 */
+  protected sentEmail = '';
+
+  /** 重新寄送倒數秒數 */
+  protected resendCountdown = 0;
+
+  private _countdownTimer: any = null;
+
   /**
    * 忘記密碼響應式表單群組 (僅需提供 email)
    */
@@ -70,7 +81,7 @@ export class ForgetPasswordComponent {
   }
 
   /**
-   * 發送忘記密碼請求資料至後端真實端點
+   * 發送忘記密碼請求資料至後端真實端點 (原地切換狀態，不自動跳轉)
    */
   protected sendForgotPasswordData(): void {
     const email = this.formBuilderGroup.get('email')?.value?.trim();
@@ -81,19 +92,11 @@ export class ForgetPasswordComponent {
     this.isSubmitting = true;
 
     this._apiClient.post<any>('/api/public/auth/forget-password', { email }).subscribe({
-      next: (res) => {
+      next: () => {
         this.isSubmitting = false;
-        const noticeData: DialogData = {
-          title: '驗證碼已寄出',
-          message: `6 位數安全重設驗證碼已發送至您的信箱：\n${email}\n\n請查收郵件後前往重設密碼頁面輸入驗證碼。`,
-          mode: 'noticeMode',
-          confirmText: '立即前往重設密碼',
-          showCloseButton: true,
-        };
-
-        this._dialogService.showDialog(noticeData).subscribe(() => {
-          this._router.navigate(['/reset-password'], { queryParams: { email } });
-        });
+        this.emailSent = true;
+        this.sentEmail = email;
+        this.startResendCountdown();
       },
       error: (err) => {
         this.isSubmitting = false;
@@ -109,9 +112,47 @@ export class ForgetPasswordComponent {
   }
 
   /**
+   * 啟動 60 秒重新發送冷卻倒數計時器
+   */
+  protected startResendCountdown(): void {
+    this.resendCountdown = 60;
+    if (this._countdownTimer) {
+      clearInterval(this._countdownTimer);
+    }
+    this._countdownTimer = setInterval(() => {
+      this.resendCountdown--;
+      if (this.resendCountdown <= 0) {
+        clearInterval(this._countdownTimer);
+        this._countdownTimer = null;
+      }
+    }, 1000);
+  }
+
+  /**
+   * 重新發送重設密碼信件
+   */
+  protected resendEmail(): void {
+    if (this.resendCountdown > 0 || this.isSubmitting || !this.sentEmail) {
+      return;
+    }
+    this.formBuilderGroup.patchValue({ email: this.sentEmail });
+    this.sendForgotPasswordData();
+  }
+
+  /**
+   * 手動前往輸入 6 碼重設頁面
+   */
+  protected goToResetPasswordDirectly(): void {
+    this._router.navigate(['/reset-password'], { queryParams: { email: this.sentEmail } });
+  }
+
+  /**
    * 導航回登入頁面
    */
   protected goToLogInPage(): void {
+    if (this._countdownTimer) {
+      clearInterval(this._countdownTimer);
+    }
     this._router.navigateByUrl('/log-in');
   }
 }

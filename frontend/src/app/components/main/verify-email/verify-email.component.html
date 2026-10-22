@@ -1,0 +1,88 @@
+<div class="page-auth">
+  <div class="form-card auth-card">
+    <header class="auth-header">
+      <span class="auth-badge">信箱認證</span>
+      <h1 class="auth-title">開通會員帳號</h1>
+      <p class="auth-subtitle">
+        {{ isVerifiedSuccess ? '恭喜您，會員帳號已成功開通！' : (isVerifying ? '正在進行信箱憑證核驗中...' : '請輸入 6 位數啟用碼或透過信中連結一鍵開通') }}
+      </p>
+    </header>
+
+    @if (isVerifying) {
+      <div class="status-box verifying-box">
+        <div class="spinner-hud" aria-hidden="true"></div>
+        <p class="status-msg">正在驗證您的專屬開通信件憑證，請稍候...</p>
+      </div>
+    } @else if (isVerifiedSuccess) {
+      <div class="status-box success-box">
+        <div class="status-icon" aria-hidden="true">🎉</div>
+        <h2 class="status-title">開通成功！</h2>
+        <p class="status-desc">
+          您的電子信箱 <strong>{{ targetEmail }}</strong> 已完成驗證！<br/>
+          系統已為您自動登入，正在為您導向問卷大廳...
+        </p>
+        <div class="auth-actions">
+          <button type="button" class="btn btn-primary btn-block" (click)="goToLobby()">
+            立即前往問卷大廳
+          </button>
+        </div>
+      </div>
+    } @else {
+      @if (errorMessage) {
+        <div class="alert-banner alert-error" role="alert">
+          <span class="alert-icon" aria-hidden="true">⚠️</span>
+          <span class="alert-text">{{ errorMessage }}</span>
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="ve-email">註冊電子信箱</label>
+        <input
+          id="ve-email"
+          type="email"
+          [(ngModel)]="targetEmail"
+          placeholder="例如：user@example.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="ve-code">6 位數啟用碼</label>
+        <input
+          id="ve-code"
+          type="text"
+          [(ngModel)]="verificationCode"
+          placeholder="請輸入 6 碼數字啟用碼"
+          maxlength="6"
+          class="code-input"
+          autocomplete="one-time-code"
+        />
+        <span class="field-hint">啟用碼有效期限為 15 分鐘</span>
+      </div>
+
+      <div class="auth-actions">
+        <button
+          type="button"
+          class="btn btn-primary btn-block"
+          [disabled]="verificationCode.length !== 6 || !targetEmail"
+          (click)="handleManualVerify()"
+        >
+          開通帳號並登入
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-outline btn-block"
+          [disabled]="resendCountdown > 0 || isResending"
+          (click)="handleResendVerification()"
+        >
+          {{ resendCountdown > 0 ? ('重新寄送驗證信 (' + resendCountdown + 's)') : '重新寄送驗證信' }}
+        </button>
+
+        <button type="button" class="btn btn-ghost btn-block" (click)="goToLogIn()">
+          返回登入頁面
+        </button>
+      </div>
+    }
+  </div>
+</div>

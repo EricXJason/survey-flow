@@ -73,6 +73,27 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 處理帳號尚未完成信箱驗證例外 (403 FORBIDDEN，附帶 status 與 email 供前端啟動重發流程)
+     * @param ex 帳號未驗證例外
+     * @return 403 包含 ACCOUNT_NOT_VERIFIED 之結構化回應
+     */
+    @ExceptionHandler(AccountNotVerifiedException.class)
+    public ResponseEntity<ApiResponse<java.util.Map<String, String>>> handleAccountNotVerified(AccountNotVerifiedException ex) {
+        java.util.Map<String, String> data = java.util.Map.of(
+                "status", "ACCOUNT_NOT_VERIFIED",
+                "email", ex.getEmail() != null ? ex.getEmail() : ""
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.<java.util.Map<String, String>>builder()
+                        .status(HttpStatus.FORBIDDEN.value())
+                        .success(false)
+                        .message(ex.getMessage())
+                        .data(data)
+                        .timestamp(java.time.LocalDateTime.now())
+                        .build());
+    }
+
+    /**
      * 處理自訂業務違例 (IllegalArgumentException 等)
      * @param ex 非法引數或業務衝突例外
      * @return 400 統一回應

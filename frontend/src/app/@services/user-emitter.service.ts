@@ -101,6 +101,52 @@ export class UserEmitterService {
         }
       },
       error: (err) => {
+        const errorDataPayload = err?.error?.data;
+        const unverifiedEmail = errorDataPayload?.email;
+        const isNotVerified =
+          err?.status === 403 &&
+          (errorDataPayload?.status === 'ACCOUNT_NOT_VERIFIED' ||
+            err?.error?.message?.includes('尚未完成電子郵件驗證'));
+
+        if (isNotVerified) {
+          const unverifiedDialog: DialogData = {
+            title: '帳號尚未開通信箱驗證',
+            message: `此帳號已註冊但尚未完成電子郵件驗證。\n目標信箱：${unverifiedEmail || '註冊信箱'}\n\n您可以點擊下方按鈕重新寄送開通驗證信，或前往輸入 6 位數啟用碼完成開通。`,
+            mode: 'checkMode',
+            confirmText: '重新發送開通信',
+            cancelText: '前往開通驗證',
+            showCloseButton: true,
+          };
+
+          this._dialogService.showDialog(unverifiedDialog).subscribe((confirmed) => {
+            if (confirmed) {
+              if (unverifiedEmail) {
+                this._apiClient.post<any>('/api/public/auth/resend-verification', { email: unverifiedEmail }).subscribe({
+                  next: () => {
+                    this._dialogService.showDialog({
+                      title: '開通信件已重新寄出',
+                      message: `已重新發送開通驗證信至：\n${unverifiedEmail}\n\n請前往您的電子郵件信箱，點擊信中的「點擊立即開通帳號」按鈕即可開通並登入！`,
+                      mode: 'noticeMode',
+                      confirmText: '好',
+                      showCloseButton: true,
+                    }).subscribe();
+                  },
+                  error: (resendErr) => {
+                    this._dialogService.showDialog({
+                      title: '發送失敗',
+                      message: resendErr?.error?.message || '重新發送驗證信失敗，請稍後再試。',
+                      mode: 'errorMode',
+                    }).subscribe();
+                  },
+                });
+              }
+            } else {
+              this._router.navigate(['/verify-email'], { queryParams: { email: unverifiedEmail } });
+            }
+          });
+          return;
+        }
+
         const errorMsg = this.resolveErrorMessage(err, '帳號或密碼錯誤，請重新確認。');
         const errorData: DialogData = {
           title: '登入失敗',

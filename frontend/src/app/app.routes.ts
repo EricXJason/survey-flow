@@ -23,6 +23,7 @@ import { LogInComponent } from './components/main/log-in/log-in.component';
 import { ForgetPasswordComponent } from './components/main/forget-password/forget-password.component';
 import { RegisterComponent } from './components/main/register/register.component';
 import { ResetPasswordComponent } from './components/main/reset-password/reset-password.component';
+import { VerifyEmailComponent } from './components/main/verify-email/verify-email.component';
 import { UserProfileComponent } from './components/main/user-profile/user-profile.component';
 import { NotFoundComponent } from './components/main/not-found/not-found.component';
 
@@ -84,6 +85,7 @@ export const routes: Routes = [
   { path: 'forget-password', component: ForgetPasswordComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'verify-email', component: VerifyEmailComponent },
   {
     path: 'survey-design',
     component: SurveyDesignComponent,

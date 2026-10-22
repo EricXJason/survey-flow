@@ -58,11 +58,11 @@ public class SecurityConfig {
      */
     @Bean
     public PasswordEncoder passwordEncoder(
-            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.salt-length:16}") int saltLength,
-            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.hash-length:32}") int hashLength,
-            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.parallelism:1}") int parallelism,
-            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.memory:4096}") int memory,
-            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.iterations:3}") int iterations) {
+            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.salt-length}") int saltLength,
+            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.hash-length}") int hashLength,
+            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.parallelism}") int parallelism,
+            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.memory}") int memory,
+            @org.springframework.beans.factory.annotation.Value("${app.security.argon2.iterations}") int iterations) {
         return new org.springframework.security.crypto.argon2.Argon2PasswordEncoder(saltLength, hashLength, parallelism, memory, iterations);
     }
 

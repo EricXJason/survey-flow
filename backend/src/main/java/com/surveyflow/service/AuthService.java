@@ -13,6 +13,7 @@
 
 package com.surveyflow.service;
 
+import com.surveyflow.common.AccountNotVerifiedException;
 import com.surveyflow.common.enums.RoleType;
 import com.surveyflow.dto.auth.*;
 import com.surveyflow.entity.User;
@@ -31,6 +32,7 @@ import org.springframework.util.StringUtils;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -47,32 +49,58 @@ public class AuthService {
     private static final SecureRandom RANDOM = new SecureRandom();
 
     /**
-     * 處理新會員註冊業務 (寄送 Email 驗證碼，帳號暫置於待驗證狀態)
+     * 處理新會員註冊業務 (支援未驗證帳號覆蓋更新，寄送 Email 驗證碼與開通連結)
      * @param request 註冊參數
      * @return 註冊成功資訊
      */
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("此帳號已被註冊，請更換其他帳號");
-        }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("此電子信箱已被使用，請更換其他信箱");
-        }
+        String trimmedUsername = request.getUsername().trim();
+        String trimmedEmail = request.getEmail().trim();
 
-        // 使用 Argon2id 加密密碼
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        Optional<User> existingUserByUsername = userRepository.findByUsername(trimmedUsername);
+        Optional<User> existingUserByEmail = userRepository.findByEmailNative(trimmedEmail);
 
-        User user = User.builder()
-                .username(request.getUsername().trim())
-                .email(request.getEmail().trim())
-                .passwordHash(encodedPassword)
-                .fullName(request.getFullName().trim())
-                .phone(request.getPhone() != null ? request.getPhone().trim() : null)
-                .identityCard(request.getIdentityCard() != null ? request.getIdentityCard().trim() : null)
-                .role(RoleType.ROLE_USER)
-                .status("PENDING_VERIFICATION")
-                .build();
+        User user;
+        if (existingUserByUsername.isPresent()) {
+            User existing = existingUserByUsername.get();
+            if ("PENDING_VERIFICATION".equalsIgnoreCase(existing.getStatus())) {
+                // 若先前的註冊尚未開通，允許使用者重新提交表單覆蓋更新並重發驗證信，避免卡死
+                user = existing;
+                user.setEmail(trimmedEmail);
+                user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+                user.setFullName(request.getFullName().trim());
+                user.setPhone(request.getPhone() != null ? request.getPhone().trim() : null);
+                user.setIdentityCard(request.getIdentityCard() != null ? request.getIdentityCard().trim() : null);
+            } else {
+                throw new IllegalArgumentException("此帳號已被註冊，請更換其他帳號");
+            }
+        } else if (existingUserByEmail.isPresent()) {
+            User existing = existingUserByEmail.get();
+            if ("PENDING_VERIFICATION".equalsIgnoreCase(existing.getStatus())) {
+                // 若該信箱先前之註冊尚未開通，允許覆蓋更新
+                user = existing;
+                user.setUsername(trimmedUsername);
+                user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+                user.setFullName(request.getFullName().trim());
+                user.setPhone(request.getPhone() != null ? request.getPhone().trim() : null);
+                user.setIdentityCard(request.getIdentityCard() != null ? request.getIdentityCard().trim() : null);
+            } else {
+                throw new IllegalArgumentException("此電子信箱已被使用，請更換其他信箱");
+            }
+        } else {
+            String encodedPassword = passwordEncoder.encode(request.getPassword());
+            user = User.builder()
+                    .username(trimmedUsername)
+                    .email(trimmedEmail)
+                    .passwordHash(encodedPassword)
+                    .fullName(request.getFullName().trim())
+                    .phone(request.getPhone() != null ? request.getPhone().trim() : null)
+                    .identityCard(request.getIdentityCard() != null ? request.getIdentityCard().trim() : null)
+                    .role(RoleType.ROLE_USER)
+                    .status("PENDING_VERIFICATION")
+                    .build();
+        }
 
         user = userRepository.save(user);
 
@@ -170,7 +198,7 @@ public class AuthService {
         }
 
         if ("PENDING_VERIFICATION".equalsIgnoreCase(user.getStatus())) {
-            throw new IllegalArgumentException("該帳號尚未完成電子郵件驗證，請先至信箱查收 6 位數驗證碼開通帳號");
+            throw new AccountNotVerifiedException("該帳號尚未完成電子郵件驗證，請至信箱點擊開通連結或輸入 6 位數啟用碼", user.getEmail());
         }
 
         if (!"ACTIVE".equals(user.getStatus())) {

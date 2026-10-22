@@ -32,6 +32,7 @@ public class MailService {
     private final JavaMailSender mailSender;
     private final String fromEmail;
     private final String senderName;
+    private final String frontendBaseUrl;
 
     /**
      * 建構子依賴注入 (Constructor Injection)
@@ -40,33 +41,35 @@ public class MailService {
     public MailService(
             JavaMailSender mailSender,
             @Value("${app.mail.from}") String fromEmail,
-            @Value("${app.mail.sender-name}") String senderName) {
+            @Value("${app.mail.sender-name}") String senderName,
+            @Value("${app.frontend.base-url}") String frontendBaseUrl) {
         this.mailSender = mailSender;
         this.fromEmail = fromEmail;
         this.senderName = senderName;
+        this.frontendBaseUrl = frontendBaseUrl;
     }
 
     /**
-     * 發送忘記密碼重設驗證信 (含 6 碼 OTP 與重設連結)
+     * 發送忘記密碼重設驗證信 (含一鍵直達連結與 6 碼 OTP)
      * @param toEmail 收件者信箱
      * @param code 6 碼數字驗證碼
      */
     public void sendPasswordResetMail(String toEmail, String code) {
-        String subject = "【SurveyFlow】您的密碼重設驗證碼通知";
-        String htmlContent = buildPasswordResetHtml(code);
+        String subject = "【SurveyFlow】您的密碼重設專屬連結與驗證碼通知";
+        String htmlContent = buildPasswordResetHtml(toEmail, code);
         sendHtmlMail(toEmail, subject, htmlContent);
         log.info("忘記密碼驗證信已寄出: to={}, code={}", toEmail, code);
     }
 
     /**
-     * 發送新會員註冊啟用信 (含 6 碼啟用碼)
+     * 發送會員註冊啟用驗證信 (含一鍵開通連結與 6 碼 OTP)
      * @param toEmail 收件者信箱
-     * @param fullName 使用者全名
-     * @param code 6 碼啟用驗證碼
+     * @param fullName 會員全名
+     * @param code 6 碼數字啟用碼
      */
     public void sendRegistrationVerificationMail(String toEmail, String fullName, String code) {
-        String subject = "【SurveyFlow】歡迎加入！請完成會員信箱驗證";
-        String htmlContent = buildRegistrationHtml(fullName, code);
+        String subject = "【SurveyFlow】歡迎加入！請點擊開通您的會員帳號";
+        String htmlContent = buildRegistrationHtml(toEmail, fullName, code);
         sendHtmlMail(toEmail, subject, htmlContent);
         log.info("註冊啟用驗證信已寄出: to={}, fullName={}, code={}", toEmail, fullName, code);
     }
@@ -115,9 +118,10 @@ public class MailService {
     }
 
     /**
-     * 構建忘記密碼 HTML 電子郵件樣板
+     * 構建忘記密碼 HTML 電子郵件樣板 (含一鍵直達重設連結與 6 碼驗證碼)
      */
-    private String buildPasswordResetHtml(String code) {
+    private String buildPasswordResetHtml(String toEmail, String code) {
+        String resetUrl = "%s/reset-password?email=%s&code=%s".formatted(frontendBaseUrl, toEmail, code);
         return """
             <!DOCTYPE html>
             <html lang="zh-TW">
@@ -129,8 +133,10 @@ public class MailService {
                 .email-head { background: #0f172a; padding: 24px 32px; text-align: center; }
                 .email-head h1 { margin: 0; color: #ffffff; font-size: 20px; letter-spacing: 0.5px; }
                 .email-body { padding: 32px; }
-                .code-box { background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0; }
-                .code-text { font-family: monospace; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0f172a; }
+                .btn-box { text-align: center; margin: 24px 0 16px 0; }
+                .btn-action { background-color: #0f172a; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2); }
+                .code-box { background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; margin: 16px 0; }
+                .code-text { font-family: monospace; font-size: 28px; font-weight: 800; letter-spacing: 6px; color: #0f172a; }
                 .tip-text { font-size: 14px; color: #64748b; line-height: 1.6; }
                 .email-foot { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 32px; text-align: center; font-size: 12px; color: #94a3b8; }
               </style>
@@ -142,14 +148,19 @@ public class MailService {
                 </div>
                 <div class="email-body">
                   <h2 style="font-size: 18px; margin-top: 0;">重設您的登入密碼</h2>
-                  <p class="tip-text">您好！我們收到了重設您 SurveyFlow 會員密碼的請求。請在密碼重設頁面輸入下方的 6 位數安全驗證碼：</p>
+                  <p class="tip-text">您好！我們收到了重設您 SurveyFlow 會員密碼的請求。您可以直接點擊下方按鈕前往重設密碼頁面（系統將為您自動帶入驗證碼）：</p>
                   
+                  <div class="btn-box">
+                    <a href="%s" target="_blank" class="btn-action">立即前往重設密碼</a>
+                  </div>
+                  
+                  <p class="tip-text" style="margin-bottom: 6px;">若按鈕無法點擊，您亦可手動輸入以下 6 位數安全驗證碼：</p>
                   <div class="code-box">
                     <div class="code-text">%s</div>
                   </div>
                   
                   <p class="tip-text">⚠️ <strong>注意事項</strong>：<br/>
-                  • 此驗證碼的有效期限為 <strong>15 分鐘</strong>，請儘速完成密碼重設。<br/>
+                  • 此驗證碼與重設連結之有效期限為 <strong>15 分鐘</strong>，請儘速完成密碼重設。<br/>
                   • 若非您本人發起此項操作，請忽略此郵件，您的帳號仍然是安全的。</p>
                 </div>
                 <div class="email-foot">
@@ -158,13 +169,14 @@ public class MailService {
               </div>
             </body>
             </html>
-            """.formatted(code);
+            """.formatted(resetUrl, code);
     }
 
     /**
-     * 構建會員註冊啟用 HTML 電子郵件樣板
+     * 構建會員註冊啟用 HTML 電子郵件樣板 (含一鍵開通連結與 6 碼 OTP)
      */
-    private String buildRegistrationHtml(String fullName, String code) {
+    private String buildRegistrationHtml(String toEmail, String fullName, String code) {
+        String verifyUrl = "%s/verify-email?email=%s&code=%s".formatted(frontendBaseUrl, toEmail, code);
         return """
             <!DOCTYPE html>
             <html lang="zh-TW">
@@ -176,8 +188,10 @@ public class MailService {
                 .email-head { background: #0f172a; padding: 24px 32px; text-align: center; }
                 .email-head h1 { margin: 0; color: #ffffff; font-size: 20px; letter-spacing: 0.5px; }
                 .email-body { padding: 32px; }
-                .code-box { background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0; }
-                .code-text { font-family: monospace; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0f172a; }
+                .btn-box { text-align: center; margin: 24px 0 16px 0; }
+                .btn-action { background-color: #0f172a; color: #ffffff !important; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; display: inline-block; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2); }
+                .code-box { background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 14px; text-align: center; margin: 16px 0; }
+                .code-text { font-family: monospace; font-size: 28px; font-weight: 800; letter-spacing: 6px; color: #0f172a; }
                 .tip-text { font-size: 14px; color: #64748b; line-height: 1.6; }
                 .email-foot { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 32px; text-align: center; font-size: 12px; color: #94a3b8; }
               </style>
@@ -189,15 +203,20 @@ public class MailService {
                 </div>
                 <div class="email-body">
                   <h2 style="font-size: 18px; margin-top: 0;">歡迎加入 SurveyFlow，%s！</h2>
-                  <p class="tip-text">感謝您註冊 SurveyFlow 線上問卷系統。請於註冊驗證頁面輸入以下 6 位數啟用碼，以正式開通您的會員帳號：</p>
+                  <p class="tip-text">感謝您註冊 SurveyFlow 線上問卷系統。您可以直接點擊下方按鈕立即開通您的會員帳號並自動登入：</p>
                   
+                  <div class="btn-box">
+                    <a href="%s" target="_blank" class="btn-action">點擊立即開通帳號</a>
+                  </div>
+                  
+                  <p class="tip-text" style="margin-bottom: 6px;">若按鈕無法點擊，您亦可在註冊開通頁面輸入以下 6 位數啟用碼：</p>
                   <div class="code-box">
                     <div class="code-text">%s</div>
                   </div>
                   
                   <p class="tip-text">⚠️ <strong>注意事項</strong>：<br/>
-                  • 此驗證碼的有效期限為 <strong>15 分鐘</strong>。<br/>
-                  • 驗證成功後，您即可立即登入並開始設計問卷與管理專案。</p>
+                  • 此驗證碼與啟用連結之有效期限為 <strong>15 分鐘</strong>。<br/>
+                  • 驗證成功後，系統將自動完成開通，您即可立即開始設計問卷與管理專案。</p>
                 </div>
                 <div class="email-foot">
                   本信件由 SurveyFlow 系統自動發送，請勿直接回覆。
@@ -205,6 +224,6 @@ public class MailService {
               </div>
             </body>
             </html>
-            """.formatted(fullName, code);
+            """.formatted(fullName, verifyUrl, code);
     }
 }
