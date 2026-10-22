@@ -32,9 +32,9 @@ public class TokenProvider {
     private final long refreshTokenExpirationMs;
 
     public TokenProvider(
-            @Value("${jwt.secret:SurveyFlowSecretKeyForJwtAuthenticationMustBeAtLeast256BitsLong2026!}") String secret,
-            @Value("${jwt.access-token-expiration-ms:${jwt.expiration-ms:900000}}") long accessTokenExpirationMs,
-            @Value("${jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMs) {
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.access-token-expiration-ms}") long accessTokenExpirationMs,
+            @Value("${jwt.refresh-token-expiration-ms}") long refreshTokenExpirationMs) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessTokenExpirationMs = accessTokenExpirationMs;
         this.refreshTokenExpirationMs = refreshTokenExpirationMs;

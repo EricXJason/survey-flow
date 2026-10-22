@@ -26,17 +26,25 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class MailService {
 
     private final JavaMailSender mailSender;
+    private final String fromEmail;
+    private final String senderName;
 
-    @Value("${app.mail.from:user40972@gmail.com}")
-    private String fromEmail;
-
-    @Value("${app.mail.sender-name:SurveyFlow 線上問卷團隊}")
-    private String senderName;
+    /**
+     * 建構子依賴注入 (Constructor Injection)
+     * 遵循 DIP 原則與設定檔單一真實來源，嚴禁於代碼中硬編碼業務預設值
+     */
+    public MailService(
+            JavaMailSender mailSender,
+            @Value("${app.mail.from}") String fromEmail,
+            @Value("${app.mail.sender-name}") String senderName) {
+        this.mailSender = mailSender;
+        this.fromEmail = fromEmail;
+        this.senderName = senderName;
+    }
 
     /**
      * 發送忘記密碼重設驗證信 (含 6 碼 OTP 與重設連結)

@@ -27,29 +27,39 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class UserCredentialSynchronizer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final String adminUsername;
+    private final String adminPassword;
+    private final String adminEmail;
+    private final String testUsername;
+    private final String testPassword;
+    private final String testEmail;
 
-    @Value("${app.security.admin.username:admin}")
-    private String adminUsername;
-
-    @Value("${app.security.admin.password:Admin123!}")
-    private String adminPassword;
-
-    @Value("${app.security.admin.email:admin@surveyflow.com}")
-    private String adminEmail;
-
-    @Value("${app.security.test-user.username:testuser}")
-    private String testUsername;
-
-    @Value("${app.security.test-user.password:User1234!}")
-    private String testPassword;
-
-    @Value("${app.security.test-user.email:testuser@surveyflow.com}")
-    private String testEmail;
+    /**
+     * 建構子依賴注入 (Constructor Injection)
+     * 遵循 DIP 原則，設定值由 application.properties 單一真實源注入，嚴禁程式碼硬編碼
+     */
+    public UserCredentialSynchronizer(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            @Value("${app.security.admin.username}") String adminUsername,
+            @Value("${app.security.admin.password}") String adminPassword,
+            @Value("${app.security.admin.email}") String adminEmail,
+            @Value("${app.security.test-user.username}") String testUsername,
+            @Value("${app.security.test-user.password}") String testPassword,
+            @Value("${app.security.test-user.email}") String testEmail) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.adminUsername = adminUsername;
+        this.adminPassword = adminPassword;
+        this.adminEmail = adminEmail;
+        this.testUsername = testUsername;
+        this.testPassword = testPassword;
+        this.testEmail = testEmail;
+    }
 
     /**
      * 於 Spring Boot 啟動就緒後執行管理員與測試會員帳密動態同步

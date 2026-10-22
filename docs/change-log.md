@@ -3,6 +3,19 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 11:20] - 架構治理：全域設定外部化與嚴禁程式碼寫死預設值規範確立
+
+- **改動原因**: 依據使用者稽核指示，全面清查並剔除 Java 程式碼中 `@Value("${key:fallback}")` 硬編碼業務預設值之反模式，貫徹單一真實資料源 (SSOT) 與設定檔集中管理
+- **具體內容**:
+  - **程式碼全面重構與清理**:
+    - **`MailService.java`**: 欄位全面改為 `private final` 並改用純建構子注入，移除 `@Value` 內寫死之 `user40972@gmail.com` 與 `SurveyFlow 線上問卷團隊` 預設字串，統一自 `application.properties` 之 `app.mail.from` 與 `app.mail.sender-name` 注入
+    - **`TokenProvider.java`**: 建構子移除 `@Value` 內硬編碼之密鑰與 900,000 / 604,800,000 毫秒預設值，完全由設定檔單一真實源控制
+    - **`UserCredentialSynchronizer.java`**: 欄位改為 `private final` 並由純建構子注入，移除所有硬編碼帳密預設值
+  - **核心規範確立寫入**:
+    - **`AGENTS-BACK.md`**: 於 §1 追加「全域設定外部化與零寫死預設值 (Strict Externalized Configuration & Zero Hardcoded Fallbacks)」條款，絕對嚴禁在代碼中寫死業務預設值
+    - **`AGENTS.md`**: 於 §3 SSOT 條款強化全域規範
+- **影響範圍**: 後端郵件模組、安全憑證模組、系統帳號同步器與全域協定庫
+
 ## [2026-10-22 11:15] - 安全與通訊治理：信件發送者名稱 UTF-8 解碼修復與全專案嚴禁 @Autowired 規範確立
 
 - **改動原因**: 依據使用者回饋，修復郵件寄件人外顯名稱因 Properties ISO-8859-1 編碼問題出現之亂碼；正式確立全 Java 專案絕對禁止使用 `@Autowired` 欄位注入，一律強制採用建構子注入搭配 Lombok 之最高規範
