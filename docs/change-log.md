@@ -3,6 +3,18 @@
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
 
+## [2026-10-22 10:30] - UI/UX 優化：登出自動導向首頁、首頁 Hero 於 PC 模式 100% 精準貼合視窗
+
+- **改動原因**: 依據使用者指示，將會員登出導航目的地改為官方首頁 (`/home`)；調整首頁 Hero 主視覺於桌面 PC 模式 (>=1025px) 100% 縮放下之高度比例，確保首屏完整呈現主視覺且不見下方次區塊露底
+- **具體內容**:
+  - **登出路由修正**:
+    - **`user-emitter.service.ts`**: 將 `emitLogout()` 於清理 Session 狀態後之轉址目標由 `/lobby` 修正為 `/home`
+  - **Hero 桌面端高度與空氣感重構**:
+    - **`hero.component.scss`**: 針對桌面端 (>=1025px) 設定高度為精確 `calc(100vh - var(--header-h, 6rem))`，移除上下硬 padding 並以 Flex 垂直置中居中排版；為 `.preview-card` 加上最大高度保護；修復空規則 lint warning
+  - **文檔同步**:
+    - **`docs/check-list.md`**: 登記登出導航修正、Hero PC 視窗貼合完成項目，並增列忘記密碼純 Email 與新會員信箱驗證需求
+- **影響範圍**: [`user-emitter.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/user-emitter.service.ts)、[`hero.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/hero/hero.component.scss)、[`docs/check-list.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/check-list.md)、[`docs/change-log.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/change-log.md)
+
 ## [2026-10-21 13:45] - 協定優化：四個 AGENTS MD 邊界精準劃分、徹底掃除重複敘述與 Token 開銷極致化
 
 - **改動原因**: 依據使用者指示，嚴格檢視四個 MD 檔案（`AGENTS.md`、`AGENTS-GIT.md`、`AGENTS-FRONT.md`、`AGENTS-BACK.md`），徹底消除重疊與重複敘述，確保職責邊界明確、低 Token 開銷、易於完整理解並具備嚴格可執行性

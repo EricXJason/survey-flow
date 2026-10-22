@@ -183,7 +183,7 @@ export class UserEmitterService {
       sessionStorage.removeItem('SURVEY_ACCESS_TOKEN');
       sessionStorage.removeItem('SURVEY_REFRESH_TOKEN');
       this._userState.resetToGuest();
-      this._router.navigateByUrl('/lobby');
+      this._router.navigateByUrl('/home');
     });
   }
 
