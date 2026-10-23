@@ -2,8 +2,24 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
+## [2026-10-24 00:41] - 淘汰冗餘 GitHub Actions 保活工作流：全面由 UptimeRobot 外部探針接管，落實最少實體檔案原則
+> **Commit 代碼**: `1c6f96c`
+
+- **改動原因**:
+  - 響應使用者指示：「keep-alive.yml 不需要了吧 目前是用uptimerobot了」。
+  - 專案已全面啟用專業且高可用之外部健康監控服務 **UptimeRobot**，定時對 Render 後端輕量端點 `GET /actuator/health` 發送 HTTP GET 探針。
+  - 徹底移除 GitHub Actions 定時觸發的工作流，避免 GitHub Cron 排程延遲、60 天無提交自動失效以及產生冗餘 Action 構建日誌與實體檔案，貫徹 SOLID 與最少實體檔案原則。
+- **具體內容**:
+  - **移除冗餘 CI/CD 工作流**：刪除 `.github/workflows/keep-alive.yml`。
+  - **同步更新部署規格書**（[`docs/system-design/10-deployment.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-deployment.md)）：
+    - 第 6 節「維運保活與冷啟動防護規範」明確載明由 UptimeRobot 外部探針 24/7 全天候監控保活，杜絕 50 秒冷啟動延遲。
+- **影響範圍**:
+  - `.github/workflows/keep-alive.yml` (已刪除)
+  - `docs/system-design/10-deployment.md`
+  - `docs/change-log.md`
+
 ## [2026-10-24 00:40] - 極致分層架構 4 大黃金法則落地：新增 AdminService 達成薄型 Controller，全域方法與測試 Javadoc 100% 覆蓋
-> **Commit 代碼**: `f63f08f`
+> **Commit 代碼**: `63a0de4`
 
 - **改動原因**:
   - 響應使用者最高工程要求：

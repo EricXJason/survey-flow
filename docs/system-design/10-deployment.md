@@ -120,9 +120,9 @@ ENTRYPOINT ["sh", "-c", "exec java -XX:+UseContainerSupport -XX:MaxRAMPercentage
 
 ## 6. 維運保活與冷啟動防護規範
 
-1. **Render 免費容器保活機制**:
+1. **Render 免費容器保活機制 (UptimeRobot 外部探針)**:
    - Render 免費容器在 15 分鐘無外部流量時會進入休眠 (Spin-down)。
-   - 後端暴露專屬輕量探針端點 `GET /actuator/health`（僅檢查 Web 容器存活，排除 DB/Mail 暫態相依），回傳 HTTP 200。
-   - 透過 GitHub Actions 或外部 Uptime 監控排程，定時發送 HTTP GET 探針封包，維持後端服務常駐熱機，杜絕受訪者遭遇 50 秒冷啟動延遲。
+   - 後端暴露專屬輕量探針端點 `GET /actuator/health`（僅檢查 Web 容器存活，排除 DB/Mail 暫態相依），回傳 HTTP 200 OK。
+   - **全面採用外部專業服務 UptimeRobot 執行 24/7 全天候探針監控**（每 5~10 分鐘自動對 `https://survey-flow-9gt6.onrender.com/actuator/health` 發送 HTTP GET 請求），杜絕受訪者遭遇 50 秒冷啟動延遲；同時淘汰非必要之 GitHub Actions 定時工作流，落實乾淨維運與最少實體檔案原則。
 2. **TiDB Cloud 連線池防禦**:
    - HikariCP 連線池配置 `connection-timeout: 20000ms` 與 `idle-timeout: 300000ms`，自動回收無效連線並保證查詢連線可用性。
