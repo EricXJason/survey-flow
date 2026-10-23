@@ -12,6 +12,8 @@
 
 package com.surveyflow.dto.submission;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,10 +34,14 @@ public class SubmissionAnswerDto {
     @NotNull(message = "題目 ID 不得為空")
     private Long questionId;
 
-    /** 單選選項 ID */
+    /** 單選選項 ID (主名稱 selectedOptionId，反序列化相容別名 optionId) */
+    @JsonProperty("selectedOptionId")
+    @JsonAlias("optionId")
     private Long selectedOptionId;
 
-    /** 多選選項 ID 清單 */
+    /** 多選選項 ID 清單 (主名稱 selectedOptionIds，反序列化相容別名 optionIds) */
+    @JsonProperty("selectedOptionIds")
+    @JsonAlias("optionIds")
     @Builder.Default
     private List<Long> selectedOptionIds = new ArrayList<>();
 

@@ -449,15 +449,35 @@ export class SurveyActionService {
           }
 
           let optId: number | null = null;
-          const rawOptId = (ans as any).optionId;
+          const rawOptId = ans.selectedOptionId ?? (ans as any).optionId;
           if (rawOptId != null) {
             optId = typeof rawOptId === 'number' ? rawOptId : parseInt(String(rawOptId).replace(/\D/g, ''), 10) || null;
           }
 
+          let optIds: number[] = [];
+          const rawOptIds = ans.selectedOptionIds ?? (ans as any).optionIds;
+          if (Array.isArray(rawOptIds)) {
+            optIds = rawOptIds
+              .map((id) => (typeof id === 'number' ? id : parseInt(String(id).replace(/\D/g, ''), 10)))
+              .filter((id) => !isNaN(id) && id != null) as number[];
+          }
+
+          let textAns: string | null = null;
+          if (!isScaleType && ans.answer != null) {
+            if (typeof ans.answer === 'object') {
+              textAns = JSON.stringify(ans.answer);
+            } else {
+              textAns = String(ans.answer).trim();
+            }
+          }
+
           return {
             questionId: typeof qId === 'number' ? qId : parseInt(String(qId).replace(/\D/g, ''), 10) || 1,
+            selectedOptionId: optId,
+            selectedOptionIds: optIds,
             optionId: optId,
-            textAnswer: !isScaleType && ans.answer != null ? (typeof ans.answer === 'object' ? JSON.stringify(ans.answer) : String(ans.answer)) : null,
+            optionIds: optIds,
+            textAnswer: textAns,
             ratingValue: numValue,
           };
         }),

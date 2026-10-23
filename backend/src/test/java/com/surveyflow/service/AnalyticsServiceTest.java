@@ -117,4 +117,45 @@ class AnalyticsServiceTest {
 
         assertThrows(AccessDeniedException.class, () -> analyticsService.getSurveyAnalytics(1L, "unauthorized"));
     }
+
+    @Test
+    @DisplayName("分析報表測試: 是非題在無 optionId 時透過 text_answer 後備補全，應正確聚合「是」與「否」且總得票數大於0")
+    void getSurveyAnalytics_WithBooleanFallbackAndOrderedOptions_Success() {
+        com.surveyflow.entity.SurveyQuestion boolQ = com.surveyflow.entity.SurveyQuestion.builder()
+                .id(10L)
+                .questionCode("Q1")
+                .questionText("ww")
+                .type(com.surveyflow.common.enums.QuestionType.BOOLEAN)
+                .sortOrder(1)
+                .options(new ArrayList<>())
+                .build();
+        sampleSurvey.getQuestions().add(boolQ);
+
+        List<Submission> submissions = List.of(
+                Submission.builder().id(1L).survey(sampleSurvey).durationSeconds(60).submittedAt(LocalDateTime.now()).build()
+        );
+
+        when(surveyRepository.findByIdAndDeletedAtIsNullNative(1L)).thenReturn(Optional.of(sampleSurvey));
+        when(userRepository.findByUsername("analyst")).thenReturn(Optional.of(owner));
+        when(submissionRepository.findBySurveyIdNative(1L)).thenReturn(submissions);
+        when(submissionRepository.getAverageDurationSecondsNative(1L)).thenReturn(60.0);
+
+        // 模擬 native option 統計為 0
+        when(answerRepository.countSelectionsByQuestionNative(10L)).thenReturn(new ArrayList<>());
+        // 模擬 text_answer 存有 "false"
+        when(answerRepository.findTextAnswersByQuestionNative(10L)).thenReturn(List.of("false"));
+
+        SurveyAnalyticsResponse response = analyticsService.getSurveyAnalytics(1L, "analyst");
+        assertNotNull(response);
+        assertFalse(response.getQuestionStats().isEmpty());
+
+        var qStat = response.getQuestionStats().get(0);
+        assertEquals(10L, qStat.getQuestionId());
+        assertEquals("ww", qStat.getQuestionText());
+        assertEquals(1L, qStat.getTotalAnswers());
+        assertEquals(1L, qStat.getOptionCounts().get("否"));
+        assertEquals(0L, qStat.getOptionCounts().get("是"));
+        assertEquals(100.0, qStat.getOptionPercentages().get("否"));
+        assertEquals(0.0, qStat.getOptionPercentages().get("是"));
+    }
 }

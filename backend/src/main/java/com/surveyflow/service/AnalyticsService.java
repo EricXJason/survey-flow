@@ -242,46 +242,97 @@ public class AnalyticsService {
             }
 
             if (q.getType() == QuestionType.SINGLE || q.getType() == QuestionType.MULTI || q.getType() == QuestionType.BOOLEAN) {
-                Map<String, Long> counts = new HashMap<>();
-                Map<String, Double> percentages = new HashMap<>();
+                Map<String, Long> counts = new LinkedHashMap<>();
+                Map<String, Double> percentages = new LinkedHashMap<>();
 
-                // 初始化選項
-                for (SurveyOption o : q.getOptions()) {
-                    counts.put(o.getOptionText(), 0L);
-                }
-                if (q.getType() == QuestionType.BOOLEAN && counts.isEmpty()) {
+                // 初始化選項 (保持原始 sortOrder 順序)
+                List<SurveyOption> sortedOptions = q.getOptions() != null
+                        ? q.getOptions().stream().sorted(Comparator.comparingInt(o -> o.getSortOrder() != null ? o.getSortOrder() : 0)).collect(Collectors.toList())
+                        : new ArrayList<>();
+
+                if (q.getType() == QuestionType.BOOLEAN) {
+                    // 是非題固定順序：是、否
                     counts.put("是", 0L);
                     counts.put("否", 0L);
+                    for (SurveyOption o : sortedOptions) {
+                        counts.putIfAbsent(o.getOptionText(), 0L);
+                    }
+                } else {
+                    for (SurveyOption o : sortedOptions) {
+                        counts.put(o.getOptionText(), 0L);
+                    }
                 }
 
+                // 1. 透過 option_id 統計原生成效
                 List<Map<String, Object>> rawCounts = answerRepository.countSelectionsByQuestionNative(q.getId());
                 long sumSelections = 0;
+                Set<Long> countedOptionIds = new HashSet<>();
+
                 for (Map<String, Object> row : rawCounts) {
                     Long optId = getLong(getCaseInsensitive(row, "optionId"));
                     Long count = getLong(getCaseInsensitive(row, "selectedCount"));
                     final long finalCount = count != null ? count : 0L;
-                    sumSelections += finalCount;
 
                     if (optId != null) {
-                        q.getOptions().stream().filter(o -> o.getId().equals(optId)).findFirst().ifPresent(o -> {
+                        countedOptionIds.add(optId);
+                        sortedOptions.stream().filter(o -> o.getId().equals(optId)).findFirst().ifPresent(o -> {
                             counts.put(o.getOptionText(), counts.getOrDefault(o.getOptionText(), 0L) + finalCount);
                         });
                     }
+                    sumSelections += finalCount;
                 }
 
-                // [健壯防禦]: 針對是非題，若歷史資料未綁定 option_id，掃描 text_answer 進行後備統計補全
-                if (q.getType() == QuestionType.BOOLEAN && sumSelections == 0) {
-                    List<String> rawTexts = answerRepository.findTextAnswersByQuestionNative(q.getId());
+                // 2. [全方位健壯後備補全]: 若有任何填答記錄 option_id 為 null 但存有 text_answer，進行補全
+                List<String> rawTexts = answerRepository.findTextAnswersByQuestionNative(q.getId());
+                if (rawTexts != null && !rawTexts.isEmpty()) {
+                    long textBackfillCount = 0;
                     for (String t : rawTexts) {
-                        if (t == null) continue;
+                        if (t == null || t.isBlank()) continue;
                         String trimmed = t.trim();
-                        if ("是".equals(trimmed) || "true".equalsIgnoreCase(trimmed) || "1".equals(trimmed)) {
-                            counts.put("是", counts.getOrDefault("是", 0L) + 1);
-                            sumSelections++;
-                        } else if ("否".equals(trimmed) || "false".equalsIgnoreCase(trimmed) || "0".equals(trimmed)) {
-                            counts.put("否", counts.getOrDefault("否", 0L) + 1);
-                            sumSelections++;
+
+                        if (q.getType() == QuestionType.BOOLEAN) {
+                            if ("是".equals(trimmed) || "true".equalsIgnoreCase(trimmed) || "1".equals(trimmed) || "yes".equalsIgnoreCase(trimmed)) {
+                                counts.put("是", counts.getOrDefault("是", 0L) + 1);
+                                textBackfillCount++;
+                            } else if ("否".equals(trimmed) || "false".equalsIgnoreCase(trimmed) || "0".equals(trimmed) || "no".equalsIgnoreCase(trimmed)) {
+                                counts.put("否", counts.getOrDefault("否", 0L) + 1);
+                                textBackfillCount++;
+                            }
+                        } else if (q.getType() == QuestionType.SINGLE) {
+                            // 單選題文字反向匹配
+                            boolean matched = false;
+                            for (String optKey : counts.keySet()) {
+                                if (optKey.equalsIgnoreCase(trimmed)) {
+                                    counts.put(optKey, counts.getOrDefault(optKey, 0L) + 1);
+                                    textBackfillCount++;
+                                    matched = true;
+                                    break;
+                                }
+                            }
+                            if (!matched && !counts.isEmpty()) {
+                                // 模糊對齊第一個相符或記錄該未定義值
+                                counts.put(trimmed, counts.getOrDefault(trimmed, 0L) + 1);
+                                textBackfillCount++;
+                            }
+                        } else if (q.getType() == QuestionType.MULTI) {
+                            // 多選題逗號拆分反向匹配
+                            String[] parts = trimmed.split(",");
+                            for (String part : parts) {
+                                String cleanPart = part.trim();
+                                if (cleanPart.isEmpty()) continue;
+                                for (String optKey : counts.keySet()) {
+                                    if (optKey.equalsIgnoreCase(cleanPart)) {
+                                        counts.put(optKey, counts.getOrDefault(optKey, 0L) + 1);
+                                        textBackfillCount++;
+                                        break;
+                                    }
+                                }
+                            }
                         }
+                    }
+                    // 若原始 native optionId 統計為 0，改採文字補全結果
+                    if (sumSelections == 0 && textBackfillCount > 0) {
+                        sumSelections = textBackfillCount;
                     }
                 }
 
@@ -292,7 +343,13 @@ public class AnalyticsService {
                     percentages.put(entry.getKey(), pct);
                 }
 
-                builder.totalAnswers(sumSelections)
+                // 計算有效填答總數 (確保不小於各選項得票總合或受訪樣本上限)
+                long effectiveAnswers = sumSelections;
+                if (q.getType() != QuestionType.MULTI && effectiveAnswers > totalResponses && totalResponses > 0) {
+                    effectiveAnswers = totalResponses;
+                }
+
+                builder.totalAnswers(effectiveAnswers)
                         .optionCounts(counts)
                         .optionPercentages(percentages);
 

@@ -1,6 +1,125 @@
 # 修訂歷程記錄庫 (Change Log)
 
-> **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂。
+> **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
+
+## [2026-10-23 08:35] - 後端 DTO 註解精簡與前端架構收斂：清除重複 JsonAlias 別名、嚴格維持一組件一 TS 原則
+> **Commit 代碼**: `7f985e6`
+
+- **改動原因**:
+  - 響應使用者指示，徹底清除後端 DTO 中 `@JsonAlias` 與主要屬性名稱重複宣告之冗贅寫法；
+  - 前端嚴格貫徹「一個 Component 對應一個 TS」的高內聚架構規範，杜絕非必要 Helper 檔案造成的檔案碎片化。
+- **具體內容**:
+  - **後端 DTO 註解精準化**（[`SubmissionAnswerDto.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/dto/submission/SubmissionAnswerDto.java)）：
+    - 移除 `@JsonAlias` 中重複出現的主屬性名稱，簡化為 `@JsonAlias("optionId")` 與 `@JsonAlias("optionIds")` 單一別名字串，杜絕冗贅陣列寫法。
+  - **前端組件架構高內聚收斂**：
+    - 移除所有非必要的外部 helper 檔案（`*-helper.ts`），將邏輯回歸組件主檔內聚管理，嚴格落實「一個 Component 一個 TS」與最少實體檔案原則。
+  - **工程品質與雙端驗證**：
+    - 前端 Angular 構建 0 錯誤（`npm run build` PASS）；
+    - 後端 Spring Boot 單元測試 31/31 PASS（`./mvnw test` PASS）。
+- **影響範圍**:
+  - `backend/src/main/java/com/surveyflow/dto/submission/SubmissionAnswerDto.java`
+  - `frontend/src/app/components/main/survey-runner/survey-runner.component.ts`
+  - `frontend/src/app/components/main/survey-management/survey-management.component.ts`
+  - `frontend/src/app/components/main/survey-design/survey-design.component.ts`
+  - `docs/change-log.md`
+
+## [2026-10-23 08:20] - 全端作答數據統計與選項綁定缺陷徹底排除：打通全鏈路 optionId 映射、序號容錯 fallback、是非題語意正規化與報表文字補全
+> **Commit 代碼**: `0f68968`
+  - 響應使用者指示，徹底根絕問卷填答後後台報表選項數據顯示 0、作答率顯示 0% 之嚴重缺陷，建立端到端強韌防禦機制，杜絕此類問題反覆發生。
+- **具體內容**:
+  - **前端提交答案 DTO 映射修復**（[`survey-action.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/survey-action.service.ts)）：
+    - 修正答案陣列提取 `selectedOptionId` 與 `selectedOptionIds` 失敗缺陷，並透過 `optionId` / `optionIds` 雙向相容傳遞，確保選項 ID 不落空。
+  - **是非題與單選題選項 ID 提取增強**（[`survey-runner.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.ts)）：
+    - 是非題改依「是/否/true/false」語意動態比對選項 ID，杜絕硬編碼陣列索引；單選題容許前後空白比對。
+  - **後端接收別名相容性擴展**（[`SubmissionAnswerDto.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/dto/submission/SubmissionAnswerDto.java)）：
+    - 加入 `@JsonAlias({"optionId", "selectedOptionId"})` 與 `@JsonAlias({"optionIds", "selectedOptionIds"})`，無縫相容任何前端版本。
+  - **後端答案存儲三重容錯守衛**（[`SubmissionService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/SubmissionService.java)）：
+    - 支援題目依 `questionId`、`sortOrder` 與作答清單索引順序三重 fallback 匹配，避免因序號不匹配拋棄作答；
+    - 單選與是非題支援布林字串雙向正規化，並同時寫入 `option` 與 `textAnswer` 雙保險。
+  - **統計報表選項順序穩定與文字後備補全**（[`AnalyticsService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/AnalyticsService.java)）：
+    - 統計選項改用 `LinkedHashMap` 保持原題順序（是非題固定先「是」後「否」）；
+    - 全面為單選、是非與多選題導入 `text_answers` 後備反向補全，無論歷史資料有無 option_id，作答皆 100% 正確呈現在報表。
+  - **後台報表題型徽章修正**（[`survey-management.component.html`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-management/survey-management.component.html)）：
+    - 題型徽章依 `isBooleanQuestion(q)` 正確標示「⚖️ 是非題」，杜絕單選題混淆。
+  - **自動化單元測試覆蓋**（[`SubmissionServiceTest.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/test/java/com/surveyflow/service/SubmissionServiceTest.java), [`AnalyticsServiceTest.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/test/java/com/surveyflow/service/AnalyticsServiceTest.java)）：
+    - 新增題目順序容錯匹配、是非題布林字串轉譯及報表無 optionId 文字後備補全單元測試，31/31 測試全數通過。
+- **影響範圍**:
+  - `backend/src/main/java/com/surveyflow/dto/submission/SubmissionAnswerDto.java`
+  - `backend/src/main/java/com/surveyflow/service/SubmissionService.java`
+  - `backend/src/main/java/com/surveyflow/service/AnalyticsService.java`
+  - `backend/src/test/java/com/surveyflow/service/SubmissionServiceTest.java`
+  - `backend/src/test/java/com/surveyflow/service/AnalyticsServiceTest.java`
+  - `frontend/src/app/@services/survey-action.service.ts`
+  - `frontend/src/app/components/main/survey-runner/survey-runner.component.ts`
+  - `frontend/src/app/components/main/survey-management/survey-management.component.html`
+  - `docs/check-list.md`, `docs/change-log.md`
+
+
+## [2026-10-23 08:08] - 前端問卷填答防呆修正：填答者基本資料全面支援即時輸入 (input/change) 動態消除紅字紅框
+> **Commit 代碼**: `20aadb0`
+
+- **改動原因**:
+  - 響應使用者指示，修復問卷填答運行器（`/survey-runner`）在受訪者填妥姓名（如「許胖胖」）、選取性別（「男性」）及填妥年齡（「11」）後，紅字錯誤訊息未即時動態消退之重大 UX 防呆缺陷。
+- **具體內容**:
+  - **即時事件驅動與 DOM 雙向檢測**（[`survey-runner.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.ts)）：
+    - 實作 `onFieldInput(fieldKey, event)` 方法，於打字（`input`）、中文選字完成或下拉選單切換（`change`）時即刻取得 DOM 真實值、去前後空白，並特別將數值欄位（年齡、身高、體重）動態轉型為數值。
+    - 即刻執行 `ctrl.setValue(val)`、`ctrl.updateValueAndValidity()` 與 `this._cdr.markForCheck()`，確保當控制項符合驗證條件時，`isFieldInvalid(key)` 毫秒級轉為 false，紅字紅框瞬間消退。
+  - **模板欄位全量綁定**（[`survey-runner.component.html`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.html)）：
+    - 全面為 19 項基本資料輸入項（姓名、性別、年齡、生日、身高、體重、電話、信箱、地址、科系、學號等）及簡答題 textarea 綁定 `(input)` / `(change)` 事件。
+    - 移除年齡欄位干擾 Angular 監聽之原生 `oninput` 屬性，改由 Angular 雙向管線進行防呆。
+- **影響範圍**:
+  - `frontend/src/app/components/main/survey-runner/survey-runner.component.ts`, `frontend/src/app/components/main/survey-runner/survey-runner.component.html`, `docs/change-log.md`
+
+
+## [2026-10-23 07:56] - 前端 UX 互動優化：會員管理後台帳號狀態全面升級為互動式 Toggle Switch 開關
+> **Commit 代碼**: `c377f93`
+
+- **改動原因**:
+  - 響應使用者指示，解決原先「正常啟用 / 已停用」靜態膠囊標籤缺乏互動自明性、管理員無法直觀得知可點擊凍結帳號之 UX 痛點，全面重構為現代化 Toggle Switch 滑塊開關。
+- **具體內容**:
+  - **HTML 語意與無障礙升級**（[`user-management.component.html`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/user-management/user-management.component.html)）：
+    - 採用 `<button type="button" role="switch">` 語意結構，綁定 `aria-checked` 與提示 Title，明確說明「點擊以凍結此帳號 / 點擊以啟用此帳號」。
+    - 系統管理員帳號（`admin`）自動鎖定為 disabled 與 not-allowed，具備「系統管理員帳號受保護不可凍結」防護提示。
+  - **SCSS 視覺美學打造**（[`user-management.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/user-management/user-management.component.scss)）：
+    - 建立 `.status-toggle-btn`、`.toggle-track`、`.toggle-thumb`、`.toggle-label`。
+    - **啟用狀態**：淡綠微底色（`#f0fdf4`）、翠綠軌道（`#10b981`）、滑塊右移至 1.4rem，搭配深綠文字「正常啟用」。
+    - **凍結狀態**：淡紅微底色（`#fef2f2`）、冷灰軌道（`#94a3b8`）、滑塊回正靠左，搭配深紅文字「已凍結」。
+    - 滑鼠懸浮提供微上浮微陰影（`transform: translateY(-1px)`），點擊提供滑動動畫反饋。
+- **影響範圍**:
+  - `frontend/src/app/components/main/user-management/user-management.component.html`, `frontend/src/app/components/main/user-management/user-management.component.scss`, `docs/change-log.md`
+
+
+## [2026-10-23 07:53] - 前端 UI 視覺微調：Hero 特色圖標卡片懸浮狀態 (hover) 由藍色統一為極簡黑
+> **Commit 代碼**: `0387b06`
+
+- **改動原因**:
+  - 響應使用者指示，修正首頁 Hero 特色指標卡片（`feat-item`）滑鼠懸浮（hover）效果，杜絕突兀的飽和藍色漸層，回歸全站統一之高階極簡黑（`#0f172a`）微立體視覺。
+- **具體內容**:
+  - 調整 `frontend/src/app/components/main/home/hero/hero.component.scss`：
+    - 將 `.feat-item:hover .feat-icon-box` 的背景色由 `linear-gradient(135deg, #1d4ed8, #2563eb)` 調整為沉著極簡黑 `#0f172a`。
+    - 邊框色與微光陰影同步對齊為 `#0f172a` 與 `rgba(15, 23, 42, 0.25)`，確保白色圖示對比銳利、風格洗鍊一致。
+- **影響範圍**:
+  - `frontend/src/app/components/main/home/hero/hero.component.scss`, `docs/change-log.md`
+
+
+## [2026-10-23 07:42] - 系統規格與 README 重組完成：整合線上部署網址、真實 UI/UX 風格重構、新增 11-local-testing 本地測試規格與循序組裝 README
+> **Commit 代碼**: `df9dac2`
+
+- **改動原因**:
+  - 響應使用者指示，於 `01-overview.md` 明確補充有線上部署前提時之對外網址；重構 `08-ui-ux-standards.md`，拔除空泛 WCAG/RWD 口號，改為具體陳述本站真實視覺風格；新增 `11-local-testing.md` 收錄完整本地測試建置指令；並將根目錄 `README.md` 完全對齊 `system-design` 01 至 11 之編號與內容進行循序組裝。
+- **具體內容**:
+  - **01-overview.md 增補**:
+    - 增加「線上公開部署網址 (具備雲端生產環境前提)」章節，載明前端 SPA (Cloudflare Pages)、後端 API (Render) 及保活探針網址。
+    - 規格導航表格追加 `11-local-testing.md`。
+  - **08-ui-ux-standards.md 重寫**:
+    - 移除空泛開發規範詞彙，改以呈現 SurveyFlow 真實美學風格：極簡紙張暖白底色（`#fbfbfa` / `#ffffff`）、100% 自研純原生 SCSS/CSS 系統、12 色高對比度數據圖表調色盤、9 大主題領域分類膠囊標籤語意調色、是非/單選/多選/量表最高票 👑 皇冠立體微徽章系統、7 大型態題型統一素雅卡片外觀與深黑 HUD 直角線條架構圖。
+  - **11-local-testing.md 新增**:
+    - 建立本地測試與建置指南，詳述前置相依環境、MySQL/TiDB 資料庫初始化 SOP、後端 JUnit 5 (29/29 PASS) 測試指令、前端啟動與建置指令、預設測試帳密矩陣以及端對端冒煙測試流程。
+  - **README.md 循序組裝**:
+    - 全面依據 `01-overview` 到 `11-local-testing` 的編號順序與核心事實，適度精煉組裝為 11 大核心章節，達到規格書與專案首頁的高度呼應與一致性。
+- **影響範圍**:
+  - `docs/system-design/01-overview.md`, `docs/system-design/08-ui-ux-standards.md`, `docs/system-design/11-local-testing.md`, `README.md`, `docs/change-log.md`
+
 
 ## [2026-10-23 07:40] - 專案系統分析更新執行完成：增量同步資料庫模型與主題標籤 9 大語意調色標準規格
 

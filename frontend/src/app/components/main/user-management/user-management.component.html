@@ -261,22 +261,30 @@
                 </td>
               </ng-container>
 
-              <!-- 帳號狀態欄 (啟用中 / 已停用) -->
+              <!-- 帳號狀態欄 (互動式 Toggle Switch：正常啟用 / 已凍結) -->
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>帳號狀態</th>
                 <td mat-cell *matCellDef="let user">
-                  <div class="status-cell" (click)="toggleUserStatus(user)" [title]="user.role === 'admin' ? '系統管理員不可停用' : '點擊快速切換啟用/凍結狀態'" [style.cursor]="user.role === 'admin' ? 'default' : 'pointer'">
-                    @if (user.status === 'active') {
-                      <span class="status-badge status-active">
-                        <span class="dot"></span>
-                        正常啟用
+                  <div class="status-cell">
+                    <button
+                      type="button"
+                      role="switch"
+                      class="status-toggle-btn"
+                      [class.is-active]="user.status === 'active'"
+                      [class.is-disabled]="user.role === 'admin'"
+                      [disabled]="user.role === 'admin'"
+                      [attr.aria-checked]="user.status === 'active'"
+                      [attr.aria-label]="user.role === 'admin' ? '系統管理員不可凍結' : (user.status === 'active' ? '點擊以凍結此帳號' : '點擊以啟用此帳號')"
+                      [title]="user.role === 'admin' ? '系統管理員帳號受保護不可凍結' : (user.status === 'active' ? '點擊以凍結此帳號' : '點擊以啟用此帳號')"
+                      (click)="toggleUserStatus(user)"
+                    >
+                      <span class="toggle-track" aria-hidden="true">
+                        <span class="toggle-thumb"></span>
                       </span>
-                    } @else {
-                      <span class="status-badge status-suspended">
-                        <span class="dot"></span>
-                        已停用
+                      <span class="toggle-label">
+                        {{ user.status === 'active' ? '正常啟用' : '已凍結' }}
                       </span>
-                    }
+                    </button>
                   </div>
                 </td>
               </ng-container>

@@ -81,18 +81,39 @@ public class SubmissionService {
         // 3. 建立各題作答明細
         if (request.getAnswers() != null && !request.getAnswers().isEmpty()) {
             List<SubmissionAnswer> answers = new ArrayList<>();
-            for (SubmissionAnswerDto aDto : request.getAnswers()) {
-                SurveyQuestion question = survey.getQuestions().stream()
+            List<SurveyQuestion> surveyQuestions = survey.getQuestions() != null ? survey.getQuestions() : new ArrayList<>();
+
+            for (int ansIdx = 0; ansIdx < request.getAnswers().size(); ansIdx++) {
+                SubmissionAnswerDto aDto = request.getAnswers().get(ansIdx);
+
+                // 容錯 1: 依 questionId 查找
+                SurveyQuestion question = surveyQuestions.stream()
                         .filter(q -> q.getId().equals(aDto.getQuestionId()))
                         .findFirst()
                         .orElse(null);
 
+                // 容錯 2: 依 sortOrder (或前端暫定序號) 查找
+                if (question == null && aDto.getQuestionId() != null) {
+                    final int targetOrder = aDto.getQuestionId().intValue();
+                    question = surveyQuestions.stream()
+                            .filter(q -> q.getSortOrder() != null && q.getSortOrder().equals(targetOrder))
+                            .findFirst()
+                            .orElse(null);
+                }
+
+                // 容錯 3: 依作答清單索引直接對應題目
+                if (question == null && ansIdx < surveyQuestions.size()) {
+                    question = surveyQuestions.get(ansIdx);
+                }
+
                 if (question == null) continue;
 
-                // 若為多選題且傳入 selectedOptionIds
+                List<SurveyOption> qOptions = question.getOptions() != null ? question.getOptions() : new ArrayList<>();
+
+                // (A) 多選題處理：若有 selectedOptionIds 清單
                 if (aDto.getSelectedOptionIds() != null && !aDto.getSelectedOptionIds().isEmpty()) {
                     for (Long optId : aDto.getSelectedOptionIds()) {
-                        SurveyOption option = question.getOptions().stream()
+                        SurveyOption option = qOptions.stream()
                                 .filter(o -> o.getId().equals(optId))
                                 .findFirst()
                                 .orElse(null);
@@ -101,51 +122,16 @@ public class SubmissionService {
                                 .submission(submission)
                                 .question(question)
                                 .option(option)
+                                .textAnswer(option != null ? option.getOptionText() : null)
                                 .build());
                     }
-                } else if (aDto.getSelectedOptionId() != null) {
-                    // 單選題或是非題 (精確透過選項 ID 綁定)
-                    SurveyOption option = question.getOptions().stream()
-                            .filter(o -> o.getId().equals(aDto.getSelectedOptionId()))
-                            .findFirst()
-                            .orElse(null);
-
-                    answers.add(SubmissionAnswer.builder()
-                            .submission(submission)
-                            .question(question)
-                            .option(option)
-                            .build());
-                } else if ((question.getType() == QuestionType.SINGLE || question.getType() == QuestionType.BOOLEAN) 
-                        && aDto.getTextAnswer() != null && !aDto.getTextAnswer().isBlank()) {
-                    // [健壯防禦]: 單選或是非題若僅帶文字答案，依文字內容反向匹配對應之選項實體
-                    String trimmedText = aDto.getTextAnswer().trim();
-                    if (question.getType() == QuestionType.BOOLEAN) {
-                        if ("true".equalsIgnoreCase(trimmedText) || "1".equals(trimmedText)) {
-                            trimmedText = "是";
-                        } else if ("false".equalsIgnoreCase(trimmedText) || "0".equals(trimmedText)) {
-                            trimmedText = "否";
-                        }
-                    }
-
-                    final String finalText = trimmedText;
-                    SurveyOption option = question.getOptions().stream()
-                            .filter(o -> o.getOptionText().equalsIgnoreCase(finalText))
-                            .findFirst()
-                            .orElse(null);
-
-                    answers.add(SubmissionAnswer.builder()
-                            .submission(submission)
-                            .question(question)
-                            .option(option)
-                            .textAnswer(finalText)
-                            .build());
                 } else if (question.getType() == QuestionType.MULTI && aDto.getTextAnswer() != null && !aDto.getTextAnswer().isBlank()) {
                     // [健壯防禦]: 多選題若傳入逗號分隔之文字，拆分並反向匹配各個選項實體
                     String[] tokens = aDto.getTextAnswer().split(",");
                     boolean matchedAny = false;
                     for (String token : tokens) {
                         String trimmed = token.trim();
-                        SurveyOption option = question.getOptions().stream()
+                        SurveyOption option = qOptions.stream()
                                 .filter(o -> o.getOptionText().equalsIgnoreCase(trimmed))
                                 .findFirst()
                                 .orElse(null);
@@ -155,6 +141,7 @@ public class SubmissionService {
                                     .submission(submission)
                                     .question(question)
                                     .option(option)
+                                    .textAnswer(trimmed)
                                     .build());
                         }
                     }
@@ -162,9 +149,62 @@ public class SubmissionService {
                         answers.add(SubmissionAnswer.builder()
                                 .submission(submission)
                                 .question(question)
-                                .textAnswer(aDto.getTextAnswer())
+                                .textAnswer(aDto.getTextAnswer().trim())
                                 .build());
                     }
+                } else if (question.getType() == QuestionType.SINGLE || question.getType() == QuestionType.BOOLEAN) {
+                    // (B) 單選題或是非題：精確雙向綁定選項
+                    SurveyOption targetOption = null;
+
+                    // 優先依 selectedOptionId 查找
+                    if (aDto.getSelectedOptionId() != null) {
+                        targetOption = qOptions.stream()
+                                .filter(o -> o.getId().equals(aDto.getSelectedOptionId()))
+                                .findFirst()
+                                .orElse(null);
+                    }
+
+                    // 文字正規化分析（支援布林值 true/false/1/0/yes/no 與文字選項文字）
+                    String rawText = aDto.getTextAnswer() != null ? aDto.getTextAnswer().trim() : null;
+                    String normText = rawText;
+                    if (question.getType() == QuestionType.BOOLEAN && rawText != null) {
+                        if ("true".equalsIgnoreCase(rawText) || "1".equals(rawText) || "yes".equalsIgnoreCase(rawText)) {
+                            normText = "是";
+                        } else if ("false".equalsIgnoreCase(rawText) || "0".equals(rawText) || "no".equalsIgnoreCase(rawText)) {
+                            normText = "否";
+                        }
+                    }
+
+                    // 若尚未匹配到選項且有文字答案，反向在題目的選項清單中搜尋
+                    if (targetOption == null && normText != null && !normText.isBlank()) {
+                        final String searchText = normText;
+                        targetOption = qOptions.stream()
+                                .filter(o -> o.getOptionText() != null && o.getOptionText().trim().equalsIgnoreCase(searchText))
+                                .findFirst()
+                                .orElse(null);
+
+                        // 是非題寬鬆匹配
+                        if (targetOption == null && question.getType() == QuestionType.BOOLEAN) {
+                            if ("是".equals(searchText)) {
+                                targetOption = qOptions.stream()
+                                        .filter(o -> o.getOptionText() != null && (o.getOptionText().contains("是") || o.getOptionText().equalsIgnoreCase("true")))
+                                        .findFirst().orElse(null);
+                            } else if ("否".equals(searchText)) {
+                                targetOption = qOptions.stream()
+                                        .filter(o -> o.getOptionText() != null && (o.getOptionText().contains("否") || o.getOptionText().equalsIgnoreCase("false")))
+                                        .findFirst().orElse(null);
+                            }
+                        }
+                    }
+
+                    String textToStore = targetOption != null ? targetOption.getOptionText() : (normText != null ? normText : rawText);
+
+                    answers.add(SubmissionAnswer.builder()
+                            .submission(submission)
+                            .question(question)
+                            .option(targetOption)
+                            .textAnswer(textToStore)
+                            .build());
                 } else {
                     // 文字簡答題或評分量表題
                     Integer rating = aDto.getRatingValue();

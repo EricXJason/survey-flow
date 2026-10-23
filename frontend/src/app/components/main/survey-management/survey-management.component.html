@@ -782,7 +782,7 @@
                   <div class="q-card-meta">
                     <span class="q-index-badge">第 {{ idx + 1 }} 題</span>
                     <span class="q-type-badge q-type-{{ q.type }}">
-                      {{ q.type === 'scale' ? '📊 評分量表' : (q.type === 'checkbox' ? '☑ 多選題' : (q.type === 'text' ? '✏️ 簡答題' : '◉ 單選題')) }}
+                      {{ isBooleanQuestion(q) ? '⚖️ 是非題' : (q.type === 'scale' ? '📊 評分量表' : (q.type === 'checkbox' ? '☑ 多選題' : (q.type === 'text' ? '✏️ 簡答題' : '◉ 單選題'))) }}
                     </span>
                     @if (q.isRequired) {
                       <span class="req-badge">必填</span>

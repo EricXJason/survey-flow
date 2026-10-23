@@ -90,7 +90,7 @@
     - [x] `POST /api/public/auth/reset-password`: 驗證 Token 並安全置換密碼與撤銷舊 Token。
   - [x] **Clean Architecture 領域實體純淨化 (`User.java`)**: 徹底移除 `User` 實體上展示層 `@JsonIgnore` 註解，解除 Entity 與 Web 展示層 JSON 序列化框架之耦合，密碼欄位防護與個資脫敏 100% 由展示層專屬 DTO (`UserSummaryResponse`, `UserProfileResponse`) 單一職責守護，並清理誤植之 Controller 端點代碼。
   - [x] **問卷大廳時程起訖時間全鏈路映射**: 前端 `SurveyGetterService.getLobbySurveys()` 補齊後端 API `SurveySummaryResponse` 之 `startDate` 與 `endDate` 欄位雙向映射，徹底根除有效填答期間降級破折號 `—` 缺陷。
-  - [x] **單選/複選作答全鏈路 optionId 精確綁定與後端容錯防禦**: 徹底解決線上填答選項得票歸零斷層；前端在 `SurveyRunnerComponent` 精準比對選取之 `selectedOptionId`（單選/是非）與 `selectedOptionIds`（複選）並由 `UserEmitterService` 傳入後端；後端 `SubmissionService` 實作精確綁定與文字反查雙重守衛，確保 `submission_answers.option_id` 100% 入庫，聚合統計 100% 即時反應。
+  - [x] **單選/是非/複選作答全鏈路 optionId 精確綁定與後端容錯防禦**: 徹底解決線上填答選項得票歸零斷層；前端在 `SurveyRunnerComponent` 精準依語意比對選取之 `selectedOptionId`（單選/是非）與 `selectedOptionIds`（複選），於 `survey-action.service.ts` 完整映射入 DTO；後端 `SubmissionAnswerDto` 透過 `@JsonAlias` 雙向相容 `optionId` 與 `selectedOptionId`；後端 `SubmissionService` 實作題號序號容錯 fallback、布林字串雙向正規化與文字反查三重守衛；`AnalyticsService` 改採 `LinkedHashMap` 維持選項順序，並普遍導入 `text_answers` 後備文字補全機制，確保作答數據 100% 正確存入與即時展現。
   - [x] **問卷設計工作台「條件跳題解鎖」全鏈路持久化 (`trigger_question_uid`)**: `UserEmitterService.emitDesignSurvey` 完整提取單選題各選項之 `triggerQuestionUid` 並傳入後端 `OptionDto`，打通設計端選取、後端資料庫存儲到填答端動態解鎖的完整閉環。
   - [x] **數據分析報表受訪者人口特徵輪廓全端對齊 (`demographics`)**: `SurveyAnalyticsService` 實作 `DemographicsDto` 至前端 `DemographicStats` 之精準轉譯管線，打通性別比、年齡層金字塔與前五大任職產業之全端展示。
   - [x] **大廳與會員後台分頁器 Setter 響應式綁定 (`lobby.component.ts`, `user-management.component.ts`)**: 採用 setter 模式確保 `@if` 延遲渲染時自動完成 `dataSource.paginator` 與 `sort` 綁定，徹底修復分頁失效與統計為 0 缺陷。

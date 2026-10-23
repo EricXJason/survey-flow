@@ -114,6 +114,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('name')"
+                (input)="onFieldInput('name', $event)"
                 (blur)="onFieldBlur('name')"
                 formControlName="name"
                 maxlength="10"
@@ -132,6 +133,7 @@
                 formControlName="gender"
                 class="field-select"
                 [class.has-error]="isFieldInvalid('gender')"
+                (change)="onFieldInput('gender', $event)"
                 (blur)="onFieldBlur('gender')"
               >
                 <option value="" disabled selected>請選擇性別</option>
@@ -152,12 +154,12 @@
                 type="number"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('age')"
+                (input)="onFieldInput('age', $event)"
                 (blur)="onFieldBlur('age')"
                 formControlName="age"
                 min="1"
                 max="120"
                 maxlength="3"
-                oninput="if(this.value.length>3) this.value=this.value.slice(0,3)"
                 placeholder="請填寫您的年齡（例如：22）"
               />
               @if (isFieldInvalid('age')) {
@@ -173,6 +175,8 @@
                 type="date"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('birthday')"
+                (input)="onFieldInput('birthday', $event)"
+                (change)="onFieldInput('birthday', $event)"
                 (blur)="onFieldBlur('birthday')"
                 formControlName="birthday"
               />
@@ -189,6 +193,7 @@
                 type="number"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('height')"
+                (input)="onFieldInput('height', $event)"
                 (blur)="onFieldBlur('height')"
                 formControlName="height"
                 placeholder="例如：175"
@@ -206,6 +211,7 @@
                 type="number"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('weight')"
+                (input)="onFieldInput('weight', $event)"
                 (blur)="onFieldBlur('weight')"
                 formControlName="weight"
                 placeholder="例如：65"
@@ -223,6 +229,7 @@
                 type="tel"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('mobilePhone')"
+                (input)="onFieldInput('mobilePhone', $event)"
                 (blur)="onFieldBlur('mobilePhone')"
                 formControlName="mobilePhone"
                 maxlength="10"
@@ -241,6 +248,7 @@
                 type="tel"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('homePhone')"
+                (input)="onFieldInput('homePhone', $event)"
                 (blur)="onFieldBlur('homePhone')"
                 formControlName="homePhone"
                 placeholder="例如：02-12345678"
@@ -258,6 +266,7 @@
                 type="email"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('email')"
+                (input)="onFieldInput('email', $event)"
                 (blur)="onFieldBlur('email')"
                 formControlName="email"
                 maxlength="100"
@@ -276,6 +285,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('registeredAddress')"
+                (input)="onFieldInput('registeredAddress', $event)"
                 (blur)="onFieldBlur('registeredAddress')"
                 formControlName="registeredAddress"
                 placeholder="請輸入完整戶籍地址"
@@ -293,6 +303,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('residentialAddress')"
+                (input)="onFieldInput('residentialAddress', $event)"
                 (blur)="onFieldBlur('residentialAddress')"
                 formControlName="residentialAddress"
                 maxlength="100"
@@ -311,6 +322,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('department')"
+                (input)="onFieldInput('department', $event)"
                 (blur)="onFieldBlur('department')"
                 formControlName="department"
                 placeholder="例如：人文社會學院"
@@ -328,6 +340,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('academicMajor')"
+                (input)="onFieldInput('academicMajor', $event)"
                 (blur)="onFieldBlur('academicMajor')"
                 formControlName="academicMajor"
                 placeholder="例如：資訊管理系 / 企管系"
@@ -345,6 +358,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('className')"
+                (input)="onFieldInput('className', $event)"
                 (blur)="onFieldBlur('className')"
                 formControlName="className"
                 placeholder="例如：碩一甲班"
@@ -362,6 +376,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('studentId')"
+                (input)="onFieldInput('studentId', $event)"
                 (blur)="onFieldBlur('studentId')"
                 formControlName="studentId"
                 placeholder="例如：R12345678"
@@ -379,6 +394,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('employeeId')"
+                (input)="onFieldInput('employeeId', $event)"
                 (blur)="onFieldBlur('employeeId')"
                 formControlName="employeeId"
                 placeholder="例如：EMP-0921"
@@ -396,6 +412,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('nationalId')"
+                (input)="onFieldInput('nationalId', $event)"
                 (blur)="onFieldBlur('nationalId')"
                 formControlName="nationalId"
                 maxlength="10"
@@ -415,7 +432,7 @@
                 class="field-select"
                 [class.has-error]="isFieldInvalid('jobIndustry')"
                 (blur)="onFieldBlur('jobIndustry')"
-                (change)="onIndustryChange($event)"
+                (change)="onIndustryChange($event); onFieldInput('jobIndustry', $event)"
               >
                 <option value="" disabled selected>請選擇產業領域</option>
                 <option value="資訊科技／半導體軟體">資訊科技／半導體軟體</option>
@@ -438,7 +455,7 @@
                   type="text"
                   class="field-input field-input-other"
                   [value]="customOtherIndustry()"
-                  (input)="onCustomIndustryInput($event)"
+                  (input)="onCustomIndustryInput($event); onFieldInput('jobIndustry', $event)"
                   placeholder="請在此輸入您的自訂產業領域名稱"
                   maxlength="50"
                   style="margin-top: 0.8rem;"
@@ -457,6 +474,7 @@
                 type="text"
                 class="field-input"
                 [class.has-error]="isFieldInvalid('jobTitle')"
+                (input)="onFieldInput('jobTitle', $event)"
                 (blur)="onFieldBlur('jobTitle')"
                 formControlName="jobTitle"
                 placeholder="例如：資深研發工程師"
@@ -468,6 +486,7 @@
           }
         </div>
       </section>
+
 
       <div class="runner-divider"></div>
     }
@@ -541,6 +560,7 @@
                     <textarea
                       class="field-textarea"
                       [class.has-error]="isFieldInvalid(q.uid)"
+                      (input)="onFieldInput(q.uid, $event)"
                       (blur)="onFieldBlur(q.uid)"
                       [formControlName]="q.uid"
                       rows="3"

@@ -196,4 +196,41 @@ class SubmissionServiceTest {
         assertTrue(ex.getMessage().contains("截止"));
         verify(submissionRepository, never()).save(any());
     }
+
+    @Test
+    @DisplayName("前端傳入題號序號而非實體ID時，應自動依 sortOrder 成功匹配並儲存是非題答案")
+    void submitSurvey_QuestionIdOrderMismatchFallback_Success() {
+        when(surveyRepository.findByIdAndDeletedAtIsNullNative(1L)).thenReturn(Optional.of(activeSurvey));
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(invocation -> {
+            Submission sub = invocation.getArgument(0);
+            sub.setId(999L);
+            return sub;
+        });
+
+        // activeSurvey 中第 1 題 ID 為 10L (sortOrder 1, 選項: "1-2 次", "3-5 次")
+        // 第 2 題 ID 為 20L (sortOrder 2, 選項: "是", "否")
+        // 模擬前端傳來 questionId = 1L (代表第 1 題), questionId = 2L (代表第 2 題)
+        List<SubmissionAnswerDto> answers = List.of(
+                SubmissionAnswerDto.builder().questionId(1L).textAnswer("1-2 次").build(),
+                SubmissionAnswerDto.builder().questionId(2L).textAnswer("false").build()
+        );
+
+        SubmissionRequest request = SubmissionRequest.builder()
+                .surveyId(1L)
+                .durationSeconds(30)
+                .answers(answers)
+                .build();
+
+        SubmissionResponse response = submissionService.submitSurvey(request, "192.168.1.1");
+        assertNotNull(response);
+        assertEquals(999L, response.getSubmissionId());
+        verify(submissionRepository, times(1)).save(argThat(sub -> {
+            List<SubmissionAnswer> subAnswers = sub.getAnswers();
+            return subAnswers != null && subAnswers.size() == 2 &&
+                    subAnswers.get(0).getOption() != null &&
+                    "1-2 次".equals(subAnswers.get(0).getOption().getOptionText()) &&
+                    subAnswers.get(1).getOption() != null &&
+                    "否".equals(subAnswers.get(1).getOption().getOptionText());
+        }));
+    }
 }

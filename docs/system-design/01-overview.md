@@ -17,6 +17,14 @@
 4. **真實數據與學術級分析**: 報表真實取自資料庫最新作答時間戳（絕無虛假時間），支援 CSV (UTF-8 BOM)、SPSS 語法檔 (`.sps`)、JSON 與原生列印。
 5. **雲端現代雙軌部署**: 前端 SPA（Cloudflare Pages，純原生 SCSS/CSS）與後端 Web API（Render Web Service + TiDB Cloud Serverless）完全解耦，具備極致效能與全球加速。
 
+### 線上公開部署網址 (具備雲端生產環境前提)
+本系統已完成全自動化雲端雙軌部署；若具備正式線上部署環境，可透過以下公開網址直接存取體驗：
+- **前端 SPA 展示站點 (Cloudflare Pages)**: `https://survey-flow.pages.dev`
+- **後端 Web API 伺服器 (Render Web Service)**: `https://survey-flow-9gt6.onrender.com`
+- **健康檢查保活探針 (Actuator)**: `https://survey-flow-9gt6.onrender.com/actuator/health`
+
+> 註：在未配置雲端環境或本機離線開發情境下，系統則回歸本機服務（預設前端為 `http://localhost:4200`，後端為 `http://localhost:8080`）。
+
 ---
 
 ## 2. 系統六大核心實體模組 (Functional Modules)
@@ -67,3 +75,4 @@ flowchart LR
 | [08-ui-ux-standards.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/08-ui-ux-standards.md) | **前端 UI/UX 與原生樣式** | 100% 純原生 SCSS/CSS、去 AI 化中性設計語言、零橫向拖曳自適應。 |
 | [09-security.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/09-security.md) | **資安防護與資料脫敏** | Argon2id 參數規格、身分證 Modulo 10 演算法、SQL 注入防禦。 |
 | [10-deployment.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-deployment.md) | **雲端部署拓撲與維運規範** | Cloudflare Pages + Render + TiDB 拓撲、Docker 多階段建置、環境變數 OCP、Actuator 保活探針。 |
+| [11-local-testing.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-local-testing.md) | **本地測試與建置指南** | 前置相依環境、資料庫初始化、後端 29/29 測試全數驗證、前端啟動與冒煙測試 SOP。 |

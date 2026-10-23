@@ -541,7 +541,37 @@ export class SurveyRunnerComponent implements OnInit {
     if (ctrl) {
       ctrl.markAsTouched();
       ctrl.updateValueAndValidity();
+      this._cdr.markForCheck();
     }
+  }
+
+  /**
+   * 處理欄位即時輸入與選取 (Input / Change) 事件
+   * 當受訪者鍵入文字、中文選字完成或切換下拉選項時，即時同步值並重新計算驗證狀態，確保合格時紅字紅框即刻消退
+   * @param fieldKey 控制項名稱
+   * @param event 原生 DOM 事件
+   */
+  public onFieldInput(fieldKey: string, event: Event): void {
+    const target = event.target as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+    if (!target) return;
+
+    const ctrl = this.runnerFormGroup.get(fieldKey);
+    if (!ctrl) return;
+
+    let val: unknown = target.value;
+    if (typeof val === 'string') {
+      val = val.trim();
+    }
+
+    if (fieldKey === 'age' || fieldKey === 'height' || fieldKey === 'weight') {
+      const parsed = parseFloat(String(val));
+      val = !isNaN(parsed) && parsed > 0 ? parsed : null;
+    }
+
+    ctrl.setValue(val);
+    ctrl.markAsDirty();
+    ctrl.updateValueAndValidity();
+    this._cdr.markForCheck();
   }
 
   /**
@@ -825,6 +855,7 @@ export class SurveyRunnerComponent implements OnInit {
       }
       control.markAsDirty();
       control.updateValueAndValidity();
+      this._cdr.markForCheck();
     }
   }
 
@@ -839,6 +870,7 @@ export class SurveyRunnerComponent implements OnInit {
       control.setValue(val.trim() ? val.trim() : '其他');
       control.markAsDirty();
       control.updateValueAndValidity();
+      this._cdr.markForCheck();
     }
   }
 
@@ -1137,18 +1169,28 @@ export class SurveyRunnerComponent implements OnInit {
 
         switch (question.type) {
           case 't/f': {
-            // 是非題：若選 true 匹配「是」或第 1 個選項；若選 false 匹配「否」或第 2 個選項
+            // 是非題：依文字語意智慧匹配選項 ID，拒絕硬編碼索引順序
             const opts = question.optionsConfig || [];
-            if ((val === 'true' || val === true) && opts.length > 0) {
-              selectedOptionId = opts[0].id ?? null;
-            } else if ((val === 'false' || val === false) && opts.length > 1) {
-              selectedOptionId = opts[1].id ?? null;
+            const isTrue = (val === 'true' || val === true || val === '是' || val === 'yes');
+            const isFalse = (val === 'false' || val === false || val === '否' || val === 'no');
+
+            const yesKeywords = ['是', 'true', 'yes', '同意', '對'];
+            const noKeywords = ['否', 'false', 'no', '不同意', '不對'];
+
+            const yesOpt = opts.find((o) => yesKeywords.some((k) => (o.text || '').trim().toLowerCase() === k)) || opts[0];
+            const noOpt = opts.find((o) => noKeywords.some((k) => (o.text || '').trim().toLowerCase() === k)) || (opts.length > 1 ? opts[1] : null);
+
+            if (isTrue && yesOpt && yesOpt.id) {
+              selectedOptionId = yesOpt.id;
+            } else if (isFalse && noOpt && noOpt.id) {
+              selectedOptionId = noOpt.id;
             }
             break;
           }
           case 'radio': {
-            // 單選題：比對選項文字獲取 optionId
-            const matchedOpt = (question.optionsConfig || []).find((o) => o.text === String(val));
+            // 單選題：比對選項文字獲取 optionId (容許前後空白)
+            const cleanVal = String(val ?? '').trim();
+            const matchedOpt = (question.optionsConfig || []).find((o) => (o.text || '').trim() === cleanVal);
             if (matchedOpt && matchedOpt.id) {
               selectedOptionId = matchedOpt.id;
             }
@@ -1157,8 +1199,9 @@ export class SurveyRunnerComponent implements OnInit {
           case 'multiRadio': {
             // 複選題：比對多個勾選項目的文字獲取對應 optionId 清單
             if (Array.isArray(val)) {
+              const cleanVals = val.map((v) => String(v).trim());
               selectedOptionIds = (question.optionsConfig || [])
-                .filter((o) => val.includes(o.text) && o.id)
+                .filter((o) => cleanVals.includes((o.text || '').trim()) && o.id)
                 .map((o) => o.id!);
             }
             break;
