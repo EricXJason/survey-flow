@@ -2,6 +2,78 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
+## [2026-10-23 09:12] - 前端問卷預覽審查體驗重大升級：預覽模式全題目強制可見、醒目標示跳題解鎖來源題號選項與即時響應式解鎖驗證
+> **Commit 代碼**: `7ac5274`
+
+- **改動原因**:
+  - 響應使用者深刻指出之重大體驗痛點：「預覽模式要能看到解鎖題啊 預覽這邊都看不到 而且要說明是由哪一題哪個選項開啟解鎖啊 這邊整個規劃一定有問題啊」。
+  - 徹底解決原先在問卷管理點選「預覽問卷」（`from=survey-management&surveyId=...`）進入後，被系統誤當作正式填答模式載入，導致未解鎖題目直接被條件過濾隱藏、審閱者無法檢閱問卷全貌與跳題拓撲的嚴重缺陷。
+- **具體內容**:
+  - **預覽審查模式判定徹底補全**（[`survey-runner.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.ts)）：
+    - `isPreview` 計算屬性全面納入：設計器即時預覽、問卷管理後台審查（`from === 'survey-management'`）及 `preview === 'true'` 參數，無論直接進入或頁面重新整理均維持精準預覽模式；
+    - `ngOnInit` 載入問卷時，若來源為問卷管理審查，自動呼叫 `setForPreviewMode(loadedSurvey)`；
+    - 實作 `shouldShowBackButton`，確保在獨立審查頁面保留頂部「返回問卷管理」導航功能，且嵌入預覽時隱藏以避免按鈕衝突。
+  - **預覽模式全卷題目強制可見與作答解鎖分離架構**（[`survey-runner.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.ts)）：
+    - 抽出 `isQuestionUnlocked(question)` 專職負責精準計算受訪者作答是否解鎖該題目；
+    - 改造 `isQuestionVisible(question)`：於預覽模式下強制回傳 `true`，使所有題目（包含條件跳題目）在審查模式下全部無遺漏展開！
+  - **跳題解鎖來源結構化解析與即時反向推算**（[`survey-getter.service.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/@services/survey-getter.service.ts), [`survey-runner.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.ts)）：
+    - `SurveyGetterService` 載入問卷時，進行全卷題目跳題關聯雙向掃描，針對目標題目自動生成標準結構之 `lockedBySummary`（如：`【問題 01】選項 02（選項名稱）`）；
+    - `SurveyRunnerComponent` 新增 `getUnlockSourcesSummary(question)`，即使資料未預先計算，前端亦具備即時反向動態解析能力，100% 確保每一道條件跳題皆能精確標示是由哪一題、哪一個選項開啟解鎖。
+  - **條件跳題預覽橫幅與即時驗證微互動**（[`survey-runner.component.html`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.html), [`survey-runner.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.scss)）：
+    - 在預覽模式下，條件跳題目頂部自動展示精美的 `.conditional-preview-banner` 提示條；
+    - **預設未解鎖狀態**：標示 `🔒 條件跳題（預設隱藏） 由 【問題 01】選項 02（選項名稱） 開啟解鎖`，卡片呈現細緻微虛線預覽樣式；
+    - **點選觸發解鎖狀態**：作者點選對應選項時即時動態響應切換為綠色 `🔓 條件跳題（已解鎖） 由 【問題 01】選項 02（選項名稱） 開啟解鎖`，卡片即時亮起，讓設計者當場驗證跳題邏輯的正確性；
+    - 頂部提示橫幅同步更新為清晰的「問卷預覽審查」說明。
+- **影響範圍**:
+  - `frontend/src/app/@services/survey-getter.service.ts`
+  - `frontend/src/app/components/main/survey-design/survey-design.component.ts`
+  - `frontend/src/app/components/main/survey-runner/survey-runner.component.html`
+  - `frontend/src/app/components/main/survey-runner/survey-runner.component.scss`
+  - `frontend/src/app/components/main/survey-runner/survey-runner.component.ts`
+  - `docs/change-log.md`
+
+- **改動原因**:
+  - 響應使用者反饋與截圖指正，修復問卷題目中若有兩個選項文字相同（如兩項皆為「11」），即使設計者僅為其中一項設定動態解鎖後續題目，填答者點選未設定解鎖之選項時卻依然觸發解鎖展開的嚴重商務邏輯缺陷。
+- **具體內容**:
+  - **根本原因定位**：
+    - 原先題目可見度判定 `isQuestionVisible()` 與單選題表單 `selectRadioOption()` 僅以選項文字純字串（`String(val).trim() === String(option.text).trim()`）比對；
+    - 當同一題目存在相同文字之選項時，只要字串相等即被誤判為選中了具備解鎖權限之選項，導致未設定解鎖的同名選項一併誤觸發題目展開，且在畫面選取狀態（radio checked）相互干擾。
+  - **選項索引精準隔離體系實作**（[`survey-runner.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.ts), [`survey-runner.component.html`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/survey-runner/survey-runner.component.html)）：
+    - 引入 `selectedRadioIndexMap` 信號，精準追蹤各單選題目當前被選中之選項索引（`optIdx`）；
+    - `isQuestionVisible()` 優先檢索當前選中的特定選項索引 `parentQuestion.optionsConfig[selectedIdx]`，精確檢核該選項之 `enableUnlockQuestion` 與目標 UID 匹配性；若當前選取的選項未開啟解鎖，即刻阻斷跳題展開，杜絕同文字選項間的狀態污染；
+    - 實作 `isRadioOptionSelected(questionUid, opt, optIdx)`，HTML 模板精確對齊選項索引，徹底排除點擊其中一項導致同名其他項被同步誤標為選中的 UI 缺陷；
+    - 答案送出 `sendRunnerData()` 中，單選題 `selectedOptionId` 同樣優先依據 `selectedIdx` 提取精確選項 ID。
+  - **驗證成果**：
+    - 前端 Angular 構建 0 錯誤（`npm run build` PASS）；
+    - 後端 Spring Boot 單元測試 31/31 PASS（`./mvnw test` PASS）。
+- **影響範圍**:
+  - `frontend/src/app/components/main/survey-runner/survey-runner.component.ts`
+  - `frontend/src/app/components/main/survey-runner/survey-runner.component.html`
+  - `docs/change-log.md`
+
+## [2026-10-23 08:55] - 官方首頁題型導覽輪盤全面升級：支援 1 到 6 大核心題型自動輪播重複循環 (Wheel Repeat) 與懸停暫停
+> **Commit 代碼**: `d44fdc7`
+
+- **改動原因**:
+  - 響應使用者指示，將官方首頁「支援題型清單」升級為動態輪盤（Wheel），實現從第 1 種到第 6 種題型自動循環播放（Repeat），生動展示六大題型與即時互動效果。
+- **具體內容**:
+  - **自動輪盤計時器與循環機制**（[`home.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.ts)）：
+    - 實作 `OnInit` 與 `OnDestroy` 生命週期守衛，設定 `WHEEL_INTERVAL_MS = 3800` 毫秒自動循環前進；
+    - 索引依序從 0 (01 是非意願確認題) 遞增推進至 5 (06 預約日期與時段題)，並透過模數運算自動循環回到 0（1 到 6 種 repeat 輪播）；
+    - 支援滑鼠移入時即時暫停 (`pauseWheel`)、移出時恢復播放 (`resumeWheel`)，手動點選或切換時重啟計時器 (`restartWheel`)，維持從容操作體驗；
+    - 銷毀時確實清除定時器，杜絕記憶體洩漏。
+  - **輪盤進度動畫指示線**（[`home.component.html`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.html), [`home.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.scss)）：
+    - 為當前啟用之題型按鈕底部加入 `.wheel-countdown-bar` 微動畫進度條，具備 3.8s 線性高光動效，直觀反饋輪盤輪播倒數；
+    - 支援暫停狀態 CSS `animation-play-state: paused`。
+  - **驗證成果**：
+    - 前端 Angular 建置 0 錯誤（`npm run build` PASS）；
+    - 後端全套單元測試 31/31 PASS（`./mvnw test` PASS）。
+- **影響範圍**:
+  - `frontend/src/app/components/main/home/home.component.ts`
+  - `frontend/src/app/components/main/home/home.component.html`
+  - `frontend/src/app/components/main/home/home.component.scss`
+  - `docs/change-log.md`
+
 ## [2026-10-23 08:35] - 後端 DTO 註解精簡與前端架構收斂：清除重複 JsonAlias 別名、嚴格維持一組件一 TS 原則
 > **Commit 代碼**: `7f985e6`
 

@@ -25,7 +25,11 @@
       </p>
     </div>
 
-    <div class="demo-showcase-layout">
+    <div
+      class="demo-showcase-layout"
+      (mouseenter)="pauseWheel()"
+      (mouseleave)="resumeWheel()"
+    >
       <!-- 左側：題型導覽切換選單 (Question Tabs Menu) -->
       <nav class="demo-tabs-sidebar" aria-label="核心題型切換清單">
         <div class="sidebar-header">
@@ -52,6 +56,9 @@
                 </div>
                 <p class="tab-benefit">{{ tab.benefit }}</p>
               </div>
+              @if (activeTabIndex() === idx) {
+                <span class="wheel-countdown-bar" [class.paused]="isWheelPaused()"></span>
+              }
             </button>
           }
         </div>

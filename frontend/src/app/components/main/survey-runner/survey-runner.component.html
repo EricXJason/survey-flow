@@ -1,6 +1,6 @@
 <div class="runner-shell">
-  <!-- 頂部快速返回導航列 (支援返回問卷管理、問卷大廳或上一頁，僅於獨立填答路由顯示，嵌入預覽模式下隱藏以避免雙重返回按鈕與標籤衝突) -->
-  @if (!isPreview) {
+  <!-- 頂部快速返回導航列 (支援返回問卷管理、問卷大廳或上一頁，於獨立填答或管理預覽路由顯示) -->
+  @if (shouldShowBackButton) {
     <div class="runner-top-nav-wrap">
       <button type="button" class="btn-runner-back" (click)="onBack()" [attr.aria-label]="backButtonLabel">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" aria-hidden="true">
@@ -58,8 +58,8 @@
   } @else {
   @if (isPreview) {
     <div class="runner-preview-alert">
-      <span class="preview-badge">填答預覽視角</span>
-      <span class="preview-text">表單輸入已鎖定唯讀模式，僅供確認題型顯示、排版與條件跳題邏輯。</span>
+      <span class="preview-badge">問卷預覽審查</span>
+      <span class="preview-text">目前為預覽審查視角，已全數展示卷內所有題目與條件跳題解鎖關聯；您可點選選項驗證跳題即時解鎖互動，預覽模式無法提交資料。</span>
     </div>
   }
 
@@ -501,7 +501,29 @@
       <div class="runner-questions-list">
         @for (q of survey.questions; track q.uid) {
           @if (isQuestionVisible(q)) {
-            <article class="runner-question-card">
+            <article
+              class="runner-question-card"
+              [class.is-preview-locked]="isPreview && q.isLockedByOther && !isQuestionUnlocked(q)"
+              [class.is-preview-unlocked]="isPreview && q.isLockedByOther && isQuestionUnlocked(q)"
+            >
+              @if (isPreview && q.isLockedByOther) {
+                <div class="conditional-preview-banner" [class.unlocked]="isQuestionUnlocked(q)">
+                  <div class="banner-icon" aria-hidden="true">
+                    @if (isQuestionUnlocked(q)) {
+                      <span>🔓</span>
+                    } @else {
+                      <span>🔒</span>
+                    }
+                  </div>
+                  <div class="banner-content">
+                    <span class="banner-tag">{{ isQuestionUnlocked(q) ? '條件跳題（已解鎖）' : '條件跳題（預設隱藏）' }}</span>
+                    <span class="banner-desc">
+                      由 <strong>{{ getUnlockSourcesSummary(q) || q.lockedBySummary || '前置題目指定選項' }}</strong> 開啟解鎖
+                    </span>
+                  </div>
+                </div>
+              }
+
               <div class="q-header-row">
                 <div class="q-num-chip">{{ ($index + 1).toString().padStart(2, '0') }}</div>
                 <div class="q-title-wrap">
@@ -570,18 +592,19 @@
 
                   @case ("radio") {
                     <div class="choice-options-list" role="radiogroup" [attr.aria-label]="q.description">
-                      @for (opt of q.options; track $index) {
+                      @for (opt of q.options; track $index; let optIdx = $index) {
                         <label
                           class="choice-option-label"
-                          (click)="selectRadioOption(q.uid, opt)"
+                          [class.selected]="isRadioOptionSelected(q.uid, opt, optIdx)"
+                          (click)="selectRadioOption(q.uid, opt, optIdx)"
                         >
                           <input
                             type="radio"
                             [attr.name]="'radio_' + q.uid"
                             [value]="opt"
-                            [checked]="runnerFormGroup.get(q.uid)?.value === opt"
+                            [checked]="isRadioOptionSelected(q.uid, opt, optIdx)"
                             (click)="$event.stopPropagation()"
-                            (change)="selectRadioOption(q.uid, opt)"
+                            (change)="selectRadioOption(q.uid, opt, optIdx)"
                           />
                           <span class="choice-text">{{ opt }}</span>
                         </label>
@@ -596,7 +619,6 @@
                           <input
                             type="checkbox"
                             [value]="opt"
-                            [disabled]="isPreview"
                             [checked]="isMultiRadioChecked(q.uid, opt)"
                             (click)="$event.stopPropagation()"
                             (change)="onMultiRadioChange(q.uid, opt, $event)"

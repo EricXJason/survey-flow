@@ -187,20 +187,38 @@ export class SurveyGetterService {
             };
           });
 
-          // 條件跳題關聯掃描：被上游題目選項指向者標記為受鎖定
-          const lockedUids = new Set<string>();
-          for (const q of rawQuestions) {
-            if (q.optionsConfig) {
-              for (const opt of q.optionsConfig) {
+          // 條件跳題關聯掃描：精準識別被上游題目指定選項解鎖之目標題目，並生成易讀的解鎖來源摘要文字
+          for (let tIdx = 0; tIdx < rawQuestions.length; tIdx++) {
+            const targetQ = rawQuestions[tIdx];
+            const targetUid = String(targetQ.uid || '').trim();
+            const targetId = String(targetQ.id ?? '').trim();
+            const lockSources: string[] = [];
+
+            for (let pIdx = 0; pIdx < rawQuestions.length; pIdx++) {
+              const parentQ = rawQuestions[pIdx];
+              if (!parentQ.optionsConfig) continue;
+
+              for (let oIdx = 0; oIdx < parentQ.optionsConfig.length; oIdx++) {
+                const opt = parentQ.optionsConfig[oIdx];
                 if (opt.enableUnlockQuestion && opt.unlockTargetUid) {
-                  lockedUids.add(opt.unlockTargetUid);
+                  const key = String(opt.unlockTargetUid).trim();
+                  const isMatch =
+                    key === targetUid ||
+                    (targetId && key === targetId);
+
+                  if (isMatch) {
+                    const qNum = (pIdx + 1).toString().padStart(2, '0');
+                    const optNum = (oIdx + 1).toString().padStart(2, '0');
+                    const optText = opt.text ? `（${opt.text}）` : '';
+                    lockSources.push(`【問題 ${qNum}】選項 ${optNum}${optText}`);
+                  }
                 }
               }
             }
-          }
-          for (const q of rawQuestions) {
-            if (lockedUids.has(q.uid)) {
-              q.isLockedByOther = true;
+
+            if (lockSources.length > 0) {
+              targetQ.isLockedByOther = true;
+              targetQ.lockedBySummary = lockSources.join(' 或 ');
             }
           }
 

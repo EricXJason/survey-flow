@@ -99,6 +99,9 @@ export class SurveyRunnerComponent implements OnInit {
   /** 自訂其他產業領域文字暫存 */
   public readonly customOtherIndustry = signal<string>('');
 
+  /** 單選題當前選取的選項索引映射表 (questionUid -> optionIndex)，精準杜絕同名選項解鎖與選取污染 */
+  public readonly selectedRadioIndexMap = signal<Record<string, number>>({});
+
   /**
    * 計算返回按鈕的友善提示文字
    */
@@ -215,12 +218,18 @@ export class SurveyRunnerComponent implements OnInit {
     const queryId =
       this._route.snapshot.queryParams['surveyId'] ||
       this._route.snapshot.queryParams['id'];
+    const fromParam = this._route.snapshot.queryParams['from'];
+    const isPreviewQuery = this._route.snapshot.queryParams['preview'] === 'true' || fromParam === 'survey-management';
 
     if (queryId) {
       this._surveyGetter.getSurveyById(String(queryId)).subscribe({
         next: (loadedSurvey) => {
           if (loadedSurvey) {
-            this.surveyStateService.setForRunMode(loadedSurvey);
+            if (isPreviewQuery) {
+              this.surveyStateService.setForPreviewMode(loadedSurvey);
+            } else {
+              this.surveyStateService.setForRunMode(loadedSurvey);
+            }
             this._checkSurveyAvailability(loadedSurvey);
             this.runnerFormGroup = this.formBuilderGroupInit();
           } else {
@@ -279,10 +288,25 @@ export class SurveyRunnerComponent implements OnInit {
   }
 
   /**
-   * 判斷當前是否處於設計者「純預覽」模式
+   * 判斷當前是否處於「預覽審查」模式
+   * 包含設計頁面即時預覽、問卷管理後台點選預覽審查（from=survey-management）或帶有 preview=true 參數之模式
    */
-  protected get isPreview(): boolean {
-    return this.surveyStateService.isPreviewMode();
+  public get isPreview(): boolean {
+    const fromParam = this._route.snapshot.queryParams['from'];
+    const previewParam = this._route.snapshot.queryParams['preview'];
+    return this.surveyStateService.isPreviewMode() || fromParam === 'survey-management' || previewParam === 'true';
+  }
+
+  /**
+   * 是否顯示頂部快速返回導航按鈕
+   * 規則：當處於獨立路由（由問卷管理跳轉預覽、問卷大廳進入，或網址有 from/surveyId 參數時）顯示；
+   * 若純粹作為 <app-survey-runner /> 嵌入於設計頁面預覽容器中，則隱藏以防按鈕重複。
+   */
+  public get shouldShowBackButton(): boolean {
+    const from = this._route.snapshot.queryParams['from'];
+    const queryId = this._route.snapshot.queryParams['surveyId'] || this._route.snapshot.queryParams['id'];
+    const isSurveyRunnerRoute = this._route.snapshot.routeConfig?.path === 'survey-runner';
+    return Boolean(from || queryId || isSurveyRunnerRoute);
   }
 
   /**
@@ -647,26 +671,88 @@ export class SurveyRunnerComponent implements OnInit {
    * @returns 該題目是否處於可見狀態
    */
   /**
-   * 判斷題目當前是否應該顯示（動態條件跳題邏輯計算核心）
-   * 若題目未受任何跳題規則鎖定，則預設常態顯示；
-   * 若受到上游題目的特定選項鎖定，則必須在使用者選取對應之解鎖選項時，才展開顯示。
+   * 取得鎖定此題目的上游來源題目與選項清單文字
+   * 若題目模型中已具備 lockedBySummary 則優先使用；若無則自動自問卷題目資料中即時反向關聯推算
    * @param question 目標題目資料模型
-   * @returns 該題目是否處於可見狀態
+   * @returns 格式化之解鎖來源敘述（例如：「【問題 01】選項 02（滿意）」）
    */
-  protected isQuestionVisible(question: SurveyQuestion): boolean {
+  public getUnlockSourcesSummary(question: SurveyQuestion): string {
+    if (question.lockedBySummary) {
+      return question.lockedBySummary;
+    }
+    const sources: string[] = [];
+    const questions = this.survey?.questions || [];
+    const targetUid = String(question.uid || '').trim();
+    const targetId = String(question.id ?? '').trim();
+    const targetCode = String((question as any).questionCode ?? '').trim();
+
+    questions.forEach((pq, pIdx) => {
+      if (pq.optionsConfig && pq.optionsConfig.length > 0) {
+        pq.optionsConfig.forEach((opt, oIdx) => {
+          if (opt.enableUnlockQuestion && opt.unlockTargetUid) {
+            const key = String(opt.unlockTargetUid).trim();
+            const isMatch =
+              key === targetUid ||
+              (targetId && key === targetId) ||
+              (targetCode && key === targetCode);
+
+            if (isMatch) {
+              const qNum = (pIdx + 1).toString().padStart(2, '0');
+              const optNum = (oIdx + 1).toString().padStart(2, '0');
+              const optText = opt.text ? `（${opt.text}）` : '';
+              sources.push(`【問題 ${qNum}】選項 ${optNum}${optText}`);
+            }
+          }
+        });
+      }
+    });
+
+    return sources.length > 0 ? sources.join(' 或 ') : '';
+  }
+
+  /**
+   * 判斷題目當前是否已由填答選項觸發解鎖
+   * @param question 目標題目
+   * @returns 若題目未被跳題規則鎖定，或已被作答選項解鎖，回傳 true；若受鎖定且尚未觸發解鎖，回傳 false
+   */
+  public isQuestionUnlocked(question: SurveyQuestion): boolean {
     if (!question.isLockedByOther) return true;
 
     for (const parentQuestion of this.survey.questions) {
       if (parentQuestion.optionsConfig && parentQuestion.optionsConfig.length > 0) {
+        const selectedIdx = this.selectedRadioIndexMap()[parentQuestion.uid];
         const val = this.runnerFormGroup.get(parentQuestion.uid)?.value;
-        if (!val) continue;
+        if (!val && selectedIdx === undefined) continue;
 
+        // [Why]: 若為單選題且有明確的選項點擊索引 (selectedIdx)，精準比對該選項之解鎖設定，杜絕同文字選項互相污染！
+        if (parentQuestion.type === 'radio' && selectedIdx !== undefined && selectedIdx >= 0 && selectedIdx < parentQuestion.optionsConfig.length) {
+          const selectedOption = parentQuestion.optionsConfig[selectedIdx];
+          if (!selectedOption.enableUnlockQuestion) {
+            continue;
+          }
+
+          const targetKey = String(selectedOption.unlockTargetUid || '').trim();
+          const targetId = String(question.id ?? '').trim();
+          const targetUid = String(question.uid ?? '').trim();
+          const targetCode = String((question as any).questionCode ?? '').trim();
+
+          const isTargetMatch =
+            targetKey === targetUid ||
+            (targetId && targetKey === targetId) ||
+            (targetCode && targetKey === targetCode);
+
+          if (isTargetMatch) {
+            return true;
+          }
+          continue;
+        }
+
+        // 後備匹配（是非題、複選題或非透過索引選取之單選題）
         for (const option of parentQuestion.optionsConfig) {
           if (!option.enableUnlockQuestion) {
             continue;
           }
 
-          // [Why]: 條件解鎖目標支援 UUID、後端 ID、題號代碼與順序索引多維相容匹配
           const targetKey = String(option.unlockTargetUid || '').trim();
           const targetId = String(question.id ?? '').trim();
           const targetUid = String(question.uid ?? '').trim();
@@ -681,7 +767,7 @@ export class SurveyRunnerComponent implements OnInit {
             continue;
           }
 
-          // 單選或文字選項內容精準匹配
+          // 單選或文字選項內容精準匹配 (僅在未有 selectedIdx 時作為後備)
           if (String(val).trim() === String(option.text).trim()) {
             return true;
           }
@@ -705,6 +791,20 @@ export class SurveyRunnerComponent implements OnInit {
     }
 
     return false;
+  }
+
+  /**
+   * 判斷題目當前是否應該顯示
+   * 1. 若處於預覽審查模式，所有題目強制可見，便於作者檢閱問卷結構、題型外觀與跳題關聯；
+   * 2. 若處於正式受訪者填答模式，依作答解鎖狀態動態切換顯示與隱藏。
+   * @param question 目標題目資料模型
+   * @returns 該題目是否處於可見狀態
+   */
+  protected isQuestionVisible(question: SurveyQuestion): boolean {
+    if (this.isPreview) {
+      return true;
+    }
+    return this.isQuestionUnlocked(question);
   }
 
   /**
@@ -808,8 +908,15 @@ export class SurveyRunnerComponent implements OnInit {
    * 受訪者選取單選題 (radio) 選項時精準賦值
    * @param questionUid 題目唯一識別碼
    * @param opt 所選取之選項文字
+   * @param optIdx 選項索引 (0-based)
    */
-  protected selectRadioOption(questionUid: string, opt: string): void {
+  protected selectRadioOption(questionUid: string, opt: string, optIdx?: number): void {
+    if (optIdx !== undefined) {
+      this.selectedRadioIndexMap.update((map) => ({
+        ...map,
+        [questionUid]: optIdx,
+      }));
+    }
     const ctrl = this.runnerFormGroup.get(questionUid);
     if (ctrl) {
       ctrl.setValue(opt);
@@ -818,6 +925,21 @@ export class SurveyRunnerComponent implements OnInit {
       ctrl.updateValueAndValidity();
       this._cdr.markForCheck();
     }
+  }
+
+  /**
+   * 判斷單選題指定索引之選項是否已被選取
+   * 優先依據選項索引 (optIdx) 進行精確比對，杜絕同文字選項同時被選中的混淆
+   * @param questionUid 題目 UID
+   * @param opt 選項文字
+   * @param optIdx 選項索引
+   */
+  protected isRadioOptionSelected(questionUid: string, opt: string, optIdx: number): boolean {
+    const selectedIdx = this.selectedRadioIndexMap()[questionUid];
+    if (selectedIdx !== undefined) {
+      return selectedIdx === optIdx;
+    }
+    return this.runnerFormGroup.get(questionUid)?.value === opt;
   }
 
   /**
@@ -1188,11 +1310,18 @@ export class SurveyRunnerComponent implements OnInit {
             break;
           }
           case 'radio': {
-            // 單選題：比對選項文字獲取 optionId (容許前後空白)
+            // 單選題：優先依據選項選取索引精準提取 optionId，避免同名選項 ID 混淆
             const cleanVal = String(val ?? '').trim();
-            const matchedOpt = (question.optionsConfig || []).find((o) => (o.text || '').trim() === cleanVal);
-            if (matchedOpt && matchedOpt.id) {
-              selectedOptionId = matchedOpt.id;
+            const selectedIdx = this.selectedRadioIndexMap()[question.uid];
+            const opts = question.optionsConfig || [];
+
+            if (selectedIdx !== undefined && opts[selectedIdx] && opts[selectedIdx].id) {
+              selectedOptionId = opts[selectedIdx].id;
+            } else {
+              const matchedOpt = opts.find((o) => (o.text || '').trim() === cleanVal);
+              if (matchedOpt && matchedOpt.id) {
+                selectedOptionId = matchedOpt.id;
+              }
             }
             break;
           }

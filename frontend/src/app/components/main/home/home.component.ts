@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HeroComponent } from './hero/hero.component';
 
@@ -31,7 +31,7 @@ export interface DemoQuestionTab {
 /**
  * 平台主首頁組件 (Home Component)
  * 組織與展示 SurveyFlow 首頁主視覺 (Hero)、即時問卷填寫體驗區 (Live Survey Interactive Demo)、
- * 三步驟發布流程、多元應用情境、常見問題 (FAQ) 與行動呼籲 (CTA)。
+ * 支援 6 大題型輪盤自動輪播展示 (1~6 循環重複)、三步驟發布流程、多元應用情境、常見問題 (FAQ) 與行動呼籲 (CTA)。
  */
 @Component({
   selector: 'app-home',
@@ -40,7 +40,7 @@ export interface DemoQuestionTab {
   styleUrl: './home.component.scss',
   standalone: true,
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit, OnDestroy {
   /**
    * 6 大核心題型導覽清單 (SSOT 題型定義)
    */
@@ -101,11 +101,87 @@ export class HomeComponent {
     },
   ];
 
-  /** 當前選中的題型示範索引 (預設為 1: 單選條件跳題，最具互動展示亮點) */
-  readonly activeTabIndex = signal<number>(1);
+  /** 題型輪盤自動輪播間隔毫秒數 (3.8 秒自動切換至下一題型，1~6 重複循環) */
+  public readonly WHEEL_INTERVAL_MS = 3800;
+
+  /** 題型輪盤循環計時器參考 */
+  private wheelTimer: ReturnType<typeof setInterval> | null = null;
+
+  /** 輪盤是否暫停（滑鼠懸停時自動暫停） */
+  public readonly isWheelPaused = signal<boolean>(false);
+
+  /** 當前選中的題型示範索引 (從 0 開始，依序 1~6 種 repeat 輪播) */
+  readonly activeTabIndex = signal<number>(0);
 
   /** 當前選中的題型物件 */
   readonly activeTab = computed(() => this.questionTabs[this.activeTabIndex()]);
+
+  /**
+   * 生命週期鉤子 (ngOnInit)
+   * 進入首頁即刻啟動 6 大題型輪盤循環輪播
+   */
+  public ngOnInit(): void {
+    this.startWheel();
+  }
+
+  /**
+   * 生命週期鉤子 (ngOnDestroy)
+   * 離開首頁時確實釋放輪盤計時器，杜絕記憶體洩漏
+   */
+  public ngOnDestroy(): void {
+    this.stopWheel();
+  }
+
+  /**
+   * 啟動題型輪盤自動循環輪播 (從 1 到 6 種 repeat 循環)
+   */
+  public startWheel(): void {
+    this.stopWheel();
+    this.wheelTimer = setInterval(() => {
+      if (!this.isWheelPaused()) {
+        this.advanceWheel();
+      }
+    }, this.WHEEL_INTERVAL_MS);
+  }
+
+  /**
+   * 停止題型輪盤播放
+   */
+  public stopWheel(): void {
+    if (this.wheelTimer) {
+      clearInterval(this.wheelTimer);
+      this.wheelTimer = null;
+    }
+  }
+
+  /**
+   * 輪盤自動前進下一題型 (1 -> 2 -> ... -> 6 -> 1 repeat)
+   */
+  private advanceWheel(): void {
+    const total = this.questionTabs.length;
+    this.activeTabIndex.update((curr) => (curr + 1) % total);
+  }
+
+  /**
+   * 滑鼠移入題型導覽區時暫停輪盤播放
+   */
+  public pauseWheel(): void {
+    this.isWheelPaused.set(true);
+  }
+
+  /**
+   * 滑鼠移出題型導覽區時恢復輪盤播放
+   */
+  public resumeWheel(): void {
+    this.isWheelPaused.set(false);
+  }
+
+  /**
+   * 重啟輪盤計時器（使用者手動切換題型後重新起算 3.8 秒）
+   */
+  private restartWheel(): void {
+    this.startWheel();
+  }
 
   // ==========================================
   // 即時問卷填答作答模擬狀態 (Reactive Demo Answers)
@@ -140,29 +216,32 @@ export class HomeComponent {
   // ==========================================
 
   /**
-   * 切換選中的題型分頁
-   * @param index 題型索引 (0 ~ 6)
+   * 切換選中的題型分頁（手動點選重啟輪盤計時）
+   * @param index 題型索引 (0 ~ 5)
    */
   selectTab(index: number): void {
     if (index >= 0 && index < this.questionTabs.length) {
       this.activeTabIndex.set(index);
+      this.restartWheel();
     }
   }
 
   /**
-   * 前往上一個題型
+   * 前往上一個題型（手動點選重啟輪盤計時）
    */
   prevTab(): void {
     const total = this.questionTabs.length;
     this.activeTabIndex.update((curr) => (curr - 1 + total) % total);
+    this.restartWheel();
   }
 
   /**
-   * 前往下一個題型
+   * 前往下一個題型（手動點選重啟輪盤計時）
    */
   nextTab(): void {
     const total = this.questionTabs.length;
     this.activeTabIndex.update((curr) => (curr + 1) % total);
+    this.restartWheel();
   }
 
   /**

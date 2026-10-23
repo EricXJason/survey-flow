@@ -1,7 +1,7 @@
 # SurveyFlow | 現代實證調研與學術結構化數據採集系統
 
 > **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
-> **專案定位**: 專業級全端動態線上問卷調研與多維數據分析平台。支援 7 大型態動態題目編排、條件跳題動態解鎖、原生 DOM 雙向防誤判、即時統計圖表聚合、4 大專業格式匯出與三層身分授權治理。  
+> **專案定位**: 專業級全端動態線上問卷調研與多維數據分析平台。支援 7 大型態動態題目編排、條件跳題動態解鎖、問卷預覽審查全卷結構檢視與來源標示、原生 DOM 雙向防誤判、首頁 6 大題型自動循環輪盤、即時統計圖表聚合、4 大專業格式匯出與三層身分授權治理。  
 > **語言與執行環境版本**:
 > - **前端 SPA**: Node.js 24.18.0 / Angular 19.0.0 / TypeScript 5.6.2 / Angular CDK 19.2.19 (Cloudflare Pages 託管，100% 純原生 SCSS/CSS，無外部樣式表，TS 零硬編碼色票)
 > - **後端 Web API**: Java 21 / Spring Boot 4.1.1 / Spring Data JPA / ModelMapper 3.2.2 / Spring Security / JJWT 0.12.6 / Argon2id (Render Docker 容器化)
@@ -27,7 +27,7 @@ flowchart LR
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
 
     M1["01. 視覺化問卷設計<br/>(7大型態 / 拖曳排序 / 跳題解鎖)"]:::hudCard
-    M2["02. 問卷填答運行器<br/>(雙軌入口 / DOM雙向同步 / 格式防呆)"]:::hudCard
+    M2["02. 問卷填答與審查運行器<br/>(雙軌入口 / 預覽全題目可見 / 跳題來源標示)"]:::hudCard
     M3["03. 問卷專案管理<br/>(時限設定 / 雙維度狀態 / 專屬連結)"]:::hudCard
     M4["04. 數據分析儀表板<br/>(KPI指標 / 題型聚合 / SPSS匯出)"]:::hudCard
     M5["05. 會員認證體系<br/>(Gmail SMTP / 雙權杖輪替)"]:::hudCard
@@ -116,7 +116,7 @@ survey-flow/
     └── src/
         ├── main/java/com/surveyflow/  # Clean Architecture 乾淨分層 (Controller/Service/Repo/Entity)
         ├── main/resources/database/   # schema.sql (9大表 DDL) 與 data.sql (測試種子)
-        └── test/                      # 29/29 全套 JUnit 5 + Mockito 單元與整合測試套件
+        └── test/                      # 31/31 全套 JUnit 5 + Mockito 單元與整合測試套件
 ```
 
 ---

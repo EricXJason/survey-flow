@@ -539,7 +539,10 @@ export class SurveyDesignComponent implements OnInit, OnDestroy {
           optionGroup.get('unlockTargetUid')?.value === targetUid
         ) {
           const optionLabel = this.getOptionLabel(optionIdx);
-          sources.push(`【問題 ${questionIdx + 1}】選項 ${optionLabel}`);
+          const optionText = optionGroup.get('text')?.value;
+          const optText = optionText ? `（${optionText}）` : '';
+          const qNum = (questionIdx + 1).toString().padStart(2, '0');
+          sources.push(`【問題 ${qNum}】選項 ${optionLabel}${optText}`);
         }
       }
     }

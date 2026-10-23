@@ -491,6 +491,99 @@
     border-color: var(--c-primary-400);
     box-shadow: var(--shadow-md);
   }
+
+  /* 預覽模式下尚未解鎖之卡片外觀（微虛線、略帶柔和底色） */
+  &.is-preview-locked {
+    border: 1.5px dashed #cbd5e1;
+    background: #fbfcfe;
+    box-shadow: none;
+
+    &:hover {
+      border-color: #94a3b8;
+    }
+  }
+
+  /* 預覽模式下已被觸發解鎖之卡片外觀（清新微綠邊框與微光暈） */
+  &.is-preview-unlocked {
+    border: 1.5px solid #86efac;
+    box-shadow: 0 4px 12px -2px rgba(34, 197, 94, 0.12);
+  }
+}
+
+/* 條件跳題預覽橫幅提示條 */
+.conditional-preview-banner {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.9rem 1.4rem;
+  border-radius: var(--r-md);
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  color: #334155;
+  margin-bottom: 0.8rem;
+  transition: all 0.25s ease;
+
+  .banner-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    font-size: 1.3rem;
+    line-height: 1.5;
+  }
+
+  .banner-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+    background: #e2e8f0;
+    color: #475569;
+    letter-spacing: 0.02em;
+  }
+
+  .banner-desc {
+    color: #334155;
+    font-weight: 500;
+
+    strong {
+      color: #0f172a;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+
+  /* 已由使用者選中觸發解鎖狀態 */
+  &.unlocked {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    color: #166534;
+
+    .banner-tag {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .banner-desc {
+      color: #166534;
+
+      strong {
+        color: #14532d;
+      }
+    }
+  }
 }
 
 .q-header-row {

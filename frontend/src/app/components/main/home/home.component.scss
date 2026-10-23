@@ -231,6 +231,9 @@
     }
   }
 
+  position: relative;
+  overflow: hidden;
+
   &.active {
     background: #0f172a;
     border-color: #0f172a;
@@ -255,6 +258,31 @@
     .tab-benefit {
       color: var(--c-neutral-300, #cbd5e1);
     }
+  }
+
+  .wheel-countdown-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    width: 0%;
+    background: var(--c-primary, #0ea5e9);
+    box-shadow: 0 0 8px rgba(14, 165, 233, 0.6);
+    border-radius: 0 2px 2px 0;
+    animation: wheelCountdownAnim 3.8s linear infinite;
+
+    &.paused {
+      animation-play-state: paused;
+    }
+  }
+}
+
+@keyframes wheelCountdownAnim {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
   }
 }
 
