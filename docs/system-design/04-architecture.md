@@ -40,6 +40,39 @@ flowchart LR
     BackendApp -->|"HikariCP 連線池 / 原生 SQL"| DatabaseLayer
 ```
 
+### 1.1 極致分層架構與 4 大設計黃金法則 (Controller-Service-Repo 4 Golden Rules)
+
+系統嚴格貫徹以**「業務意圖（Use Case）」作為核心邊界**之架構拓撲：
+
+```text
+[ Client Request ]
+       │
+       ▼
+[ Controller ]                  --> 嚴格 1 對 1（只負責 HTTP、DTO 驗證、轉發）
+       │
+       ▼
+[ Business Service / Facade ]   --> 事務邊界（@Transactional），統籌單一業務流程
+   ├── 專屬主表 Repo            --> 1 對多（依業務需求直接注入 1~3 個 Repo）
+   ├── 相關附屬表 Repo
+   └── 通用 Helper / Component  --> 抽離純邏輯計算（例如演算法、字串與郵件處理）
+```
+
+1. **Controller 保持「極度輕薄」（Thin Controller）**:
+   - 1 個 Controller 嚴格只對應 1 個專屬入口 Service。
+   - 職責僅限 3 件事：Request 參數驗證 (`@Valid`)、呼叫 Service、包裝 `ApiResponse<T>` 回傳。
+   - 嚴禁在 Controller 出現 `if-else` 業務判斷、嚴禁跨多個 Service 自行組裝邏輯。
+2. **Service 以「業務流程/意圖 (Use Case)」命名，而非以「資料表」命名**:
+   - 杜絕單表對單 Service 的機械化 CRUD 壞味道；單一業務 Service 統籌完整流程，依業務意圖直接注入 1~多個關聯 Repositories。
+   - 複雜跨模組流程建立專屬 Service 或 Facade 負責編排（例如 `AdminService`）。
+3. **事務邊界 (`@Transactional`) 嚴格收斂在 Service 層**:
+   - 跨多張表的寫入與更新全部關在同一個 Service 方法中，確保失敗整筆原子 Rollback，絕不產生半套髒資料。
+   - Controller 與 Repository 嚴禁標註 `@Transactional`。
+4. **杜絕 Service 互相平級注入（徹底消滅循環依賴）**:
+   - 實體內部狀態判斷寫在 Entity，跨實體純計算抽成 `@Component` 工具類別供 Service 注入。
+   - Service 永遠只「向下」調用 Repositories 或 Components，絕不平級互打。
+5. **全域方法繁中註解 100% 必備（包含所有測試檔）**:
+   - 杜絕「有的有寫、有的沒寫」現象；實體方法說明業務目的、參數與回傳值；所有測試檔 (`*Test.java`) 之測試方法 (`@Test`) 與初始化方法 (`@BeforeEach`) 上方，強制具備繁中說明測試業務情境與斷言預期。
+
 ---
 
 ## 2. 專案根目錄與全域配置字典 (Root Configuration Dictionary)

@@ -48,6 +48,8 @@ public class SubmissionController {
 
     /**
      * 提取客戶端真實 IP (相容反向代理如 Nginx 或 AWS ALB)
+     * @param request HTTP 請求物件
+     * @return 客戶端真實 IP 字串
      */
     private String extractClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");

@@ -56,6 +56,10 @@ class UserControllerTest {
 
     private Principal mockPrincipal;
 
+    /**
+     * 測試前置環境初始化
+     * 設定 MockMvc standalone 模式並掛載全域例外處理器，注入模擬登入 Principal
+     */
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
@@ -68,6 +72,11 @@ class UserControllerTest {
         mockPrincipal = () -> "testmember";
     }
 
+    /**
+     * 測試取得個人檔案端點 (GET /api/user/profile)
+     * 驗證登入會員呼叫個人檔案查詢端點時，能正確委派 UserService 並回傳 HTTP 200 與個人資料
+     * @throws Exception 模擬 HTTP 調用異常
+     */
     @Test
     @DisplayName("GET /api/user/profile 成功取得個人檔案")
     void getProfile_Success() throws Exception {
@@ -89,6 +98,11 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.fullName").value("林小安"));
     }
 
+    /**
+     * 測試更新個人檔案端點 (PUT /api/user/profile)
+     * 驗證登入會員提交姓名、手機等更新資料時，能正確委派 UserService 執行更新並回傳更新後的個人檔案
+     * @throws Exception 模擬 HTTP 調用異常
+     */
     @Test
     @DisplayName("PUT /api/user/profile 成功更新個人檔案")
     void updateProfile_Success() throws Exception {
@@ -116,6 +130,11 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.fullName").value("林安安"));
     }
 
+    /**
+     * 測試變更會員密碼端點 (PUT /api/user/change-password)
+     * 驗證提交舊密碼與符合安全強度之新密碼時，能正確委派 UserService 執行密碼驗證與更換
+     * @throws Exception 模擬 HTTP 調用異常
+     */
     @Test
     @DisplayName("PUT /api/user/change-password 成功修改密碼")
     void changePassword_Success() throws Exception {

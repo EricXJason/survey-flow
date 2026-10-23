@@ -103,6 +103,9 @@ public class MailService {
     /**
      * 底層發送 HTML 電子郵件共用調度方法
      * 依據提供商策略動態路由至 Brevo HTTP API (443)、Resend HTTP API (443) 或 SMTP (587)
+     * @param toEmail 收件者電子信箱
+     * @param subject 電子郵件主旨
+     * @param htmlContent 包含完整 HTML 排版之郵件內容
      */
     private void sendHtmlMail(String toEmail, String subject, String htmlContent) {
         boolean sentSuccessfully = false;
@@ -149,6 +152,10 @@ public class MailService {
 
     /**
      * 透過 Brevo (原 Sendinblue) HTTP REST API 發送郵件 (HTTPS Port 443)
+     * @param toEmail 收件者信箱
+     * @param subject 郵件主旨
+     * @param htmlContent HTML 郵件內容
+     * @throws Exception HTTP 連線或 API 回應異常
      */
     private void sendViaBrevoApi(String toEmail, String subject, String htmlContent) throws Exception {
         String sanitizedName = resolveSenderName();
@@ -181,6 +188,10 @@ public class MailService {
 
     /**
      * 透過 Resend HTTP REST API 發送郵件 (HTTPS Port 443)
+     * @param toEmail 收件者信箱
+     * @param subject 郵件主旨
+     * @param htmlContent HTML 郵件內容
+     * @throws Exception HTTP 連線或 API 回應異常
      */
     private void sendViaResendApi(String toEmail, String subject, String htmlContent) throws Exception {
         String sanitizedName = resolveSenderName();
@@ -213,6 +224,10 @@ public class MailService {
 
     /**
      * 透過傳統 Spring JavaMailSender (SMTP Port 587) 發送郵件
+     * @param toEmail 收件者信箱
+     * @param subject 郵件主旨
+     * @param htmlContent HTML 郵件內容
+     * @throws Exception SMTP 協定或連線異常
      */
     private void sendViaSmtp(String toEmail, String subject, String htmlContent) throws Exception {
         MimeMessage message = mailSender.createMimeMessage();
@@ -231,6 +246,7 @@ public class MailService {
 
     /**
      * 防禦性解析寄件者外顯名稱，自動校正 properties ISO-8859-1 編碼轉換為正確繁體中文
+     * @return 解析完成之繁體中文外顯名稱
      */
     private String resolveSenderName() {
         if (senderName == null || senderName.isBlank()) {
@@ -248,6 +264,9 @@ public class MailService {
 
     /**
      * 構建忘記密碼 HTML 電子郵件樣板 (含一鍵直達重設連結與 6 碼驗證碼)
+     * @param toEmail 收件者信箱
+     * @param code 6 碼 OTP 驗證碼
+     * @return 完整 HTML 郵件內容字串
      */
     private String buildPasswordResetHtml(String toEmail, String code) {
         String resetUrl = "%s/reset-password?email=%s&code=%s".formatted(frontendBaseUrl, toEmail, code);
@@ -295,6 +314,10 @@ public class MailService {
 
     /**
      * 構建會員註冊啟用 HTML 電子郵件樣板 (含一鍵開通連結與 6 碼 OTP)
+     * @param toEmail 收件者信箱
+     * @param fullName 會員全名
+     * @param code 6 碼數字啟用碼
+     * @return 完整 HTML 郵件內容字串
      */
     private String buildRegistrationHtml(String toEmail, String fullName, String code) {
         String verifyUrl = "%s/verify-email?email=%s&code=%s".formatted(frontendBaseUrl, toEmail, code);

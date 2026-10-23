@@ -6,7 +6,7 @@
  * 架構分層: Test Layer / Web Test
  * 聯動關係:
  *   - 測試目標: AdminController
- *   - 模擬對象: UserService, SurveyService, AnalyticsService
+ *   - 模擬對象: AdminService
  * ============================================================================
  */
 
@@ -15,9 +15,7 @@ package com.surveyflow.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.surveyflow.common.exception.GlobalExceptionHandler;
-import com.surveyflow.service.AnalyticsService;
-import com.surveyflow.service.SurveyService;
-import com.surveyflow.service.UserService;
+import com.surveyflow.service.AdminService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,17 +43,14 @@ class AdminControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private UserService userService;
-
-    @Mock
-    private SurveyService surveyService;
-
-    @Mock
-    private AnalyticsService analyticsService;
+    private AdminService adminService;
 
     @InjectMocks
     private AdminController adminController;
 
+    /**
+     * 初始化 MockMvc 測試環境，掛載全域例外處理器與分頁參數解析器
+     */
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -69,6 +64,10 @@ class AdminControllerTest {
                 .build();
     }
 
+    /**
+     * 測試取得全站總體營運指標端點
+     * 驗證情境: 呼叫 GET /api/admin/analytics/overview 時，預期成功取得包含會員總數、問卷總數與填答總數之 JSON 回應
+     */
     @Test
     @DisplayName("管理端點測試: 請求 /api/admin/analytics/overview 應回傳全站總體營運指標")
     void getPlatformOverview_Returns200() throws Exception {
@@ -77,7 +76,7 @@ class AdminControllerTest {
         stats.put("totalSurveys", 10L);
         stats.put("totalSubmissions", 520L);
 
-        when(analyticsService.getPlatformOverview()).thenReturn(stats);
+        when(adminService.getPlatformOverview()).thenReturn(stats);
 
         mockMvc.perform(get("/api/admin/analytics/overview")
                         .contentType(MediaType.APPLICATION_JSON))

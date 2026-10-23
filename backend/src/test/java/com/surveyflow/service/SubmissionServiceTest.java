@@ -59,6 +59,10 @@ class SubmissionServiceTest {
     private SurveyQuestion booleanQuestion;
     private SurveyQuestion ratingQuestion;
 
+    /**
+     * 測試前置資料初始化
+     * 構建包含單選題、是非題與評分題之開放中問卷實體
+     */
     @BeforeEach
     void setUp() {
         activeSurvey = Survey.builder()
@@ -118,6 +122,10 @@ class SubmissionServiceTest {
         activeSurvey.getQuestions().add(ratingQuestion);
     }
 
+    /**
+     * 測試受訪者成功提交問卷填答
+     * 驗證包含受訪者個資輪廓（姓名、性別、年齡層）與各題型答案正確關聯與持久化
+     */
     @Test
     @DisplayName("受訪者成功送出問卷填答（包含基本個資與各題型答案）")
     void submitSurvey_Success() {
@@ -158,6 +166,10 @@ class SubmissionServiceTest {
         verify(submissionRepository, times(1)).save(any(Submission.class));
     }
 
+    /**
+     * 測試填答不存在之問卷
+     * 驗證當 surveyId 不存在或已被軟刪除時，拋出 IllegalArgumentException 阻斷
+     */
     @Test
     @DisplayName("填答不存在之問卷應拋出 IllegalArgumentException")
     void submitSurvey_SurveyNotFound() {
@@ -169,6 +181,10 @@ class SubmissionServiceTest {
         verify(submissionRepository, never()).save(any());
     }
 
+    /**
+     * 測試填答未開放問卷
+     * 驗證當問卷 isOpen 為 false 時，拒絕填答提交並拋出對應例外
+     */
     @Test
     @DisplayName("問卷尚未開放（isOpen = false）應拒絕提交")
     void submitSurvey_SurveyClosed() {
@@ -183,6 +199,10 @@ class SubmissionServiceTest {
         verify(submissionRepository, never()).save(any());
     }
 
+    /**
+     * 測試填答已過截止期之問卷
+     * 驗證問卷截止時間已過時，拒絕提交填答並拋出對應例外
+     */
     @Test
     @DisplayName("問卷已過截止期限應拒絕提交")
     void submitSurvey_SurveyExpired() {
@@ -197,6 +217,10 @@ class SubmissionServiceTest {
         verify(submissionRepository, never()).save(any());
     }
 
+    /**
+     * 測試前端題號序號容錯匹配
+     * 驗證當前端傳入題目之序號非資料庫流水 ID 時，系統能依題目順序 (sortOrder) 自動匹配正確題目與選項
+     */
     @Test
     @DisplayName("前端傳入題號序號而非實體ID時，應自動依 sortOrder 成功匹配並儲存是非題答案")
     void submitSurvey_QuestionIdOrderMismatchFallback_Success() {

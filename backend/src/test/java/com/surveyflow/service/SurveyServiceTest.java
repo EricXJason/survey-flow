@@ -56,6 +56,10 @@ class SurveyServiceTest {
     private User otherUser;
     private Survey sampleSurvey;
 
+    /**
+     * 測試前置資料初始化
+     * 構建問卷建立者、第三方無關使用者以及包含題目之範例問卷實體
+     */
     @BeforeEach
     void setUp() {
         owner = User.builder()
@@ -86,6 +90,10 @@ class SurveyServiceTest {
                 .build();
     }
 
+    /**
+     * 測試會員建立問卷
+     * 驗證正常傳入問卷標題、起訖時間等參數時，能成功持久化並回傳問卷詳情 DTO
+     */
     @Test
     @DisplayName("建立問卷測試: 正常傳入時應成功持久化並回傳問卷詳情")
     void createSurvey_Success() {
@@ -106,6 +114,10 @@ class SurveyServiceTest {
         verify(surveyRepository, times(1)).save(any(Survey.class));
     }
 
+    /**
+     * 測試受訪者/訪客公開查詢問卷
+     * 驗證進入填答頁面載入問卷時，系統會自動累加 viewCount 瀏覽計數並持久化
+     */
     @Test
     @DisplayName("公開取得問卷測試: 進入填答應自動累加 viewCount 瀏覽計數")
     void getPublicSurvey_IncrementsViewCount() {
@@ -120,6 +132,10 @@ class SurveyServiceTest {
         verify(surveyRepository, times(1)).save(sampleSurvey);
     }
 
+    /**
+     * 測試問卷軟刪除權限阻斷
+     * 驗證非問卷建立者且非系統管理員嘗試刪除時，應觸發 AccessDeniedException 阻斷
+     */
     @Test
     @DisplayName("軟刪除權限測試: 非建立者且非管理員嘗試刪除時應拋出 AccessDeniedException")
     void deleteSurvey_UnauthorizedUser_ThrowsAccessDeniedException() {

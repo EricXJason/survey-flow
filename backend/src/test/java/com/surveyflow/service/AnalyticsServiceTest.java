@@ -60,6 +60,10 @@ class AnalyticsServiceTest {
     private User hacker;
     private Survey sampleSurvey;
 
+    /**
+     * 測試前置資料初始化
+     * 構建問卷擁有者、非授權使用者以及範例問卷實體
+     */
     @BeforeEach
     void setUp() {
         owner = User.builder()
@@ -85,6 +89,10 @@ class AnalyticsServiceTest {
                 .build();
     }
 
+    /**
+     * 測試問卷擁有者查詢統計報表
+     * 驗證問卷建立者登入查詢時，能精確運算回收份數、填答耗時等 5 大 KPI 與聚合數據
+     */
     @Test
     @DisplayName("分析報表測試: 擁有者存取應成功產出 5 大 KPI 與聚合數據")
     void getSurveyAnalytics_OwnerAccess_Success() {
@@ -109,6 +117,10 @@ class AnalyticsServiceTest {
         assertEquals(120, response.getKpi().getAverageDurationSeconds());
     }
 
+    /**
+     * 測試非授權使用者查詢統計報表阻斷
+     * 驗證非問卷建立者且非系統管理員嘗試讀取數據時，拋出 AccessDeniedException
+     */
     @Test
     @DisplayName("分析權限測試: 非建立者且非管理者存取應拋出 AccessDeniedException")
     void getSurveyAnalytics_Unauthorized_ThrowsAccessDeniedException() {
@@ -118,6 +130,10 @@ class AnalyticsServiceTest {
         assertThrows(AccessDeniedException.class, () -> analyticsService.getSurveyAnalytics(1L, "unauthorized"));
     }
 
+    /**
+     * 測試是非題後備文本匹配與選項統計
+     * 驗證是非題在缺少選項 ID 關聯時，透過文字答案後備機制精準聚合「是」與「否」票數與百分比
+     */
     @Test
     @DisplayName("分析報表測試: 是非題在無 optionId 時透過 text_answer 後備補全，應正確聚合「是」與「否」且總得票數大於0")
     void getSurveyAnalytics_WithBooleanFallbackAndOrderedOptions_Success() {

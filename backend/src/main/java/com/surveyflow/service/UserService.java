@@ -136,6 +136,8 @@ public class UserService {
 
     /**
      * 實體轉換為 UserProfileResponse DTO (統一透過 ModelMapper 自動映射)
+     * @param user User 實體物件
+     * @return 轉換完成之 UserProfileResponse DTO，若為 null 則回傳 null
      */
     public UserProfileResponse convertToProfileResponse(User user) {
         if (user == null) return null;

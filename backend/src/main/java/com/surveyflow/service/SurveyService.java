@@ -288,6 +288,11 @@ public class SurveyService {
 
     /**
      * 內部核對問卷擁有者權限 (建立者本人或管理員)
+     * @param surveyId 問卷識別碼
+     * @param currentUsername 當前操作者帳號
+     * @return 通過權限校驗之 Survey 實體
+     * @throws IllegalArgumentException 查無問卷或操作者
+     * @throws AccessDeniedException 無修改權限
      */
     private Survey findSurveyByIdAndVerifyOwner(Long surveyId, String currentUsername) {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
@@ -307,7 +312,9 @@ public class SurveyService {
     }
 
     /**
-     * 轉換為詳情 Response
+     * 轉換為問卷完整結構詳情 Response (包含題目、選項與基本個資收集設定)
+     * @param survey 問卷實體物件
+     * @return 完整結構 SurveyResponse DTO
      */
     private SurveyResponse convertToDetailResponse(Survey survey) {
         long submissionCount = submissionRepository.countBySurveyIdNative(survey.getId());
@@ -366,7 +373,9 @@ public class SurveyService {
     }
 
     /**
-     * 轉換為概要 Response
+     * 轉換為問卷概要清單 Response (供大廳或個人專案列表卡片檢視)
+     * @param survey 問卷實體物件
+     * @return 概要 SurveySummaryResponse DTO
      */
     private SurveySummaryResponse convertToSummaryResponse(Survey survey) {
         long submissionCount = submissionRepository.countBySurveyIdNative(survey.getId());

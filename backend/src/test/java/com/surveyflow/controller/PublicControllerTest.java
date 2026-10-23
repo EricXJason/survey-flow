@@ -72,6 +72,9 @@ class PublicControllerTest {
     @InjectMocks
     private SubmissionController submissionController;
 
+    /**
+     * 初始化 MockMvc 與 Standalone 控制器環境，掛載全域例外處理器
+     */
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
@@ -86,6 +89,10 @@ class PublicControllerTest {
                 .build();
     }
 
+    /**
+     * 測試問卷大廳公開分頁清單檢索端點
+     * 驗證情境: 呼叫 GET /api/public/surveys/lobby 時，預期成功取得 HTTP 200 與分頁資料
+     */
     @Test
     @DisplayName("公開端點測試: 請求大廳列表 /api/public/surveys/lobby 應成功回傳 HTTP 200 與分頁資料")
     void getLobbySurveys_Returns200() throws Exception {
@@ -99,6 +106,10 @@ class PublicControllerTest {
                 .andExpect(jsonPath("$.success").value(true));
     }
 
+    /**
+     * 測試登入密碼為空之驗證阻斷
+     * 驗證情境: 傳入密碼為空之 LoginRequest 時，預期由 GlobalExceptionHandler 攔截並回傳 HTTP 400
+     */
     @Test
     @DisplayName("參數校驗測試: 登入時密碼為空應觸發 GlobalExceptionHandler 回傳 HTTP 400")
     void login_EmptyPassword_Returns400() throws Exception {
@@ -111,6 +122,10 @@ class PublicControllerTest {
                 .andExpect(jsonPath("$.success").value(false));
     }
 
+    /**
+     * 測試受訪者送出問卷作答端點
+     * 驗證情境: 傳入正確之 SubmissionRequest 時，預期成功建立填答並回傳包含 submissionId 之確認回應
+     */
     @Test
     @DisplayName("填答提交測試: 送出正確 SubmissionRequest 應回傳 HTTP 200")
     void submitSurvey_ValidRequest_Returns200() throws Exception {

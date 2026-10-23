@@ -54,6 +54,10 @@ class UserServiceTest {
     private User sampleUser;
     private User adminUser;
 
+    /**
+     * 測試前置資料初始化
+     * 準備一般會員與系統管理員之 Mock 實體資料
+     */
     @BeforeEach
     void setUp() {
         sampleUser = User.builder()
@@ -79,6 +83,10 @@ class UserServiceTest {
                 .build();
     }
 
+    /**
+     * 測試查詢會員個人檔案
+     * 驗證依照使用者名稱查詢原生 SQL 成功後，能透過 ModelMapper 正確轉換為 UserProfileResponse
+     */
     @Test
     @DisplayName("查詢會員個人檔案成功並正確透過 ModelMapper 映射")
     void getProfile_Success() {
@@ -93,6 +101,10 @@ class UserServiceTest {
         assertEquals("test@example.com", response.getEmail());
     }
 
+    /**
+     * 測試更新會員個人檔案資料
+     * 驗證修改姓名與手機號碼後，實體資料被正確更新並存入資料庫
+     */
     @Test
     @DisplayName("更新會員個人檔案資料成功")
     void updateProfile_Success() {
@@ -112,6 +124,10 @@ class UserServiceTest {
         verify(userRepository, times(1)).save(any(User.class));
     }
 
+    /**
+     * 測試會員修改密碼 (原密碼正確)
+     * 驗證比對舊密碼成功後，新密碼經過 PasswordEncoder 加密並保存
+     */
     @Test
     @DisplayName("會員修改密碼：原密碼正確時應成功雜湊儲存新密碼")
     void changePassword_Success() {
@@ -130,6 +146,10 @@ class UserServiceTest {
         verify(userRepository, times(1)).save(sampleUser);
     }
 
+    /**
+     * 測試會員修改密碼 (原密碼錯誤)
+     * 驗證比對舊密碼失敗時，立即阻斷並拋出 IllegalArgumentException，絕不儲存資料
+     */
     @Test
     @DisplayName("會員修改密碼：原密碼錯誤應拋出 IllegalArgumentException")
     void changePassword_WrongOldPassword() {
@@ -148,6 +168,10 @@ class UserServiceTest {
         verify(userRepository, never()).save(any());
     }
 
+    /**
+     * 測試管理員軟刪除會員 (保護最高管理員)
+     * 驗證嘗試軟刪除系統管理員 (ROLE_ADMIN) 帳號時，觸發安全防護機制拋出例外
+     */
     @Test
     @DisplayName("管理員禁止軟刪除系統最高管理員帳號")
     void deleteUser_AdminProtected() {

@@ -2,8 +2,56 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
-## [2026-10-23 19:40] - 嚴格禁止 Hibernate 自動建表：全面落實 ddl-auto=none、寫入全域 AGENTS 協定與系統規格庫
-> **Commit 代碼**: `92712a0`
+## [2026-10-24 00:40] - 極致分層架構 4 大黃金法則落地：新增 AdminService 達成薄型 Controller，全域方法與測試 Javadoc 100% 覆蓋
+> **Commit 代碼**: `f63f08f`
+
+- **改動原因**:
+  - 響應使用者最高工程要求：
+    1. 將業界最理想架構與「4 大設計黃金法則」（Controller [1:1] $\to$ Business Service / Facade [1:1] $\to$ 領域資源 [1 對多 Repos]）寫入 `AGENTS.md`、`AGENTS-BACK.md` 等協定文檔成為正式規範。
+    2. 確保專案 100% 符合此架構規範（消除 Controller 注入多個 Service，建立專屬 `AdminService`，維持極度輕薄 Controller 與杜絕平級 Service 互調）。
+    3. **每一個腳本的方法上方都要說明該方法是做什麼的（包含所有實體方法與測試檔 `*Test.java`）**，杜絕「有的有寫、有的沒寫」的半套現象，大幅提升程式碼可讀性與工程維護性。
+- **具體內容**:
+  - **最高協定與架構規範寫入**：
+    - [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md)：
+      - 第 2 節新增「方法上方目的說明 (Method Purpose, 100% 覆蓋實體與測試檔)」底線，明訂所有實體代碼與測試檔（`@Test`、`@BeforeEach`、生命週期回呼）上方必須具備結構化繁中註解，並提供標準 Javadoc 範本。
+      - 第 3 節新增「全端極致分層與『業務意圖 (Use Case)』邊界架構 (Controller-Service-Repo Architecture & 4 Golden Rules, 永恆底線)」與拓撲圖。
+    - [`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md)：
+      - 第 1 節升級為「極致三層式架構與『業務意圖 (Use Case)』邊界防線 (Strict 3-Tier Layering & 4 Golden Rules)」，詳列 Controller 薄如蟬翼 (1:1)、Service 事務邊界 (1:多 Repos)、平級 Service 互不注入等四大底線。
+      - 第 1 節末尾增訂「後端註解與方法組織 (包含所有測試檔 100% 覆蓋)」。
+    - [`docs/system-design/04-architecture.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/04-architecture.md)：
+      - 新增「1.1 極致分層架構與 4 大設計黃金法則」，並修復 Mermaid 流程圖語法。
+  - **後端架構重構與實作對齊**：
+    - **新建專屬維運服務**（[`AdminService.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/service/AdminService.java)）：專責統籌全站會員管理、問卷下架審核、全站營運 KPI 運算與系統清理，直接注入多個專屬 Repositories，具備獨立事務邊界。
+    - **輕薄化管理者端點**（[`AdminController.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/controller/AdminController.java)）：徹底消除先前混合注入 `UserService` 與 `SurveyService` 的反模式，嚴格重構為 1 對 1 僅依賴 `AdminService`，只負責 HTTP DTO 驗證、轉發與封裝。
+  - **全域實體與測試方法 100% 繁中註解補齊**：
+    - 全面檢核並補齊所有 Controller 私有輔助方法（如 `buildRefreshTokenCookie`, `extractClientIp`）之完整 Javadoc。
+    - 全面檢核並補齊所有 Service 內部計算與模型轉換方法（如 `convertToDetailResponse`, `createDualTokenAuthResponse`, `calculateKpi` 等）之完整 Javadoc。
+    - 全面為後端全部 8 個測試檔案（`AdminControllerTest`, `AdminServiceTest`, `PublicControllerTest`, `UserControllerTest`, `UserServiceTest`, `SurveyServiceTest`, `SubmissionServiceTest`, `AnalyticsServiceTest`, `AuthServiceTest`）之所有 `@BeforeEach` 初始化與 `@Test` 測試方法補齊結構化繁中 Javadoc（說明測試業務目的、驗證情境與斷言預期）。
+  - **自動化測試全套通過**：
+    - 38/38 單元與整合測試 100% PASS（`BUILD SUCCESS`，耗時 9.6 秒）。
+- **影響範圍**:
+  - `AGENTS.md`
+  - `AGENTS-BACK.md`
+  - `docs/system-design/04-architecture.md`
+  - `docs/change-log.md`
+  - `backend/src/main/java/com/surveyflow/service/AdminService.java`
+  - `backend/src/main/java/com/surveyflow/controller/AdminController.java`
+  - `backend/src/main/java/com/surveyflow/controller/AuthController.java`
+  - `backend/src/main/java/com/surveyflow/controller/SubmissionController.java`
+  - `backend/src/main/java/com/surveyflow/service/UserService.java`
+  - `backend/src/main/java/com/surveyflow/service/SurveyService.java`
+  - `backend/src/main/java/com/surveyflow/service/AuthService.java`
+  - `backend/src/main/java/com/surveyflow/service/AnalyticsService.java`
+  - `backend/src/test/java/com/surveyflow/service/AdminServiceTest.java`
+  - `backend/src/test/java/com/surveyflow/controller/AdminControllerTest.java`
+  - `backend/src/test/java/com/surveyflow/controller/PublicControllerTest.java`
+  - `backend/src/test/java/com/surveyflow/controller/UserControllerTest.java`
+  - `backend/src/test/java/com/surveyflow/service/UserServiceTest.java`
+  - `backend/src/test/java/com/surveyflow/service/SurveyServiceTest.java`
+  - `backend/src/test/java/com/surveyflow/service/SubmissionServiceTest.java`
+  - `backend/src/test/java/com/surveyflow/service/AnalyticsServiceTest.java`
+  - `backend/src/test/java/com/surveyflow/service/AuthServiceTest.java`
+
 
 - **改動原因**:
   - 響應使用者最高底線指示：「嚴禁讓 Hibernate 自動建表 寫入對應md 規範中 只能用none 然後本專案實作」。

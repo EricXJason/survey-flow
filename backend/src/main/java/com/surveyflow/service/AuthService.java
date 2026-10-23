@@ -333,6 +333,8 @@ public class AuthService {
 
     /**
      * 內部簽發零信任雙 Token 並封裝回傳物件
+     * @param user 會員實體物件
+     * @return 包含雙 Token (Access/Refresh Token) 與使用者資料之 AuthResponse
      */
     private AuthResponse createDualTokenAuthResponse(User user) {
         String accessToken = tokenProvider.generateAccessToken(user.getUsername(), user.getRole().name());
@@ -356,6 +358,7 @@ public class AuthService {
 
     /**
      * 生成安全 6 碼數字 OTP 驗證碼
+     * @return 6 碼純數字隨機字串 (000000 ~ 999999)
      */
     private String generateSixDigitCode() {
         return String.format("%06d", RANDOM.nextInt(1000000));

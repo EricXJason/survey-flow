@@ -5,7 +5,7 @@
  * 責任描述: 提供系統管理員 (ROLE_ADMIN) 專屬之全站會員管理、問卷稽核與全站維運數據 API
  * 架構分層: Presentation / Controller Layer
  * 聯動關係:
- *   - 上游依賴: UserService, SurveyService, AnalyticsService
+ *   - 上游依賴: AdminService (嚴格 1 對 1 輕量委託)
  *   - 下游消費: 前端 UserManagementComponent, SurveyManagementComponent (Admin 視角)
  * 邊界處理: 嚴格遵循三層式架構 (Controller -> Service -> Repository)，控制器嚴禁直接存取資料倉儲；標註 @PreAuthorize("hasRole('ADMIN')") 進行權限防護
  * ============================================================================
@@ -17,9 +17,7 @@ import com.surveyflow.common.ApiResponse;
 import com.surveyflow.dto.analytics.SurveyAnalyticsResponse;
 import com.surveyflow.dto.survey.SurveySummaryResponse;
 import com.surveyflow.dto.user.UserProfileResponse;
-import com.surveyflow.service.AnalyticsService;
-import com.surveyflow.service.SurveyService;
-import com.surveyflow.service.UserService;
+import com.surveyflow.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,9 +39,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminController {
 
-    private final UserService userService;
-    private final SurveyService surveyService;
-    private final AnalyticsService analyticsService;
+    private final AdminService adminService;
 
     /**
      * 查詢全站會員分頁列表 (Admin 專屬)
@@ -53,7 +49,7 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<Page<UserProfileResponse>>> getAllUsers(
             @PageableDefault(size = 100, sort = "created_at", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<UserProfileResponse> responsePage = userService.getAllUsersForAdmin(pageable);
+        Page<UserProfileResponse> responsePage = adminService.getAllUsers(pageable);
         return ResponseEntity.ok(ApiResponse.ok(responsePage, "成功取得全站會員名冊"));
     }
 
@@ -67,7 +63,7 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> updateUserStatus(
             @PathVariable Long userId,
             @RequestParam String status) {
-        userService.updateUserStatus(userId, status);
+        adminService.updateUserStatus(userId, status);
         log.info("管理員更新會員狀態: userId={}, status={}", userId, status);
         return ResponseEntity.ok(ApiResponse.ok("會員狀態已成功更新"));
     }
@@ -79,7 +75,7 @@ public class AdminController {
      */
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
-        userService.deleteUserByAdmin(userId);
+        adminService.deleteUser(userId);
         log.info("管理員已將會員軟刪除: userId={}", userId);
         return ResponseEntity.ok(ApiResponse.ok("會員帳號已成功移除"));
     }
@@ -92,7 +88,7 @@ public class AdminController {
     @GetMapping("/surveys")
     public ResponseEntity<ApiResponse<Page<SurveySummaryResponse>>> getAllSurveys(
             @PageableDefault(size = 100) Pageable pageable) {
-        Page<SurveySummaryResponse> responsePage = surveyService.getAllSurveysForAdmin(pageable);
+        Page<SurveySummaryResponse> responsePage = adminService.getAllSurveys(pageable);
         return ResponseEntity.ok(ApiResponse.ok(responsePage, "成功取得全站問卷列表"));
     }
 
@@ -106,7 +102,7 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> forceDeleteSurvey(
             @PathVariable Long surveyId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        surveyService.deleteSurvey(surveyId, userDetails.getUsername());
+        adminService.forceDeleteSurvey(surveyId, userDetails.getUsername());
         log.info("管理員強制刪除問卷: surveyId={}, admin={}", surveyId, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok("問卷已強制下架移除"));
     }
@@ -117,7 +113,7 @@ public class AdminController {
      */
     @GetMapping("/analytics/overview")
     public ResponseEntity<ApiResponse<Map<String, Object>>> getPlatformOverview() {
-        Map<String, Object> stats = analyticsService.getPlatformOverview();
+        Map<String, Object> stats = adminService.getPlatformOverview();
         return ResponseEntity.ok(ApiResponse.ok(stats, "全站營運總覽統計取得成功"));
     }
 
@@ -131,7 +127,7 @@ public class AdminController {
     public ResponseEntity<ApiResponse<SurveyAnalyticsResponse>> getSurveyAnalyticsForAdmin(
             @PathVariable Long surveyId,
             @AuthenticationPrincipal UserDetails userDetails) {
-        SurveyAnalyticsResponse response = analyticsService.getSurveyAnalytics(surveyId, userDetails.getUsername());
+        SurveyAnalyticsResponse response = adminService.getSurveyAnalytics(surveyId, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.ok(response, "成功取得問卷數據分析報表"));
     }
 }

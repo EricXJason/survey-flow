@@ -156,6 +156,9 @@ public class AuthController {
 
     /**
      * 封裝 Refresh Token 之安全 Cookie 物件
+     * @param token Refresh Token 字串
+     * @param maxAgeSeconds Cookie 存活秒數
+     * @return 封裝完成之 ResponseCookie
      */
     private ResponseCookie buildRefreshTokenCookie(String token, long maxAgeSeconds) {
         return ResponseCookie.from("refreshToken", token)

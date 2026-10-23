@@ -104,7 +104,11 @@ public class AnalyticsService {
     }
 
     /**
-     * 計算 5 大核心 KPI 指標
+     * 計算 5 大核心 KPI 指標 (總填答數、平均作答秒數、完成率、淨推薦值 NPS、今日新增填答數)
+     * @param survey 問卷實體物件
+     * @param submissions 填答實體清單
+     * @param totalResponses 總填答筆數
+     * @return 聚合後之 KpiDto 物件
      */
     private KpiDto calculateKpi(Survey survey, List<Submission> submissions, long totalResponses) {
         Double avgDuration = submissionRepository.getAverageDurationSecondsNative(survey.getId());
@@ -134,6 +138,8 @@ public class AnalyticsService {
 
     /**
      * 計算近 7 日每日填答走勢
+     * @param submissions 填答實體清單
+     * @return 依日期排序之近 7 日 TrendDto 清單
      */
     private List<TrendDto> calculateTrends(List<Submission> submissions) {
         LocalDate today = LocalDate.now();
@@ -160,7 +166,9 @@ public class AnalyticsService {
     }
 
     /**
-     * 統計受訪者人口輪廓
+     * 統計受訪者人口輪廓 (性別、年齡層、職業產業、居住地)
+     * @param submissions 填答實體清單
+     * @return 人口特徵 DemographicsDto 物件，若無有效人口輪廓則回傳 null
      */
     private DemographicsDto calculateDemographics(List<Submission> submissions) {
         Map<String, Long> genderMap = new HashMap<>();
@@ -200,7 +208,10 @@ public class AnalyticsService {
     }
 
     /**
-     * 聚合各題型作答明細
+     * 聚合各題型作答明細 (單選、多選、是非、量表、文字簡答)
+     * @param survey 問卷實體物件
+     * @param totalResponses 總填答筆數
+     * @return 各題統計分析 QuestionStatDto 清單
      */
     private List<QuestionStatDto> calculateQuestionStats(Survey survey, long totalResponses) {
         List<QuestionStatDto> stats = new ArrayList<>();
@@ -514,7 +525,9 @@ public class AnalyticsService {
     }
 
     /**
-     * 計算問卷整體 NPS 淨推薦值
+     * 計算問卷整體 NPS 淨推薦值 (-100 ~ 100)
+     * @param survey 問卷實體物件
+     * @return 計算完成之 NPS 分值
      */
     private int calculateSurveyNps(Survey survey) {
         Optional<SurveyQuestion> ratingQ = survey.getQuestions().stream()
@@ -558,6 +571,9 @@ public class AnalyticsService {
 
     /**
      * 不區分大小寫自 Map 讀取屬性值，相容不同資料庫驅動欄位別名慣例
+     * @param map 來源 Map 映射表
+     * @param key 欲查找之鍵值
+     * @return 屬性物件，查無時回傳 null
      */
     private Object getCaseInsensitive(Map<String, Object> map, String key) {
         if (map == null || key == null) return null;
@@ -571,6 +587,8 @@ public class AnalyticsService {
 
     /**
      * 安全轉型為 Double，防止 BigDecimal / Double / Long 之 ClassCastException
+     * @param val 任意數字物件或字串
+     * @return Double 數值，若解析失敗回傳 null
      */
     private Double getDouble(Object val) {
         if (val == null) return null;
@@ -584,6 +602,8 @@ public class AnalyticsService {
 
     /**
      * 安全轉型為 Long，防止 BigInteger / Integer / Long 之 ClassCastException
+     * @param val 任意數字物件或字串
+     * @return Long 數值，解析失敗或為 null 預設回傳 0L
      */
     private Long getLong(Object val) {
         if (val == null) return 0L;
