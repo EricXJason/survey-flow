@@ -118,11 +118,17 @@
       <div class="preview-card">
         <!-- 視窗標題列 (Safari Mockup 精緻頂部控制器) -->
         <div class="preview-card-head">
-          <div class="window-dots" (click)="resetDemo()" title="點擊重設為初始示範狀態" role="button" tabindex="0">
-            <span class="dot red"></span>
-            <span class="dot yellow"></span>
-            <span class="dot green"></span>
-          </div>
+          <button
+            type="button"
+            class="window-dots"
+            (click)="resetDemo()"
+            title="點擊重設為初始示範狀態"
+            aria-label="點擊重設為初始示範狀態"
+          >
+            <span class="dot red" aria-hidden="true"></span>
+            <span class="dot yellow" aria-hidden="true"></span>
+            <span class="dot green" aria-hidden="true"></span>
+          </button>
         </div>
 
         <div class="preview-card-body">
@@ -137,10 +143,12 @@
                 </div>
               </div>
 
-              <div class="q-options-list">
+              <div class="q-options-list" role="radiogroup" aria-label="平時最常使用的填答裝置">
                 <button
                   type="button"
                   class="choice-option-pill"
+                  role="radio"
+                  [attr.aria-checked]="selectedDevice() === 'desktop'"
                   [class.selected]="selectedDevice() === 'desktop'"
                   (click)="selectDevice('desktop')"
                   aria-label="選取桌上型電腦或筆記型電腦"
@@ -154,6 +162,8 @@
                 <button
                   type="button"
                   class="choice-option-pill"
+                  role="radio"
+                  [attr.aria-checked]="selectedDevice() === 'mobile'"
                   [class.selected]="selectedDevice() === 'mobile'"
                   (click)="selectDevice('mobile')"
                   aria-label="選取智慧型手機或平板電腦"
@@ -184,10 +194,12 @@
                       </div>
                     </div>
 
-                    <div class="sub-options-grid">
+                    <div class="sub-options-grid" role="radiogroup" aria-label="行動裝置作業系統">
                       <button
                         type="button"
                         class="choice-option-pill sub-opt-pill"
+                        role="radio"
+                        [attr.aria-checked]="selectedOs() === 'ios'"
                         [class.selected]="selectedOs() === 'ios'"
                         (click)="selectOs('ios')"
                         aria-label="選取 iOS"
@@ -201,6 +213,8 @@
                       <button
                         type="button"
                         class="choice-option-pill sub-opt-pill"
+                        role="radio"
+                        [attr.aria-checked]="selectedOs() === 'android'"
                         [class.selected]="selectedOs() === 'android'"
                         (click)="selectOs('android')"
                         aria-label="選取 Android"
@@ -231,6 +245,8 @@
                   <button
                     type="button"
                     class="scale-option-pill"
+                    role="radio"
+                    [attr.aria-checked]="selectedRating() === score"
                     [class.selected]="selectedRating() === score"
                     (click)="selectRating(score)"
                     [attr.aria-label]="score + ' 分'"

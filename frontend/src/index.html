@@ -5,10 +5,10 @@
     <base href="/" />
 
     <!-- 1. 頁面主要識別與 SEO 標題 -->
-    <title>SurveyFlow</title>
+    <title>SurveyFlow - 專業線上問卷設計與數據分析系統</title>
     <meta
       name="description"
-      content="SurveyFlow 為專業人士與團隊打造的線上問卷平台。支援是非、單選、多選、簡答、評分量表與時間日期等 6 大題型，提供條件跳題、即時數據統計分析與多格式資料匯出。"
+      content="SurveyFlow 為專業人士與研究團隊打造的現代化線上問卷平台。支援是非、單選、多選、簡答、評分量表與時間日期等 6 大題型，提供條件跳題、即時數據統計分析與多格式資料匯出。"
     />
     <meta
       name="keywords"
@@ -30,7 +30,7 @@
     />
 
     <!-- 3. 標準網址設定 -->
-    <link rel="canonical" href="https://surveyflow.tw/" />
+    <link rel="canonical" href="https://survey-flow.pages.dev/" />
 
     <!-- 4. 作者與品牌版權資訊 -->
     <meta name="author" content="SurveyFlow Team" />
@@ -69,14 +69,14 @@
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="SurveyFlow" />
     <meta property="og:locale" content="zh_TW" />
-    <meta property="og:title" content="SurveyFlow" />
+    <meta property="og:title" content="SurveyFlow - 專業線上問卷設計與數據分析系統" />
     <meta
       property="og:description"
       content="專業線上問卷平台。支援是非、單選、多選、簡答、評分量表、日期與時間等 6 大題型，具備拖曳排序與智慧條件跳題，受訪者免註冊即可直接作答。"
     />
-    <meta property="og:url" content="https://surveyflow.tw/" />
-    <meta property="og:image" content="https://surveyflow.tw/favicon.svg" />
-    <meta property="og:image:secure_url" content="https://surveyflow.tw/favicon.svg" />
+    <meta property="og:url" content="https://survey-flow.pages.dev/" />
+    <meta property="og:image" content="https://survey-flow.pages.dev/favicon.svg" />
+    <meta property="og:image:secure_url" content="https://survey-flow.pages.dev/favicon.svg" />
     <meta property="og:image:type" content="image/svg+xml" />
     <meta
       property="og:image:alt"
@@ -85,12 +85,12 @@
 
     <!-- 10. Twitter 卡片設定 -->
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="SurveyFlow" />
+    <meta name="twitter:title" content="SurveyFlow - 專業線上問卷設計與數據分析系統" />
     <meta
       name="twitter:description"
       content="支援多元題目類型、直覺表單拖曳設計與條件邏輯跳題，快速收集意見回饋與數據分析。"
     />
-    <meta name="twitter:image" content="https://surveyflow.tw/favicon.svg" />
+    <meta name="twitter:image" content="https://survey-flow.pages.dev/favicon.svg" />
     <meta
       name="twitter:image:alt"
       content="SurveyFlow 品牌標誌"
@@ -102,11 +102,24 @@
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
-    <!-- 12. 字型載入 -->
+    <!-- 12. 字型非同步載入 (消除 Render-Blocking，大幅提升 FCP/LCP) -->
     <link
+      rel="preload"
+      as="style"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;850&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;850&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;850&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap"
+      />
+    </noscript>
 
     <!-- 13. 結構化資料：應用程式 -->
     <script type="application/ld+json">
