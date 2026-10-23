@@ -2,6 +2,30 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
+## [2026-10-23 19:40] - 嚴格禁止 Hibernate 自動建表：全面落實 ddl-auto=none、寫入全域 AGENTS 協定與系統規格庫
+> **Commit 代碼**: `92712a0`
+
+- **改動原因**:
+  - 響應使用者最高底線指示：「嚴禁讓 Hibernate 自動建表 寫入對應md 規範中 只能用none 然後本專案實作」。
+  - 徹底消除先前 `spring.jpa.hibernate.ddl-auto=update` 引發之四大核心工程風險（欄位更名孤立殘留、遺失註解與定長約束、破壞 SSOT 產生架構漂移 Schema Drift、生產資料庫啟動期鎖表與服務中斷）。
+- **具體內容**:
+  - **後端組態實作更新**（[`application.properties`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/application.properties)）：
+    - 將 `spring.jpa.hibernate.ddl-auto` 由 `update` 強制修改為 `none`，嚴格禁止 Hibernate 在任何環境自動生成或修改 DDL。
+    - 全系統資料庫結構 100% 由 [`database/schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql) 唯一真實來源 (SSOT) 主導。
+  - **寫入最高協定規範庫**：
+    - [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) 第 3 節新增「嚴格禁止 Hibernate 自動建表鐵律 (Strict Zero DDL Auto Generation Invariant, 永恆底線)」。
+    - [`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md) 第 2 節新增「嚴格禁止 Hibernate 自動建表與改表鐵律」。
+  - **更新系統設計規格書**：
+    - [`docs/system-design/07-specs-database.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md) 新增第 5 節「ORM DDL 模式限制與嚴格禁止 Hibernate 自動建表 (Zero DDL Auto)」。
+    - [`docs/system-design/03-tech-stack.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/03-tech-stack.md) 新增 ADR-06 決策紀錄。
+- **影響範圍**:
+  - `backend/src/main/resources/application.properties`
+  - `AGENTS.md`
+  - `AGENTS-BACK.md`
+  - `docs/system-design/07-specs-database.md`
+  - `docs/system-design/03-tech-stack.md`
+  - `docs/change-log.md`
+
 ## [2026-10-23 09:32] - 首頁題型展示區佈局徹底修正：左半邊鎖定頂部絕不上下晃動、寬度滿幅與頂部導航齊平對稱水平置中
 > **Commit 代碼**: `be95694`
 

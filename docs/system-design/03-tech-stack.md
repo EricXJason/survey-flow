@@ -44,3 +44,8 @@
 ### ADR-05: 面向 Java Spring Boot + TiDB MySQL 之全端 RESTful 數據分析架構
 - **決策背景**: 前端數據分析必須無縫切換至生產環境後端服務，不可造成重構成本。
 - **解決方案**: 前端 DTO 與 API 介面規格嚴格對齊 Spring Boot REST Controller 與 TiDB MySQL Schema，提供統一的 `ApiResponse<T>` 封裝，實現平滑無痛接軌。
+
+### ADR-06: 嚴禁 Hibernate 自動建表，強制採用 `ddl-auto=none`
+- **決策背景**: 若開啟 `ddl-auto=update`，Hibernate 會在啟動期自動發出未經審核的 DDL，更名時產生孤立廢棄欄位、遺失註解與精確約束，甚至在高並發或生產資料庫引發鎖表與服務中斷。
+- **解決方案**: 全專案 ORM 強制設定 `spring.jpa.hibernate.ddl-auto=none`，資料庫結構 100% 由 `backend/src/main/resources/database/schema.sql` 唯一真實來源 (SSOT) 主導，徹底杜絕架構漂移 (Schema Drift) 與非預期資料表變更。
+

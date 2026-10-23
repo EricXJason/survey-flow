@@ -76,7 +76,7 @@ flowchart LR
 | **前端樣式** | 純原生 SCSS | 原生 CSS3 變數 | **100% 自研純原生樣式，零外部樣式表 (No Bootstrap/Tailwind)** |
 | **後端核心** | Spring Boot | `v4.1.1` (Java 21) | 虛擬執行緒支援、強型別依賴注入、高效能企業級 API 平台 |
 | **資料持久化** | TiDB Cloud | MySQL 8.0 協定 | Serverless 分散式關聯式資料庫，支援 ACID 交易與高併發寫入 |
-| **資料庫映射** | Spring Data JPA | 搭配 Hibernate | 實體生命週期管理、型別安全查詢、支援複雜多表關聯與聚合 |
+| **資料庫映射** | Spring Data JPA | 搭配 Hibernate (`ddl-auto=none`) | 實體生命週期管理、型別安全查詢；強制 `none` 嚴禁自動 DDL，結構 100% 由 `schema.sql` 主導 |
 | **物件映射** | ModelMapper | `v3.2.2` (STRICT) | 嚴格策略雙向轉換 DTO 與 Entity，消除手工搬運雜訊 |
 | **密碼安全** | Argon2id | 國際標準參數 | 抵禦 GPU/ASIC 暴力破解之頂級密碼雜湊標準 |
 | **身分權杖** | JJWT | `v0.12.6` | 無狀態短效 Access Token (15m) + 長效 Refresh Token (7d) 輪替 |

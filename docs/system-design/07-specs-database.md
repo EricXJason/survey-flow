@@ -345,3 +345,12 @@ CREATE TABLE IF NOT EXISTS submission_answers (
 > 
 > **現在是、未來也是！** 嚴格禁止在專案根目錄、docs/ 或任何其他位置建立、散落重複或暫存之 SQL 檔案，確保版本控制單一真實來源 (SSOT) 與代碼庫純淨整潔。
 
+---
+
+## 5. ORM DDL 模式限制與嚴格禁止 Hibernate 自動建表 (Zero DDL Auto)
+
+> **最高底線鐵律**:  
+> 後端 ORM 之 `spring.jpa.hibernate.ddl-auto` **強制永遠只能設定為 `none`**！  
+> 嚴格禁止設定為 `update`, `create`, `create-drop` 等任何模式。  
+> 資料庫實體結構必須 100% 由 `backend/src/main/resources/database/schema.sql` 唯一主導 (SSOT)，杜絕未經審核的 DDL 執行、實體更名遺留孤立廢棄欄位、遺失中文註解與定長約束、架構漂移 (Schema Drift) 以及生產資料庫啟動期鎖表風險。
+
