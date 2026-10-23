@@ -270,7 +270,7 @@ SurveyFlow 的介面視覺體系回歸現代實證研究與頂級學術期刊之
 
 系統採極致解耦之雲端現代架構：
 - **前端 SPA**: 部署於 **Cloudflare Pages** (`https://survey-flow.pages.dev`)，享有 Edge CDN 全球邊緣加速。
-- **後端 Web API**: 部署於 **Render Web Service** (`https://survey-flow-9gt6.onrender.com`)，以 Docker 多階段容器化運作，配置 `/actuator/health` 探針維持熱機保活。
+- **後端 Web API**: 部署於 **Render Web Service** (`https://survey-flow-9gt6.onrender.com`)，以 Docker 多階段容器化運作，由 **UptimeRobot** 外部探針 24/7 全天候發送請求至 `/actuator/health` 維持熱機保活。
 - **持久化資料庫**: 託管於 **TiDB Cloud Serverless** 分散式叢集，具備 TLS 加密傳輸與自動容錯擴展。
 - **環境變數 OCP 外部化**: 連線資訊、JWT 金鑰、郵件發信金鑰 100% 外部化管理，嚴禁硬編碼。
 
@@ -295,7 +295,7 @@ USE surveyflow;
 ### 11.3 後端測試驗證與本地啟動
 ```bash
 cd backend
-# 執行全套單元與整合測試 (31/31 全數 PASS)
+# 執行全套單元與整合測試 (38/38 全數 PASS)
 ./mvnw clean test
 
 # 啟動後端 Spring Boot 服務 (預設監聽 http://localhost:8080)
