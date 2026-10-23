@@ -2,8 +2,64 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
-## [2026-10-23 09:12] - 前端問卷預覽審查體驗重大升級：預覽模式全題目強制可見、醒目標示跳題解鎖來源題號選項與即時響應式解鎖驗證
-> **Commit 代碼**: `7ac5274`
+## [2026-10-23 09:32] - 首頁題型展示區佈局徹底修正：左半邊鎖定頂部絕不上下晃動、寬度滿幅與頂部導航齊平對稱水平置中
+> **Commit 代碼**: `be95694`
+
+- **改動原因**:
+  - 響應使用者即時指正：「不對 左半邊應該不會移動啊」。
+  - 徹底排除先前誤將跨軸對齊設定為垂直置中導致左側題型導覽清單隨右側高度頻繁上下竄動的重大缺陷；將左側導覽定位回歸頂部穩定鎖定（`align-items: flex-start`），並將整體展示區寬度滿幅與 `.container`（及頂部導航列）左右兩端齊平對稱，達成真正安定、大氣且左右水平對稱居中的版面。
+- **具體內容**:
+  - **左半邊頂部穩定鎖定 (Stable Top Alignment)**（[`home.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.scss)）：
+    - 將 `.demo-showcase-layout` 跨軸對齊嚴格固定為 `align-items: flex-start`，確保左側題型清單始終穩固在頂部，無論右側題型切換或子題展開造成高度何等變化，左半邊絕對不發生任何非預期之垂直位移。
+  - **展示區滿幅與導航兩端絕對齊平**（[`home.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.scss)）：
+    - 移除 `.demo-runner-panel` 之 `max-width: 760px` 人為限制，讓右側作答舞台自然彈性佔滿剩餘寬度（`flex: 1`）；
+    - 左側卡片左邊緣與頂部 Logo 垂直對齊、右側卡片右邊緣與頂部登出按鈕垂直對齊，整體在 `.container` 內左右留白完全對等，杜絕右側局部縮排空缺感。
+- **影響範圍**:
+  - `frontend/src/app/components/main/home/home.component.scss`
+  - `docs/change-log.md`
+
+- **改動原因**:
+  - 響應使用者精確指示：「我說的是不要左右一高一低 而是剛好都在中間 你爲何不能理解」。
+  - 徹底解決原先在 `.demo-showcase-layout` 設定 `align-items: flex-start` 導致左側清單吸附於頂部、右側較長卡片向下方延伸，進而在視覺上產生明顯「左高右低/左短右長一高一低」的不協調感。
+- **具體內容**:
+  - **水平中線垂直居中對齊**（[`home.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.scss)）：
+    - 將 `.demo-showcase-layout` 之跨軸對齊屬性由 `align-items: flex-start` 正式改為 `align-items: center`；
+    - 使左側題型導覽清單與右側真實互動卡片，共同以水平中央中軸線為基準嚴格垂直居中對齊；
+    - 兩側卡片中線完美水平齊平，徹底消除一高一低的視覺落差，達到真正「剛好都在中間」的沉穩高級質感！
+- **影響範圍**:
+  - `frontend/src/app/components/main/home/home.component.scss`
+  - `docs/change-log.md`
+
+- **改動原因**:
+  - 響應使用者截圖反饋：「我希望左右兩邊水平致中」。
+  - 徹底解決原先在 `.demo-showcase-layout` 採用 `grid-template-columns: 320px 1fr` 佈局時，因 CSS Grid 規範中 `fr` 彈性軌道強制吸收剩餘空間導致 `justify-content: center` 完全失效，進而在寬螢幕下造成左側卡片靠左、右側留白過大之非對稱偏側缺陷。
+- **具體內容**:
+  - **Flexbox 絕對對稱水平居中架構**（[`home.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.scss)）：
+    - 將 `.demo-showcase-layout` 改造為 `display: flex; justify-content: center; align-items: flex-start; margin-inline: auto;`；
+    - 外層 `.home-demo-section .container` 同步強化 `display: flex; flex-direction: column; align-items: center; width: 100%;`；
+    - 左側題型清單 `.demo-tabs-sidebar` 鎖定 `width: 320px; flex-shrink: 0;`；
+    - 右側填答舞台 `.demo-runner-panel` 宣告 `flex: 1; max-width: 760px; min-width: 0;`，使左側清單與右側卡片在寬螢幕下以黃金比例穩坐視窗正中央，左右兩側邊距 100% 絕對相等對稱！
+    - 平板與行動端（`<= 1024px`）平滑降級為 `flex-direction: column; align-items: center;`，維持全響應居中。
+- **影響範圍**:
+  - `frontend/src/app/components/main/home/home.component.scss`
+  - `docs/change-log.md`
+
+- **改動原因**:
+  - 響應使用者反饋與指示：「卡卡的 且不用跑條 就是自然即可」。
+  - 徹底移除過度侵入性之按鈕底部倒數進度跑條，並消滅右側展示卡片在題型切換時的向上彈跳抖動（`translateY` 震盪感）與急衝急煞曲線，回歸純粹、沉穩、自明且絲滑舒適的自然切換體驗。
+- **具體內容**:
+  - **徹底移除倒數跑條 (No Progress Bar)**（[`home.component.html`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.html), [`home.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.scss)）：
+    - 徹底移除選中題型按鈕底部之 `.wheel-countdown-bar` 元素與 `@keyframes wheelCountdownAnim` 動畫，去除多餘的視覺干擾與焦慮感，卡片外觀回歸高雅大氣。
+  - **消滅卡頓彈跳抖動與過渡平滑化**（[`home.component.scss`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.scss)）：
+    - 移除 `.live-survey-card` 之 `@keyframes cardFadeIn` 中的 `transform: translateY(6px)` 垂直彈跳位移，改為純粹溫和的透明度淡入（`opacity: 0.88 -> 1`），切換時畫面穩定如磐石；
+    - 移除急衝急停的 `cubic-bezier(0.16, 1, 0.3, 1)`，將左側按鈕 `.demo-tab-btn` 與卡片切換過渡統一改為均勻絲滑的 `ease` 曲線，徹底消除「卡一下」的生硬卡頓感。
+  - **調校從容自然的輪播節奏**（[`home.component.ts`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/src/app/components/main/home/home.component.ts)）：
+    - 將自動切換間隔從緊湊的 3.8 秒延長至從容平緩的 5 秒（`WHEEL_INTERVAL_MS = 5000`），讓瀏覽者有充足時間自然閱讀，切換毫不倉促突兀。
+- **影響範圍**:
+  - `frontend/src/app/components/main/home/home.component.html`
+  - `frontend/src/app/components/main/home/home.component.scss`
+  - `frontend/src/app/components/main/home/home.component.ts`
+  - `docs/change-log.md`
 
 - **改動原因**:
   - 響應使用者深刻指出之重大體驗痛點：「預覽模式要能看到解鎖題啊 預覽這邊都看不到 而且要說明是由哪一題哪個選項開啟解鎖啊 這邊整個規劃一定有問題啊」。

@@ -101,8 +101,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     },
   ];
 
-  /** 題型輪盤自動輪播間隔毫秒數 (3.8 秒自動切換至下一題型，1~6 重複循環) */
-  public readonly WHEEL_INTERVAL_MS = 3800;
+  /** 題型輪盤自然輪播間隔毫秒數 (5 秒平順切換至下一題型，1~6 自然循環) */
+  public readonly WHEEL_INTERVAL_MS = 5000;
 
   /** 題型輪盤循環計時器參考 */
   private wheelTimer: ReturnType<typeof setInterval> | null = null;

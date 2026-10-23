@@ -56,9 +56,6 @@
                 </div>
                 <p class="tab-benefit">{{ tab.benefit }}</p>
               </div>
-              @if (activeTabIndex() === idx) {
-                <span class="wheel-countdown-bar" [class.paused]="isWheelPaused()"></span>
-              }
             </button>
           }
         </div>
