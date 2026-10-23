@@ -110,7 +110,7 @@ public class UserService {
      */
     @Transactional
     public void updateUserStatus(Long userId, String status) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdNative(userId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
         user.setStatus(status.toUpperCase());
         userRepository.save(user);
@@ -123,7 +123,7 @@ public class UserService {
      */
     @Transactional
     public void deleteUserByAdmin(Long userId) {
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdNative(userId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此會員"));
         if (user.getRole() == RoleType.ROLE_ADMIN) {
             throw new IllegalArgumentException("系統最高管理員帳號受保護，嚴禁刪除");

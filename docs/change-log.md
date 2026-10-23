@@ -2,6 +2,48 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
+## [2026-10-24 05:55] - 全面確立「嚴格禁止 JPA 內建/衍生查詢方法（100% 強制原生 SQL nativeQuery = true）」與「嚴格禁止 @ManyToMany（拆解為一對多與多對一）」架構鐵律並全量實作對齊
+> **Commit 代碼**: `b50ea05`
+
+- **改動原因**:
+  - 響應使用者核心指令：「嚴禁使用 jpa內建方法 必須只用 JPQL 且是native true；然後嚴格禁止多對多 必須拆成一對多 和多對一；多寫了md規範中 選後本專案實作」。
+  - 徹底杜絕 JPA 隱式/推導查詢產生的黑箱 SQL 與 N+1 查詢隱患，確保全系統資料庫存取可觀測性、索引掌控力與執行計劃 100% 透明。
+  - 徹底消滅 JPA `@ManyToMany` 隱式中介表無法擴充業務欄位（建立時間、排序、自訂關聯狀態）與更新時全表刪除重插的效能陷阱。
+- **具體內容**:
+  - **規範層落地**:
+    - 在 [`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) §3 與 [`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md) §2 建立「嚴格禁止使用 JPA 內建/衍生查詢方法，100% 強制使用原生 SQL (`nativeQuery = true`) 鐵律」與「嚴格禁止多對多關聯 (`@ManyToMany`)，強制拆解為『一對多』與『多對一』鐵律」。
+    - 在 [`docs/system-design/07-specs-database.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md) 新增第 6 節「原生 SQL 查詢唯一準則 (Strict Native Query Only)」與第 7 節「嚴格禁止多對多實體關聯 (Zero @ManyToMany Invariant)」。
+  - **代碼層全面檢核與重構**:
+    - **全實體 `@ManyToMany` 檢驗**：確認全系統實體（`User`, `Survey`, `SurveyQuestion`, `SurveyOption`, `Submission`, `SubmissionAnswer`, `SubmissionBasicInfo`, `VerificationToken`）之 `@ManyToMany` 數量為 **0**，多選題目作答直接以明細流水記錄儲存，100% 符合「一對多 (`@OneToMany`)」與「多對一 (`@ManyToOne`)」。
+    - **Repository 層全面原生化**:
+      - `UserRepository`：新增 `findByIdNative(@Param("id") Long id)` 與 `countActiveUsersNative()` 原生 SQL 查詢。
+      - `SurveyRepository`：新增 `countActiveSurveysNative()` 原生 SQL 統計。
+      - 全 5 個 Repository 之所有檢索、過濾、統計介面 100% 顯式標註 `@Query(value = "...", nativeQuery = true)`。
+    - **Service 層調用端 100% 原生對齊**:
+      - `UserService`：主鍵查詢改為調用 `userRepository.findByIdNative(userId)`。
+      - `AnalyticsService`：會員查詢改為調用 `userRepository.findByUsernameNative(...)`，計數統計改為調用 `userRepository.countActiveUsersNative()` 與 `surveyRepository.countActiveSurveysNative()`。
+      - `SurveyService`：所有 3 處操作者與建立者檢索改為調用 `userRepository.findByUsernameNative(...)`。
+      - `AuthService`：註冊、登入與 Token 輪替之帳號檢索改為調用 `userRepository.findByUsernameNative(...)`。
+      - `CustomUserDetailsService`：Spring Security 身分載入改為調用 `userRepository.findByUsernameNative(...)`。
+    - **測試層 100% Mock 原生方法對齊**:
+      - `UserServiceTest`, `SurveyServiceTest`, `AuthServiceTest`, `AnalyticsServiceTest` 全面改為 Mock 原生 SQL 方法，後端 38 個單元測試 100% 通過（Tests run: 38, Failures: 0, Errors: 0）。
+- **影響範圍**:
+  - `AGENTS.md`
+  - `AGENTS-BACK.md`
+  - `docs/system-design/07-specs-database.md`
+  - `docs/change-log.md`
+  - `backend/src/main/java/com/surveyflow/repository/UserRepository.java`
+  - `backend/src/main/java/com/surveyflow/repository/SurveyRepository.java`
+  - `backend/src/main/java/com/surveyflow/service/UserService.java`
+  - `backend/src/main/java/com/surveyflow/service/SurveyService.java`
+  - `backend/src/main/java/com/surveyflow/service/AuthService.java`
+  - `backend/src/main/java/com/surveyflow/service/AnalyticsService.java`
+  - `backend/src/main/java/com/surveyflow/security/CustomUserDetailsService.java`
+  - `backend/src/test/java/com/surveyflow/service/UserServiceTest.java`
+  - `backend/src/test/java/com/surveyflow/service/SurveyServiceTest.java`
+  - `backend/src/test/java/com/surveyflow/service/AuthServiceTest.java`
+  - `backend/src/test/java/com/surveyflow/service/AnalyticsServiceTest.java`
+
 ## [2026-10-24 00:55] - 全面落實 Lighthouse 滿分體系：修復 Agentic Browsing、補齊 llms.txt / robots.txt / sitemap.xml、消除非阻塞字體與 ARIA 違規
 > **Commit 代碼**: `a24e8fd`
 

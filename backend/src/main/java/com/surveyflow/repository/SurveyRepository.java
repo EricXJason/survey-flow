@@ -82,4 +82,11 @@ public interface SurveyRepository extends JpaRepository<Survey, Long> {
      */
     @Query(value = "SELECT id FROM surveys WHERE user_id = :userId AND deleted_at IS NULL ORDER BY created_at ASC, id ASC", nativeQuery = true)
     java.util.List<Long> findSurveyIdsByUserIdOrderByCreatedAtAscNative(@Param("userId") Long userId);
+
+    /**
+     * 原生 SQL 統計全站未刪除問卷總數 (維運概覽專用)
+     * @return 全站有效問卷總數
+     */
+    @Query(value = "SELECT COUNT(*) FROM surveys WHERE deleted_at IS NULL", nativeQuery = true)
+    long countActiveSurveysNative();
 }

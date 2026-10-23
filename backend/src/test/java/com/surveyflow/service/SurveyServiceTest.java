@@ -103,7 +103,7 @@ class SurveyServiceTest {
                 .endDate(LocalDateTime.now().plusDays(5))
                 .build();
 
-        when(userRepository.findByUsername("owner")).thenReturn(Optional.of(owner));
+        when(userRepository.findByUsernameNative("owner")).thenReturn(Optional.of(owner));
         when(surveyRepository.save(any(Survey.class))).thenReturn(sampleSurvey);
         when(submissionRepository.countBySurveyIdNative(anyLong())).thenReturn(0L);
 
@@ -140,7 +140,7 @@ class SurveyServiceTest {
     @DisplayName("軟刪除權限測試: 非建立者且非管理員嘗試刪除時應拋出 AccessDeniedException")
     void deleteSurvey_UnauthorizedUser_ThrowsAccessDeniedException() {
         when(surveyRepository.findByIdAndDeletedAtIsNullNative(100L)).thenReturn(Optional.of(sampleSurvey));
-        when(userRepository.findByUsername("other")).thenReturn(Optional.of(otherUser));
+        when(userRepository.findByUsernameNative("other")).thenReturn(Optional.of(otherUser));
 
         assertThrows(AccessDeniedException.class, () -> surveyService.deleteSurvey(100L, "other"));
         verify(surveyRepository, never()).save(any(Survey.class));

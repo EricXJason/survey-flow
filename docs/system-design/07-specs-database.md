@@ -354,3 +354,25 @@ CREATE TABLE IF NOT EXISTS submission_answers (
 > 嚴格禁止設定為 `update`, `create`, `create-drop` 等任何模式。  
 > 資料庫實體結構必須 100% 由 `backend/src/main/resources/database/schema.sql` 唯一主導 (SSOT)，杜絕未經審核的 DDL 執行、實體更名遺留孤立廢棄欄位、遺失中文註解與定長約束、架構漂移 (Schema Drift) 以及生產資料庫啟動期鎖表風險。
 
+---
+
+## 6. 原生 SQL 查詢唯一準則 (Strict Native Query Only)
+
+> **最高底線鐵律**:  
+> **嚴禁使用 Spring Data JPA 衍生推導查詢方法（如 `findByUsername`, `findById`, `count()` 等隱式魔法）**。  
+> 全系統所有資料檢索、分頁過濾與統計方法，**100% 永遠且僅能使用原生 SQL (`@Query(value = "...", nativeQuery = true)`)**！  
+> - **核心價值**: 100% 掌控 SQL 語句、索引覆蓋 (Index Coverage) 與執行計畫，徹底消滅 ORM 黑盒產生的低效 SQL、隱式 N+1 查詢與跨庫相容性問題，確保與資料庫真實 `schema.sql` (SSOT) 絕對精確對齊。  
+> - **安全防護**: 所有動態條件強制採用命名參數化綁定（如 `:userId`, `:keyword`），嚴格禁止字串拼接以杜絕 SQL Injection 漏洞。
+
+---
+
+## 7. 嚴格禁止多對多實體關聯 (Zero @ManyToMany Invariant)
+
+> **最高底線鐵律**:  
+> **全系統所有 Entity 實體類別，嚴格禁止宣告 JPA `@ManyToMany` 註解**！  
+> 任何多對多業務場景（如問卷-標籤、使用者-角色、協作成員等），強制必須顯式拆解為獨立的實體中介表 (Associative Entity Table)。  
+> - **拆解架構**: 實體關係必須雙向拆解為 `EntityA (1) <-> (N) IntermediateEntity (N) <-> (1) EntityB`，透過 `@OneToMany` 與 `@ManyToOne` 精準掌控關聯生命週期。  
+> - **核心理由**: 徹底杜絕 JPA `@ManyToMany` 隱式中介表無法擴充業務欄位（如建立時間 `created_at`、狀態 `status`、排序 `sort_order`、外鍵索引等），以及 Hibernate 在更新關聯時清空整張中介表重插的嚴重效能黑洞與鎖表風險。  
+> - **本專案實體落實**: 目前 9 大資料表均為純粹的 1:N 階層模型；多選題作答直接在 `submission_answers` 寫入多筆單題答案，乾淨利索，達到真正的最優效能與最少實體檔案原則。
+
+

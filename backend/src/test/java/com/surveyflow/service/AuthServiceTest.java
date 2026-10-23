@@ -97,7 +97,7 @@ class AuthServiceTest {
                 .phone("0912345678")
                 .build();
 
-        when(userRepository.findByUsername("newuser")).thenReturn(Optional.empty());
+        when(userRepository.findByUsernameNative("newuser")).thenReturn(Optional.empty());
         when(userRepository.findByEmailNative("new@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encoded_pass");
         when(userRepository.save(any(User.class))).thenReturn(sampleUser);
@@ -154,7 +154,7 @@ class AuthServiceTest {
     void login_Success() {
         LoginRequest request = new LoginRequest("testuser", "Password123!");
 
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(sampleUser));
+        when(userRepository.findByUsernameNative("testuser")).thenReturn(Optional.of(sampleUser));
         when(passwordEncoder.matches("Password123!", "hashed_argon2_password")).thenReturn(true);
         when(tokenProvider.generateAccessToken("testuser", "ROLE_USER")).thenReturn("mock_access_token");
         when(tokenProvider.generateRefreshToken("testuser")).thenReturn("mock_refresh_token");
@@ -234,7 +234,7 @@ class AuthServiceTest {
         when(tokenProvider.getUsernameFromToken("valid_refresh_token")).thenReturn("testuser");
         when(tokenProvider.getJtiFromToken("valid_refresh_token")).thenReturn("old_jti");
         when(tokenProvider.getRemainingTtlMs("valid_refresh_token")).thenReturn(600000000L);
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(sampleUser));
+        when(userRepository.findByUsernameNative("testuser")).thenReturn(Optional.of(sampleUser));
         when(tokenProvider.generateAccessToken("testuser", "ROLE_USER")).thenReturn("new_access_token");
         when(tokenProvider.generateRefreshToken("testuser")).thenReturn("new_refresh_token");
         when(tokenProvider.getJtiFromToken("new_refresh_token")).thenReturn("new_jti");

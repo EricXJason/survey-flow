@@ -53,7 +53,7 @@ public class AnalyticsService {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此問卷專案"));
 
-        User user = userRepository.findByUsername(currentUsername)
+        User user = userRepository.findByUsernameNative(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("查無當前使用者"));
 
         boolean isOwner = survey.getCreator().getId().equals(user.getId());
@@ -621,8 +621,8 @@ public class AnalyticsService {
      */
     @Transactional(readOnly = true)
     public Map<String, Object> getPlatformOverview() {
-        long totalUsers = userRepository.count();
-        long totalSurveys = surveyRepository.count();
+        long totalUsers = userRepository.countActiveUsersNative();
+        long totalSurveys = surveyRepository.countActiveSurveysNative();
         long totalSubmissions = submissionRepository.countTotalSubmissionsNative();
 
         Map<String, Object> stats = new HashMap<>();

@@ -58,7 +58,7 @@ public class AuthService {
         String trimmedUsername = request.getUsername().trim();
         String trimmedEmail = request.getEmail().trim();
 
-        Optional<User> existingUserByUsername = userRepository.findByUsername(trimmedUsername);
+        Optional<User> existingUserByUsername = userRepository.findByUsernameNative(trimmedUsername);
         Optional<User> existingUserByEmail = userRepository.findByEmailNative(trimmedEmail);
 
         User user;
@@ -190,7 +190,7 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByUsernameNative(request.getUsername())
                 .orElseThrow(() -> new BadCredentialsException("帳號或密碼錯誤"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
@@ -234,7 +234,7 @@ public class AuthService {
         String oldJti = tokenProvider.getJtiFromToken(tokenStr);
         long remainingTtl = tokenProvider.getRemainingTtlMs(tokenStr);
 
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsernameNative(username)
                 .orElseThrow(() -> new IllegalArgumentException("查無所屬會員資料"));
 
         if (!"ACTIVE".equals(user.getStatus())) {

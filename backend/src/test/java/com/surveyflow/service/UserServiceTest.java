@@ -175,7 +175,7 @@ class UserServiceTest {
     @Test
     @DisplayName("管理員禁止軟刪除系統最高管理員帳號")
     void deleteUser_AdminProtected() {
-        when(userRepository.findById(99L)).thenReturn(Optional.of(adminUser));
+        when(userRepository.findByIdNative(99L)).thenReturn(Optional.of(adminUser));
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> userService.deleteUserByAdmin(99L));

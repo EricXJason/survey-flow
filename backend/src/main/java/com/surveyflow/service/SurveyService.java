@@ -55,7 +55,7 @@ public class SurveyService {
      */
     @Transactional
     public SurveyResponse createSurvey(SurveyCreateRequest request, String currentUsername) {
-        User creator = userRepository.findByUsername(currentUsername)
+        User creator = userRepository.findByUsernameNative(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("查無此建立者帳號"));
 
         Survey survey = Survey.builder()
@@ -244,7 +244,7 @@ public class SurveyService {
      */
     @Transactional(readOnly = true)
     public Page<SurveySummaryResponse> getUserSurveys(String currentUsername, Pageable pageable) {
-        User user = userRepository.findByUsername(currentUsername)
+        User user = userRepository.findByUsernameNative(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("查無此使用者"));
 
         // [Why]: 依建立時間由舊至新為每份問卷編定該會員之個人問卷編號 (#1, #2, #3...)，使會員在個人專案中看到的是自己的問卷序號，而非系統全域 ID
@@ -298,7 +298,7 @@ public class SurveyService {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("查無此問卷專案"));
 
-        User currentUser = userRepository.findByUsername(currentUsername)
+        User currentUser = userRepository.findByUsernameNative(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("查無當前操作者"));
 
         boolean isOwner = survey.getCreator().getId().equals(currentUser.getId());

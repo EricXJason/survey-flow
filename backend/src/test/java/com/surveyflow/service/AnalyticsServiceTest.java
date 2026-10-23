@@ -105,7 +105,7 @@ class AnalyticsServiceTest {
                 .build());
 
         when(surveyRepository.findByIdAndDeletedAtIsNullNative(1L)).thenReturn(Optional.of(sampleSurvey));
-        when(userRepository.findByUsername("analyst")).thenReturn(Optional.of(owner));
+        when(userRepository.findByUsernameNative("analyst")).thenReturn(Optional.of(owner));
         when(submissionRepository.findBySurveyIdNative(1L)).thenReturn(submissions);
         when(submissionRepository.getAverageDurationSecondsNative(1L)).thenReturn(120.0);
 
@@ -125,7 +125,7 @@ class AnalyticsServiceTest {
     @DisplayName("分析權限測試: 非建立者且非管理者存取應拋出 AccessDeniedException")
     void getSurveyAnalytics_Unauthorized_ThrowsAccessDeniedException() {
         when(surveyRepository.findByIdAndDeletedAtIsNullNative(1L)).thenReturn(Optional.of(sampleSurvey));
-        when(userRepository.findByUsername("unauthorized")).thenReturn(Optional.of(hacker));
+        when(userRepository.findByUsernameNative("unauthorized")).thenReturn(Optional.of(hacker));
 
         assertThrows(AccessDeniedException.class, () -> analyticsService.getSurveyAnalytics(1L, "unauthorized"));
     }
@@ -152,7 +152,7 @@ class AnalyticsServiceTest {
         );
 
         when(surveyRepository.findByIdAndDeletedAtIsNullNative(1L)).thenReturn(Optional.of(sampleSurvey));
-        when(userRepository.findByUsername("analyst")).thenReturn(Optional.of(owner));
+        when(userRepository.findByUsernameNative("analyst")).thenReturn(Optional.of(owner));
         when(submissionRepository.findBySurveyIdNative(1L)).thenReturn(submissions);
         when(submissionRepository.getAverageDurationSecondsNative(1L)).thenReturn(60.0);
 

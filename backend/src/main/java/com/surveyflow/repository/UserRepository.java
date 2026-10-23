@@ -67,19 +67,53 @@ public interface UserRepository extends JpaRepository<User, Long> {
            nativeQuery = true)
     Page<User> findAllUsersForAdminNative(Pageable pageable);
 
-    // 保留標準 Spring Data JPA 兼容別名方法供 Service 直接呼叫
+    /**
+     * 原生 SQL 依主鍵 ID 查詢未刪除之會員
+     * @param id 會員流水號
+     * @return 匹配之使用者 Optional
+     */
+    @Query(value = "SELECT * FROM users WHERE id = :id AND deleted_at IS NULL LIMIT 1", nativeQuery = true)
+    Optional<User> findByIdNative(@Param("id") Long id);
+
+    /**
+     * 原生 SQL 統計全站未刪除會員總數 (維運概覽專用)
+     * @return 全站有效會員總數
+     */
+    @Query(value = "SELECT COUNT(*) FROM users WHERE deleted_at IS NULL", nativeQuery = true)
+    long countActiveUsersNative();
+
+    /**
+     * 兼容別名方法：依帳號查詢 (底層 100% 委派 findByUsernameNative)
+     * @param username 帳號
+     * @return 匹配使用者
+     */
     default Optional<User> findByUsername(String username) {
         return findByUsernameNative(username);
     }
 
+    /**
+     * 兼容別名方法：依信箱查詢 (底層 100% 委派 findByEmailNative)
+     * @param email 信箱
+     * @return 匹配使用者
+     */
     default Optional<User> findByEmail(String email) {
         return findByEmailNative(email);
     }
 
+    /**
+     * 兼容別名方法：檢查帳號是否存在 (底層 100% 委派 countByUsernameNative)
+     * @param username 帳號
+     * @return 是否存在
+     */
     default boolean existsByUsername(String username) {
         return countByUsernameNative(username) > 0;
     }
 
+    /**
+     * 兼容別名方法：檢查信箱是否存在 (底層 100% 委派 countByEmailNative)
+     * @param email 信箱
+     * @return 是否存在
+     */
     default boolean existsByEmail(String email) {
         return countByEmailNative(email) > 0;
     }
