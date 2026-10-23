@@ -273,6 +273,7 @@ SurveyFlow 的介面視覺體系回歸現代實證研究與頂級學術期刊之
 - **後端 Web API**: 部署於 **Render Web Service** (`https://survey-flow-9gt6.onrender.com`)，以 Docker 多階段容器化運作，由 **UptimeRobot** 外部探針 24/7 全天候發送請求至 `/actuator/health` 維持熱機保活。
 - **持久化資料庫**: 託管於 **TiDB Cloud Serverless** 分散式叢集，具備 TLS 加密傳輸與自動容錯擴展。
 - **環境變數 OCP 外部化**: 連線資訊、JWT 金鑰、郵件發信金鑰 100% 外部化管理，嚴禁硬編碼。
+- **Lighthouse 滿分體系與 Agentic AI 規範**: 網站根目錄配置國際標準之 [`llms.txt`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/public/llms.txt)、`robots.txt`、`sitemap.xml` 與 `_headers` 長效快取，消除 Render-blocking 字型阻斷首次繪製，全站達到 Performance、Accessibility、Best Practices、SEO 與 Agentic Browsing 滿分標準。
 
 ---
 
