@@ -1303,6 +1303,8 @@
                   id="setting-start-date"
                   type="datetime-local"
                   class="field-input"
+                  min="1900-01-01T00:00"
+                  max="2099-12-31T23:59"
                   [value]="settingsStartDate()"
                   (input)="onStartDateChange($event)"
                 />
@@ -1314,6 +1316,8 @@
                   id="setting-end-date"
                   type="datetime-local"
                   class="field-input"
+                  min="1900-01-01T00:00"
+                  max="2099-12-31T23:59"
                   [value]="settingsEndDate()"
                   (input)="onEndDateChange($event)"
                 />

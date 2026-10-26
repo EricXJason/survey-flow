@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 
 @Getter
@@ -31,11 +32,13 @@ public class SurveySettingsRequest {
     /**
      * 可填寫起始時間 (含日期與時分，null 代表常態開放無時限)
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "[yyyy-MM-dd'T'HH:mm:ss][yyyy-MM-dd'T'HH:mm][yyyy/MM/dd HH:mm:ss][yyyy/MM/dd HH:mm][yyyy-MM-dd HH:mm:ss][yyyy-MM-dd HH:mm][yyyy-MM-dd]")
     private LocalDateTime startDate;
 
     /**
      * 可填寫截止時間 (含日期與時分，null 代表常態開放無時限)
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "[yyyy-MM-dd'T'HH:mm:ss][yyyy-MM-dd'T'HH:mm][yyyy/MM/dd HH:mm:ss][yyyy/MM/dd HH:mm][yyyy-MM-dd HH:mm:ss][yyyy-MM-dd HH:mm][yyyy-MM-dd]")
     private LocalDateTime endDate;
 
     /**

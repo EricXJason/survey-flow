@@ -1,88 +1,136 @@
 <div class="page-auth">
   <div class="form-card auth-card">
-    <header class="auth-header">
-      <span class="auth-badge">信箱認證</span>
-      <h1 class="auth-title">開通會員帳號</h1>
-      <p class="auth-subtitle">
-        {{ isVerifiedSuccess ? '恭喜您，會員帳號已成功開通！' : (isVerifying ? '正在進行信箱憑證核驗中...' : '請輸入 6 位數啟用碼或透過信中連結一鍵開通') }}
-      </p>
-    </header>
+    @if (isVerifiedSuccess) {
+      <!-- 驗證成功完成畫面：專業、自然、層次分明 -->
+      <div class="verify-success-panel" role="region" aria-label="驗證成功通知">
+        <div class="success-icon-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
 
-    @if (isVerifying) {
-      <div class="status-box verifying-box">
-        <div class="spinner-hud" aria-hidden="true"></div>
-        <p class="status-msg">正在驗證您的專屬開通信件憑證，請稍候...</p>
-      </div>
-    } @else if (isVerifiedSuccess) {
-      <div class="status-box success-box">
-        <div class="status-icon" aria-hidden="true">🎉</div>
-        <h2 class="status-title">開通成功！</h2>
-        <p class="status-desc">
-          您的電子信箱 <strong>{{ targetEmail }}</strong> 已完成驗證！<br/>
-          系統已為您自動登入，正在為您導向問卷大廳...
+        <h1 class="success-title">信箱認證完成</h1>
+        <p class="success-subtitle">
+          感謝您的配合，您的電子信箱已完成驗證！<br/>
+          系統已為您啟動會員權限並完成安全登入，您可以即刻開始使用完整功能。
         </p>
-        <div class="auth-actions">
+
+        <!-- 帳號資訊卡 -->
+        <div class="account-summary-card">
+          <div class="summary-item">
+            <span class="item-label">認證信箱</span>
+            <span class="item-value font-mono">{{ targetEmail || '您的帳號信箱' }}</span>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="summary-item">
+            <span class="item-label">帳號狀態</span>
+            <span class="item-badge active">
+              <span class="status-dot"></span>
+              正常啟用中
+            </span>
+          </div>
+        </div>
+
+        <!-- 導航行動區 -->
+        <div class="success-actions">
           <button type="button" class="btn btn-primary btn-block" (click)="goToLobby()">
-            立即前往問卷大廳
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            前往問卷大廳
+          </button>
+
+          <button type="button" class="btn btn-outline btn-block" (click)="goToManagement()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            進入問卷管理
           </button>
         </div>
+
+        <p class="success-tip">
+          提示：您隨時可由右上角會員選單進入「個人專區」維護個人資料或變更密碼。
+        </p>
       </div>
     } @else {
-      @if (errorMessage) {
-        <div class="alert-banner alert-error" role="alert">
-          <span class="alert-icon" aria-hidden="true">⚠️</span>
-          <span class="alert-text">{{ errorMessage }}</span>
+      <!-- 驗證中 / 手動輸入開通碼畫面 -->
+      <header class="auth-header">
+        <span class="auth-badge">信箱認證</span>
+        <h1 class="auth-title">開通會員帳號</h1>
+        <p class="auth-subtitle">
+          {{ isVerifying ? '正在進行信箱憑證核驗中...' : '請輸入 6 位數啟用碼或透過信中連結一鍵開通' }}
+        </p>
+      </header>
+
+      @if (isVerifying) {
+        <div class="status-box verifying-box">
+          <div class="spinner-hud" aria-hidden="true"></div>
+          <p class="status-msg">正在驗證您的專屬開通信件憑證，請稍候...</p>
+        </div>
+      } @else {
+        @if (errorMessage) {
+          <div class="alert-banner alert-error" role="alert">
+            <span class="alert-icon" aria-hidden="true">⚠️</span>
+            <span class="alert-text">{{ errorMessage }}</span>
+          </div>
+        }
+
+        <div class="form-group">
+          <label for="ve-email">註冊電子信箱</label>
+          <input
+            id="ve-email"
+            type="email"
+            [(ngModel)]="targetEmail"
+            placeholder="例如：user@example.com"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="ve-code">6 位數啟用碼</label>
+          <input
+            id="ve-code"
+            type="text"
+            [(ngModel)]="verificationCode"
+            placeholder="請輸入 6 碼數字啟用碼"
+            maxlength="6"
+            class="code-input"
+            autocomplete="one-time-code"
+          />
+          <span class="field-hint">啟用碼有效期限為 15 分鐘</span>
+        </div>
+
+        <div class="auth-actions">
+          <button
+            type="button"
+            class="btn btn-primary btn-block"
+            [disabled]="verificationCode.length !== 6 || !targetEmail"
+            (click)="handleManualVerify()"
+          >
+            開通帳號並登入
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline btn-block"
+            [disabled]="resendCountdown > 0 || isResending"
+            (click)="handleResendVerification()"
+          >
+            {{ resendCountdown > 0 ? ('重新寄送驗證信 (' + resendCountdown + 's)') : '重新寄送驗證信' }}
+          </button>
+
+          <button type="button" class="btn btn-ghost btn-block" (click)="goToLogIn()">
+            返回登入頁面
+          </button>
         </div>
       }
-
-      <div class="form-group">
-        <label for="ve-email">註冊電子信箱</label>
-        <input
-          id="ve-email"
-          type="email"
-          [(ngModel)]="targetEmail"
-          placeholder="例如：user@example.com"
-          autocomplete="email"
-        />
-      </div>
-
-      <div class="form-group">
-        <label for="ve-code">6 位數啟用碼</label>
-        <input
-          id="ve-code"
-          type="text"
-          [(ngModel)]="verificationCode"
-          placeholder="請輸入 6 碼數字啟用碼"
-          maxlength="6"
-          class="code-input"
-          autocomplete="one-time-code"
-        />
-        <span class="field-hint">啟用碼有效期限為 15 分鐘</span>
-      </div>
-
-      <div class="auth-actions">
-        <button
-          type="button"
-          class="btn btn-primary btn-block"
-          [disabled]="verificationCode.length !== 6 || !targetEmail"
-          (click)="handleManualVerify()"
-        >
-          開通帳號並登入
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-outline btn-block"
-          [disabled]="resendCountdown > 0 || isResending"
-          (click)="handleResendVerification()"
-        >
-          {{ resendCountdown > 0 ? ('重新寄送驗證信 (' + resendCountdown + 's)') : '重新寄送驗證信' }}
-        </button>
-
-        <button type="button" class="btn btn-ghost btn-block" (click)="goToLogIn()">
-          返回登入頁面
-        </button>
-      </div>
     }
   </div>
 </div>

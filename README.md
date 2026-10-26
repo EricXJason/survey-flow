@@ -8,7 +8,7 @@
 [![TiDB Cloud](https://img.shields.io/badge/TiDB_Cloud-MySQL_8.0-336791?style=for-the-badge&logo=mysql&logoColor=white)](https://tidbcloud.com/)
 [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-Edge_CDN-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://pages.cloudflare.com/)
 [![Render](https://img.shields.io/badge/Render-Docker_Web_Service-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com/)
-[![Tests](https://img.shields.io/badge/Tests-38%2F38_PASS-22c55e?style=for-the-badge&logo=junit5&logoColor=white)](https://junit.org/)
+[![Tests](https://img.shields.io/badge/Tests-39%2F39_PASS-22c55e?style=for-the-badge&logo=junit5&logoColor=white)](https://junit.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 **專案作者**: 許哲誠 (HSU, CHE-CHENG)  

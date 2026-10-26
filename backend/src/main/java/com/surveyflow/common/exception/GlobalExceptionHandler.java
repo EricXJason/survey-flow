@@ -106,6 +106,26 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 處理 JSON 資料解析或日期時間反序列化失敗之例外 (400)
+     */
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadable(org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        log.warn("請求資料內容解析異常: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(HttpStatus.BAD_REQUEST.value(), "請求內容格式有誤或日期時間格式不符合規範，請檢查後再試"));
+    }
+
+    /**
+     * 處理 HTTP 請求動詞不支援之例外 (405)
+     */
+    @ExceptionHandler(org.springframework.web.HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotSupported(org.springframework.web.HttpRequestMethodNotSupportedException ex) {
+        log.warn("不支援之 HTTP 方法: {}", ex.getMethod());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                .body(ApiResponse.error(HttpStatus.METHOD_NOT_ALLOWED.value(), "此端點不支援 " + ex.getMethod() + " 請求方法"));
+    }
+
+    /**
      * 處理系統全域未捕捉之未知例外 (500)
      * @param ex 系統底層未預期例外
      * @return 500 統一回應

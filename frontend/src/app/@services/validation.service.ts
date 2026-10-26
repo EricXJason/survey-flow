@@ -313,4 +313,33 @@ export class ValidationService {
       day: '2-digit',
     }).format(targetDate);
   }
+
+  /**
+   * ==========================================================================
+   * 9. 四位數年份合法日期驗證器
+   * ==========================================================================
+   * 【規範】嚴格限制輸入之日期字串年份必須為剛好 4 位數（介於 minYear 與 maxYear 之間），防範 5~6 位數年份異常輸入。
+   *
+   * @param minYear 最早允許年份（預設 1900）
+   * @param maxYear 最晚允許年份（預設 2099）
+   */
+  public fourDigitYearDateValidator(minYear: number = 1900, maxYear: number = 2099): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) return null;
+      const strVal = String(value).trim();
+      const match = strVal.match(/^(\d{1,6})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (!match) return null;
+      const yearStr = match[1];
+      if (yearStr.length !== 4) {
+        return { invalidYearLength: { required: 4, actual: yearStr.length } };
+      }
+      const year = parseInt(yearStr, 10);
+      if (year < minYear || year > maxYear) {
+        return { yearOutOfRange: { min: minYear, max: maxYear, actual: year } };
+      }
+      return null;
+    };
+  }
 }
+

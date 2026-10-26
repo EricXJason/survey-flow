@@ -994,12 +994,44 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
   /**
    * 開啟問卷時限與發布雙狀態設定彈窗
    */
+  /**
+   * 將任意日期時間字串正規化為標準 HTML datetime-local 格式 (YYYY-MM-DDTHH:mm)
+   * 嚴格確保年份為 4 位數，避免瀏覽器出現 5 或 6 位數年份
+   */
+  public normalizeDateTimeLocal(raw?: string | null): string {
+    if (!raw) return '';
+    const s = raw.trim();
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(s)) {
+      return s;
+    }
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(s)) {
+      return s.substring(0, 16);
+    }
+    const cleanStr = s.replace(/\//g, '-').replace(/,/g, '');
+    const dateObj = new Date(cleanStr);
+    if (!isNaN(dateObj.getTime())) {
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      let y = dateObj.getFullYear();
+      if (y > 9999) y = 2099;
+      if (y < 1900) y = 1900;
+      const m = pad(dateObj.getMonth() + 1);
+      const d = pad(dateObj.getDate());
+      const hh = pad(dateObj.getHours());
+      const mm = pad(dateObj.getMinutes());
+      return `${y}-${m}-${d}T${hh}:${mm}`;
+    }
+    return '';
+  }
+
+  /**
+   * 開啟問卷時限與發布雙狀態設定彈窗
+   */
   public onOpenSettings(survey: SurveySummaryItem): void {
     this.currentEditingSurvey.set(survey);
-    this.settingsStartDate.set(survey.startDate || '');
-    this.settingsEndDate.set(survey.endDate || '');
+    this.settingsStartDate.set(this.normalizeDateTimeLocal(survey.startDate));
+    this.settingsEndDate.set(this.normalizeDateTimeLocal(survey.endDate));
     this.settingsIsPublicToLobby.set(survey.isPublicToLobby ?? true);
-    this.settingsIsOpen.set(survey.isPublished ?? true);
+    this.settingsIsOpen.set(survey.isOpen ?? survey.isPublished ?? true);
     this.isSettingsModalOpen.set(true);
   }
 
@@ -1012,18 +1044,36 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * 變更開始日期時間
+   * 變更開始日期時間 (嚴格確保年份為 4 位數)
    */
   public onStartDateChange(event: Event): void {
-    const val = (event.target as HTMLInputElement).value;
+    const input = event.target as HTMLInputElement;
+    let val = input.value;
+    if (val) {
+      const parts = val.split('-');
+      if (parts[0] && parts[0].length > 4) {
+        parts[0] = parts[0].substring(0, 4);
+        val = parts.join('-');
+        input.value = val;
+      }
+    }
     this.settingsStartDate.set(val);
   }
 
   /**
-   * 變更結束日期時間
+   * 變更結束日期時間 (嚴格確保年份為 4 位數)
    */
   public onEndDateChange(event: Event): void {
-    const val = (event.target as HTMLInputElement).value;
+    const input = event.target as HTMLInputElement;
+    let val = input.value;
+    if (val) {
+      const parts = val.split('-');
+      if (parts[0] && parts[0].length > 4) {
+        parts[0] = parts[0].substring(0, 4);
+        val = parts.join('-');
+        input.value = val;
+      }
+    }
     this.settingsEndDate.set(val);
   }
 
@@ -1058,8 +1108,34 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
     const survey = this.currentEditingSurvey();
     if (!survey) return;
 
-    const start = this.settingsStartDate().trim();
-    const end = this.settingsEndDate().trim();
+    let start = this.settingsStartDate().trim();
+    let end = this.settingsEndDate().trim();
+
+    // 嚴格校驗年份恰好 4 位數
+    if (start) {
+      const yearPart = start.split('-')[0];
+      if (yearPart.length !== 4) {
+        this._dialogService.showDialog({
+          title: '年份格式錯誤',
+          message: '開放填寫時間之年份必須恰好為 4 位數（例如：2026），請重新檢查輸入。',
+          mode: 'errorMode',
+          errorText: '確定',
+        }).subscribe();
+        return;
+      }
+    }
+    if (end) {
+      const yearPart = end.split('-')[0];
+      if (yearPart.length !== 4) {
+        this._dialogService.showDialog({
+          title: '年份格式錯誤',
+          message: '截止填寫時間之年份必須恰好為 4 位數（例如：2026），請重新檢查輸入。',
+          mode: 'errorMode',
+          errorText: '確定',
+        }).subscribe();
+        return;
+      }
+    }
 
     if (start && end && start > end) {
       this._dialogService.showDialog({
@@ -1071,9 +1147,12 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    const formattedStart = start ? (start.length === 16 ? `${start}:00` : start) : null;
+    const formattedEnd = end ? (end.length === 16 ? `${end}:59` : end) : null;
+
     const payload = {
-      startDate: start ? start : null,
-      endDate: end ? end : null,
+      startDate: formattedStart,
+      endDate: formattedEnd,
       isPublicToLobby: this.settingsIsPublicToLobby(),
       isOpen: this.settingsIsOpen(),
     };
@@ -1084,10 +1163,11 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
           item.id === survey.id
             ? {
                 ...item,
-                startDate: start,
-                endDate: end,
+                startDate: formattedStart || '',
+                endDate: formattedEnd || '',
                 isPublicToLobby: payload.isPublicToLobby,
                 isPublished: payload.isOpen,
+                isOpen: payload.isOpen,
               }
             : item
         )

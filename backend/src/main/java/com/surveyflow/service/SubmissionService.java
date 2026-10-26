@@ -210,23 +210,7 @@ public class SubmissionService {
                     // 文字簡答題或評分量表題
                     Integer rating = aDto.getRatingValue();
                     if (rating == null && question.getType() == QuestionType.RATING && aDto.getTextAnswer() != null) {
-                        String rawTxt = aDto.getTextAnswer().trim();
-                        try {
-                            rating = Integer.parseInt(rawTxt);
-                        } catch (NumberFormatException ignored) {
-                            // [Why]: 支援文字量表（滿意度、認同度、重要度、頻率）智能反向轉譯整數分值
-                            if (rawTxt.contains("非常滿意") || rawTxt.contains("非常同意") || rawTxt.contains("非常重要") || rawTxt.contains("非常喜歡") || rawTxt.contains("總是")) {
-                                rating = 5;
-                            } else if (rawTxt.contains("滿意") || rawTxt.contains("同意") || rawTxt.contains("重要") || rawTxt.contains("喜歡") || rawTxt.contains("經常")) {
-                                rating = 4;
-                            } else if (rawTxt.contains("普通") || rawTxt.contains("有時")) {
-                                rating = 3;
-                            } else if (rawTxt.contains("非常不") || rawTxt.contains("從不")) {
-                                rating = 1;
-                            } else if (rawTxt.contains("不滿意") || rawTxt.contains("不同意") || rawTxt.contains("不重要") || rawTxt.contains("不喜歡") || rawTxt.contains("很少")) {
-                                rating = 2;
-                            }
-                        }
+                        rating = com.surveyflow.common.converter.RatingScoreParser.parseRating(aDto.getTextAnswer());
                     }
                     answers.add(SubmissionAnswer.builder()
                             .submission(submission)

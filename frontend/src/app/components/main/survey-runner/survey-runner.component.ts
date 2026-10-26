@@ -397,7 +397,10 @@ export class SurveyRunnerComponent implements OnInit {
       fields.push({
         key: 'birthday',
         label: '生日',
-        control: this._formBuilder.control('', [Validators.required]),
+        control: this._formBuilder.control('', [
+          Validators.required,
+          this._validationService.fourDigitYearDateValidator(1900, 2099),
+        ]),
       });
     }
     if (requirements.requireHeight) {
@@ -593,6 +596,14 @@ export class SurveyRunnerComponent implements OnInit {
       val = val.trim();
     }
 
+    if (fieldKey === 'birthday' && typeof val === 'string' && val) {
+      const match = val.match(/^(\d{1,6})([-/\d]*)$/);
+      if (match && match[1].length > 4) {
+        val = match[1].substring(0, 4) + match[2];
+        target.value = val as string;
+      }
+    }
+
     if (fieldKey === 'age' || fieldKey === 'height' || fieldKey === 'weight') {
       const parsed = parseFloat(String(val));
       val = !isNaN(parsed) && parsed > 0 ? parsed : null;
@@ -682,32 +693,39 @@ export class SurveyRunnerComponent implements OnInit {
    * @param question 目標題目資料模型
    * @returns 格式化之解鎖來源敘述（例如：「【問題 01】選項 02（滿意）」）
    */
+  /**
+   * 檢查解鎖目標 Key 是否匹配指定題目 (支援 UID、資料庫 ID 與 questionCode 相容比對)
+   */
+  private isTargetQuestionMatch(targetKey: string | null | undefined, question: SurveyQuestion): boolean {
+    if (!targetKey) return false;
+    const cleanKey = String(targetKey).trim();
+    const targetUid = String(question.uid || '').trim();
+    const targetId = String(question.id ?? '').trim();
+    const targetCode = String((question as any).questionCode ?? '').trim();
+    return cleanKey === targetUid || (!!targetId && cleanKey === targetId) || (!!targetCode && cleanKey === targetCode);
+  }
+
+  /**
+   * 取得鎖定此題目的上游來源題目與選項清單文字
+   * 若題目模型中已具備 lockedBySummary 則優先使用；若無則自動自問卷題目資料中即時反向關聯推算
+   * @param question 目標題目資料模型
+   * @returns 格式化之解鎖來源敘述（例如：「【問題 01】選項 02（滿意）」）
+   */
   public getUnlockSourcesSummary(question: SurveyQuestion): string {
     if (question.lockedBySummary) {
       return question.lockedBySummary;
     }
     const sources: string[] = [];
     const questions = this.survey?.questions || [];
-    const targetUid = String(question.uid || '').trim();
-    const targetId = String(question.id ?? '').trim();
-    const targetCode = String((question as any).questionCode ?? '').trim();
 
     questions.forEach((pq, pIdx) => {
       if (pq.optionsConfig && pq.optionsConfig.length > 0) {
         pq.optionsConfig.forEach((opt, oIdx) => {
-          if (opt.enableUnlockQuestion && opt.unlockTargetUid) {
-            const key = String(opt.unlockTargetUid).trim();
-            const isMatch =
-              key === targetUid ||
-              (targetId && key === targetId) ||
-              (targetCode && key === targetCode);
-
-            if (isMatch) {
-              const qNum = (pIdx + 1).toString().padStart(2, '0');
-              const optNum = (oIdx + 1).toString().padStart(2, '0');
-              const optText = opt.text ? `（${opt.text}）` : '';
-              sources.push(`【問題 ${qNum}】選項 ${optNum}${optText}`);
-            }
+          if (opt.enableUnlockQuestion && this.isTargetQuestionMatch(opt.unlockTargetUid, question)) {
+            const qNum = (pIdx + 1).toString().padStart(2, '0');
+            const optNum = (oIdx + 1).toString().padStart(2, '0');
+            const optText = opt.text ? `（${opt.text}）` : '';
+            sources.push(`【問題 ${qNum}】選項 ${optNum}${optText}`);
           }
         });
       }
@@ -725,73 +743,36 @@ export class SurveyRunnerComponent implements OnInit {
     if (!question.isLockedByOther) return true;
 
     for (const parentQuestion of this.survey.questions) {
-      if (parentQuestion.optionsConfig && parentQuestion.optionsConfig.length > 0) {
-        const selectedIdx = this.selectedRadioIndexMap()[parentQuestion.uid];
-        const val = this.runnerFormGroup.get(parentQuestion.uid)?.value;
-        if (!val && selectedIdx === undefined) continue;
+      if (!parentQuestion.optionsConfig || parentQuestion.optionsConfig.length === 0) continue;
 
-        // [Why]: 若為單選題且有明確的選項點擊索引 (selectedIdx)，精準比對該選項之解鎖設定，杜絕同文字選項互相污染！
-        if (parentQuestion.type === 'radio' && selectedIdx !== undefined && selectedIdx >= 0 && selectedIdx < parentQuestion.optionsConfig.length) {
-          const selectedOption = parentQuestion.optionsConfig[selectedIdx];
-          if (!selectedOption.enableUnlockQuestion) {
-            continue;
-          }
+      const selectedIdx = this.selectedRadioIndexMap()[parentQuestion.uid];
+      const val = this.runnerFormGroup.get(parentQuestion.uid)?.value;
+      if (!val && selectedIdx === undefined) continue;
 
-          const targetKey = String(selectedOption.unlockTargetUid || '').trim();
-          const targetId = String(question.id ?? '').trim();
-          const targetUid = String(question.uid ?? '').trim();
-          const targetCode = String((question as any).questionCode ?? '').trim();
+      // 若為單選題且有明確的選項點擊索引，精準比對該選項之解鎖設定
+      if (parentQuestion.type === 'radio' && selectedIdx !== undefined && selectedIdx >= 0 && selectedIdx < parentQuestion.optionsConfig.length) {
+        const selectedOption = parentQuestion.optionsConfig[selectedIdx];
+        if (selectedOption.enableUnlockQuestion && this.isTargetQuestionMatch(selectedOption.unlockTargetUid, question)) {
+          return true;
+        }
+        continue;
+      }
 
-          const isTargetMatch =
-            targetKey === targetUid ||
-            (targetId && targetKey === targetId) ||
-            (targetCode && targetKey === targetCode);
-
-          if (isTargetMatch) {
-            return true;
-          }
+      // 後備匹配 (是非題、複選題或非透過索引選取之單選題)
+      for (const option of parentQuestion.optionsConfig) {
+        if (!option.enableUnlockQuestion || !this.isTargetQuestionMatch(option.unlockTargetUid, question)) {
           continue;
         }
 
-        // 後備匹配（是非題、複選題或非透過索引選取之單選題）
-        for (const option of parentQuestion.optionsConfig) {
-          if (!option.enableUnlockQuestion) {
-            continue;
-          }
-
-          const targetKey = String(option.unlockTargetUid || '').trim();
-          const targetId = String(question.id ?? '').trim();
-          const targetUid = String(question.uid ?? '').trim();
-          const targetCode = String((question as any).questionCode ?? '').trim();
-
-          const isTargetMatch =
-            targetKey === targetUid ||
-            (targetId && targetKey === targetId) ||
-            (targetCode && targetKey === targetCode);
-
-          if (!isTargetMatch) {
-            continue;
-          }
-
-          // 單選或文字選項內容精準匹配 (僅在未有 selectedIdx 時作為後備)
-          if (String(val).trim() === String(option.text).trim()) {
-            return true;
-          }
-
-          // 是非題匹配 (支援 true/false 與 是/否 相容轉換)
-          if (parentQuestion.type === 't/f') {
-            if ((val === 'true' || val === true || val === '是') && option.sortOrder === 1) {
-              return true;
-            }
-            if ((val === 'false' || val === false || val === '否') && option.sortOrder === 2) {
-              return true;
-            }
-          }
-
-          // 複選題匹配 (陣列包含)
-          if (Array.isArray(val) && val.some((v) => String(v).trim() === String(option.text).trim())) {
-            return true;
-          }
+        if (String(val).trim() === String(option.text).trim()) {
+          return true;
+        }
+        if (parentQuestion.type === 't/f') {
+          if ((val === 'true' || val === true || val === '是') && option.sortOrder === 1) return true;
+          if ((val === 'false' || val === false || val === '否') && option.sortOrder === 2) return true;
+        }
+        if (Array.isArray(val) && val.some((v) => String(v).trim() === String(option.text).trim())) {
+          return true;
         }
       }
     }
@@ -955,7 +936,15 @@ export class SurveyRunnerComponent implements OnInit {
    */
   protected onDateTimeChange(questionUid: string, event: Event): void {
     if (this.isPreview) return;
-    const val = (event.target as HTMLInputElement).value;
+    const input = event.target as HTMLInputElement;
+    let val = input.value;
+    if (val && typeof val === 'string') {
+      const match = val.match(/^(\d{1,6})([-/\d]*)$/);
+      if (match && match[1].length > 4) {
+        val = match[1].substring(0, 4) + match[2];
+        input.value = val;
+      }
+    }
     const ctrl = this.runnerFormGroup.get(questionUid);
     if (ctrl) {
       ctrl.setValue(val || '');

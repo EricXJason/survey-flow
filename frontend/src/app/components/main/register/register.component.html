@@ -131,6 +131,7 @@
                 id="reg-birthday"
                 type="date"
                 formControlName="birthday"
+                min="1900-01-01"
                 [max]="maxBirthday"
                 autocomplete="bday"
                 [attr.aria-invalid]="formBuilderGroup.get('birthday')?.invalid && formBuilderGroup.get('birthday')?.touched"

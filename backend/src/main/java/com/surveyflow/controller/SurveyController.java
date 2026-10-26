@@ -138,7 +138,10 @@ public class SurveyController {
      * @param userDetails 當前操作者身分
      * @return 更新後之問卷詳情
      */
-    @PutMapping({"/api/user/surveys/{id}/settings", "/api/surveys/{id}/settings"})
+    @RequestMapping(
+            value = {"/api/user/surveys/{id}/settings", "/api/surveys/{id}/settings"},
+            method = {RequestMethod.PUT, RequestMethod.PATCH}
+    )
     public ResponseEntity<ApiResponse<SurveyResponse>> updateSurveySettings(
             @PathVariable Long id,
             @Valid @RequestBody SurveySettingsRequest request,

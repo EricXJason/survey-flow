@@ -838,7 +838,7 @@
                     <div class="sub-panel">
                       <div class="field-group">
                         <label class="field-label">預設填答日期（選填）：</label>
-                        <input type="date" formControlName="dateValue" class="field-input" />
+                        <input type="date" formControlName="dateValue" class="field-input" min="1900-01-01" max="2099-12-31" />
                       </div>
 
                       <div class="mt-3">
@@ -851,11 +851,11 @@
                           <div class="datetime-inline mt-2">
                             <div>
                               <label class="subtext">最早日期（Min）</label>
-                              <input type="date" formControlName="minDate" class="field-input" />
+                              <input type="date" formControlName="minDate" class="field-input" min="1900-01-01" max="2099-12-31" />
                             </div>
                             <div>
                               <label class="subtext">最晚日期（Max）</label>
-                              <input type="date" formControlName="maxDate" class="field-input" />
+                              <input type="date" formControlName="maxDate" class="field-input" min="1900-01-01" max="2099-12-31" />
                             </div>
                           </div>
                         }
@@ -966,7 +966,7 @@
                   <div class="field-group">
                     <label class="field-label">開放開始時間 <span class="req-star">*</span></label>
                     <div class="datetime-inline">
-                      <input formControlName="startDate" type="date" class="field-input" min="{{ todayDate }}" />
+                      <input formControlName="startDate" type="date" class="field-input" min="{{ todayDate }}" max="2099-12-31" />
                       <input formControlName="startTime" type="time" class="field-input" />
                     </div>
                     @if (
@@ -980,7 +980,7 @@
                   <div class="field-group">
                     <label class="field-label">截止結束時間 <span class="req-star">*</span></label>
                     <div class="datetime-inline">
-                      <input formControlName="endDate" type="date" class="field-input" min="{{ todayDate }}" />
+                      <input formControlName="endDate" type="date" class="field-input" min="{{ todayDate }}" max="2099-12-31" />
                       <input formControlName="endTime" type="time" class="field-input" />
                     </div>
                     @if (

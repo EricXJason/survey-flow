@@ -270,25 +270,7 @@ public class AnalyticsService {
      */
     private List<QuestionStatDto> calculateQuestionStats(Survey survey, long totalResponses) {
         List<QuestionStatDto> stats = new ArrayList<>();
-
-        // 建立前置解鎖條件快查表 (目標題 questionCode -> 觸發源資訊)
-        Map<String, String[]> triggerInfoMap = new HashMap<>(); // key -> [parentText, optText, optCountStr]
-        for (SurveyQuestion parentQ : survey.getQuestions()) {
-            if (parentQ.getOptions() != null) {
-                for (SurveyOption opt : parentQ.getOptions()) {
-                    if (opt.getTriggerQuestionUid() != null && !opt.getTriggerQuestionUid().isBlank()) {
-                        String targetUid = opt.getTriggerQuestionUid().trim();
-                        Long count = answerRepository.countSelectionsByOptionIdNative(opt.getId());
-                        long c = count != null ? count : 0L;
-                        triggerInfoMap.put(targetUid, new String[]{
-                                parentQ.getQuestionText(),
-                                opt.getOptionText(),
-                                String.valueOf(c)
-                        });
-                    }
-                }
-            }
-        }
+        Map<String, String[]> triggerInfoMap = buildTriggerInfoMap(survey);
 
         for (SurveyQuestion q : survey.getQuestions()) {
             QuestionStatDto.QuestionStatDtoBuilder builder = QuestionStatDto.builder()
@@ -297,286 +279,298 @@ public class AnalyticsService {
                     .questionText(q.getQuestionText())
                     .type(q.getType());
 
-            // 檢查是否為分支條件解鎖題目
-            String qCode = q.getQuestionCode();
-            if (qCode != null && triggerInfoMap.containsKey(qCode.trim())) {
-                String[] info = triggerInfoMap.get(qCode.trim());
-                long eligibleCount = Long.parseLong(info[2]);
-                builder.isConditionTriggered(true)
-                        .triggerConditionDescription("依據前置題「" + info[0] + "」選取「" + info[1] + "」時解鎖開啟")
-                        .triggeredEligibleCount(eligibleCount);
-            }
+            populateTriggerCondition(q, triggerInfoMap, builder);
 
             if (q.getType() == QuestionType.SINGLE || q.getType() == QuestionType.MULTI || q.getType() == QuestionType.BOOLEAN) {
-                Map<String, Long> counts = new LinkedHashMap<>();
-                Map<String, Double> percentages = new LinkedHashMap<>();
-
-                // 初始化選項 (保持原始 sortOrder 順序)
-                List<SurveyOption> sortedOptions = q.getOptions() != null
-                        ? q.getOptions().stream().sorted(Comparator.comparingInt(o -> o.getSortOrder() != null ? o.getSortOrder() : 0)).collect(Collectors.toList())
-                        : new ArrayList<>();
-
-                if (q.getType() == QuestionType.BOOLEAN) {
-                    // 是非題固定順序：是、否
-                    counts.put("是", 0L);
-                    counts.put("否", 0L);
-                    for (SurveyOption o : sortedOptions) {
-                        counts.putIfAbsent(o.getOptionText(), 0L);
-                    }
-                } else {
-                    for (SurveyOption o : sortedOptions) {
-                        counts.put(o.getOptionText(), 0L);
-                    }
-                }
-
-                // 1. 透過 option_id 統計原生成效
-                List<Map<String, Object>> rawCounts = answerRepository.countSelectionsByQuestionNative(q.getId());
-                long sumSelections = 0;
-                Set<Long> countedOptionIds = new HashSet<>();
-
-                for (Map<String, Object> row : rawCounts) {
-                    Long optId = getLong(getCaseInsensitive(row, "optionId"));
-                    Long count = getLong(getCaseInsensitive(row, "selectedCount"));
-                    final long finalCount = count != null ? count : 0L;
-
-                    if (optId != null) {
-                        countedOptionIds.add(optId);
-                        sortedOptions.stream().filter(o -> o.getId().equals(optId)).findFirst().ifPresent(o -> {
-                            counts.put(o.getOptionText(), counts.getOrDefault(o.getOptionText(), 0L) + finalCount);
-                        });
-                    }
-                    sumSelections += finalCount;
-                }
-
-                // 2. [全方位健壯後備補全]: 若有任何填答記錄 option_id 為 null 但存有 text_answer，進行補全
-                List<String> rawTexts = answerRepository.findTextAnswersByQuestionNative(q.getId());
-                if (rawTexts != null && !rawTexts.isEmpty()) {
-                    long textBackfillCount = 0;
-                    for (String t : rawTexts) {
-                        if (t == null || t.isBlank()) continue;
-                        String trimmed = t.trim();
-
-                        if (q.getType() == QuestionType.BOOLEAN) {
-                            if ("是".equals(trimmed) || "true".equalsIgnoreCase(trimmed) || "1".equals(trimmed) || "yes".equalsIgnoreCase(trimmed)) {
-                                counts.put("是", counts.getOrDefault("是", 0L) + 1);
-                                textBackfillCount++;
-                            } else if ("否".equals(trimmed) || "false".equalsIgnoreCase(trimmed) || "0".equals(trimmed) || "no".equalsIgnoreCase(trimmed)) {
-                                counts.put("否", counts.getOrDefault("否", 0L) + 1);
-                                textBackfillCount++;
-                            }
-                        } else if (q.getType() == QuestionType.SINGLE) {
-                            // 單選題文字反向匹配
-                            boolean matched = false;
-                            for (String optKey : counts.keySet()) {
-                                if (optKey.equalsIgnoreCase(trimmed)) {
-                                    counts.put(optKey, counts.getOrDefault(optKey, 0L) + 1);
-                                    textBackfillCount++;
-                                    matched = true;
-                                    break;
-                                }
-                            }
-                            if (!matched && !counts.isEmpty()) {
-                                // 模糊對齊第一個相符或記錄該未定義值
-                                counts.put(trimmed, counts.getOrDefault(trimmed, 0L) + 1);
-                                textBackfillCount++;
-                            }
-                        } else if (q.getType() == QuestionType.MULTI) {
-                            // 多選題逗號拆分反向匹配
-                            String[] parts = trimmed.split(",");
-                            for (String part : parts) {
-                                String cleanPart = part.trim();
-                                if (cleanPart.isEmpty()) continue;
-                                for (String optKey : counts.keySet()) {
-                                    if (optKey.equalsIgnoreCase(cleanPart)) {
-                                        counts.put(optKey, counts.getOrDefault(optKey, 0L) + 1);
-                                        textBackfillCount++;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // 若原始 native optionId 統計為 0，改採文字補全結果
-                    if (sumSelections == 0 && textBackfillCount > 0) {
-                        sumSelections = textBackfillCount;
-                    }
-                }
-
-                // 計算百分比
-                final long denom = totalResponses > 0 ? totalResponses : 1;
-                for (Map.Entry<String, Long> entry : counts.entrySet()) {
-                    double pct = Math.round(((double) entry.getValue() / denom * 100.0) * 10.0) / 10.0;
-                    percentages.put(entry.getKey(), pct);
-                }
-
-                // 計算有效填答總數 (確保不小於各選項得票總合或受訪樣本上限)
-                long effectiveAnswers = sumSelections;
-                if (q.getType() != QuestionType.MULTI && effectiveAnswers > totalResponses && totalResponses > 0) {
-                    effectiveAnswers = totalResponses;
-                }
-
-                builder.totalAnswers(effectiveAnswers)
-                        .optionCounts(counts)
-                        .optionPercentages(percentages);
-
+                populateChoiceQuestionStats(q, builder, totalResponses);
             } else if (q.getType() == QuestionType.RATING) {
-                Map<String, Object> ratingStats = answerRepository.calculateRatingStatsNative(q.getId());
-                Double avg = getDouble(getCaseInsensitive(ratingStats, "avgRating"));
-                Long count = getLong(getCaseInsensitive(ratingStats, "totalCount"));
-                long totalCount = count != null ? count : 0L;
-
-                int minR = q.getMinRating() != null ? q.getMinRating() : 1;
-                int maxR = q.getMaxRating() != null ? q.getMaxRating() : (avg != null && avg > 5.0 ? 10 : 5);
-
-                List<Map<String, Object>> rawDist = answerRepository.countRatingDistributionByQuestionNative(q.getId());
-                Map<Integer, Long> distMap = new TreeMap<>();
-                
-                // 動態判斷真實出現的分數範圍
-                for (Map<String, Object> row : rawDist) {
-                    Long rVal = getLong(getCaseInsensitive(row, "ratingValue"));
-                    if (rVal != null) {
-                        if (rVal < minR) minR = rVal.intValue();
-                        if (rVal > maxR) maxR = rVal.intValue();
-                    }
-                }
-                
-                // 初始化全區間為 0
-                for (int score = minR; score <= maxR; score++) {
-                    distMap.put(score, 0L);
-                }
-
-                List<Integer> allScores = new ArrayList<>();
-                long maxFrequency = 0L;
-                int modeScore = minR;
-                long detractorCount = 0L;
-                long passiveCount = 0L;
-                long promoterCount = 0L;
-
-                for (Map<String, Object> row : rawDist) {
-                    Long rVal = getLong(getCaseInsensitive(row, "ratingValue"));
-                    Long rCnt = getLong(getCaseInsensitive(row, "ratingCount"));
-                    if (rVal != null && rCnt != null) {
-                        int score = rVal.intValue();
-                        distMap.put(score, rCnt);
-                        for (int k = 0; k < rCnt; k++) {
-                            allScores.add(score);
-                        }
-                        if (rCnt > maxFrequency) {
-                            maxFrequency = rCnt;
-                            modeScore = score;
-                        }
-
-                        // NPS 分組計算
-                        if (maxR >= 10) {
-                            if (score <= 6) detractorCount += rCnt;
-                            else if (score <= 8) passiveCount += rCnt;
-                            else promoterCount += rCnt;
-                        } else {
-                            if (score <= 2) detractorCount += rCnt;
-                            else if (score == 3) passiveCount += rCnt;
-                            else promoterCount += rCnt;
-                        }
-                    }
-                }
-
-                // [健壯防禦]: 若 totalCount 為 0，檢查文字量表反饋並反向補充分值統計
-                if (totalCount == 0L) {
-                    List<String> rawTexts = answerRepository.findTextAnswersByQuestionNative(q.getId());
-                    for (String t : rawTexts) {
-                        if (t == null) continue;
-                        String rawTxt = t.trim();
-                        Integer score = null;
-                        try {
-                            score = Integer.parseInt(rawTxt);
-                        } catch (NumberFormatException ignored) {
-                            if (rawTxt.contains("非常滿意") || rawTxt.contains("非常同意") || rawTxt.contains("非常重要") || rawTxt.contains("非常喜歡") || rawTxt.contains("總是")) {
-                                score = 5;
-                            } else if (rawTxt.contains("滿意") || rawTxt.contains("同意") || rawTxt.contains("重要") || rawTxt.contains("喜歡") || rawTxt.contains("經常")) {
-                                score = 4;
-                            } else if (rawTxt.contains("普通") || rawTxt.contains("有時")) {
-                                score = 3;
-                            } else if (rawTxt.contains("非常不") || rawTxt.contains("從不")) {
-                                score = 1;
-                            } else if (rawTxt.contains("不滿意") || rawTxt.contains("不同意") || rawTxt.contains("不重要") || rawTxt.contains("不喜歡") || rawTxt.contains("很少")) {
-                                score = 2;
-                            }
-                        }
-                        if (score != null) {
-                            totalCount++;
-                            distMap.put(score, distMap.getOrDefault(score, 0L) + 1);
-                            allScores.add(score);
-                        }
-                    }
-                    if (totalCount > 0) {
-                        avg = allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
-                    }
-                }
-
-                // 計算中位數
-                Collections.sort(allScores);
-                double median = 0.0;
-                if (!allScores.isEmpty()) {
-                    int size = allScores.size();
-                    if (size % 2 == 1) {
-                        median = allScores.get(size / 2);
-                    } else {
-                        median = (allScores.get(size / 2 - 1) + allScores.get(size / 2)) / 2.0;
-                    }
-                }
-
-                // 計算標準差
-                double stdDev = 0.0;
-                if (totalCount > 1 && avg != null) {
-                    double sumSqDiff = 0.0;
-                    for (int score : allScores) {
-                        sumSqDiff += Math.pow(score - avg, 2);
-                    }
-                    stdDev = Math.round(Math.sqrt(sumSqDiff / totalCount) * 10.0) / 10.0;
-                }
-
-                // 計算該量表題之真實 NPS
-                int itemNps = 0;
-                if (totalCount > 0) {
-                    itemNps = (int) Math.round(((double) (promoterCount - detractorCount) / totalCount) * 100.0);
-                }
-
-                Map<String, Long> npsBreakdown = new HashMap<>();
-                npsBreakdown.put("detractor", detractorCount);
-                npsBreakdown.put("passive", passiveCount);
-                npsBreakdown.put("promoter", promoterCount);
-
-                builder.totalAnswers(totalCount)
-                        .averageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0)
-                        .minRating(minR)
-                        .maxRating(maxR)
-                        .ratingDistribution(distMap)
-                        .modeRating(modeScore)
-                        .medianRating(median)
-                        .standardDeviation(stdDev)
-                        .npsScore(itemNps)
-                        .npsBreakdown(npsBreakdown);
-
+                populateRatingQuestionStats(q, builder);
             } else if (q.getType() == QuestionType.TEXT || q.getType() == QuestionType.TIME || q.getType() == QuestionType.DATE) {
-                List<Map<String, Object>> structuredFeedbacks = answerRepository.findStructuredTextAnswersByQuestionNative(q.getId());
-                builder.totalAnswers((long) structuredFeedbacks.size())
-                        .textFeedbacks(new ArrayList<>(structuredFeedbacks.stream().limit(100).collect(Collectors.toList())));
+                populateTextQuestionStats(q, builder);
             }
 
             QuestionStatDto itemDto = builder.build();
             if (Boolean.TRUE.equals(itemDto.getIsConditionTriggered()) && itemDto.getTriggeredEligibleCount() != null) {
                 long eligible = itemDto.getTriggeredEligibleCount();
                 long ans = itemDto.getTotalAnswers() != null ? itemDto.getTotalAnswers() : 0L;
-                if (eligible > 0) {
-                    double rate = Math.round(((double) ans / eligible) * 1000.0) / 10.0;
-                    itemDto.setTriggeredResponseRate(Math.min(100.0, rate));
-                } else {
-                    itemDto.setTriggeredResponseRate(100.0);
-                }
+                double rate = eligible > 0 ? Math.min(100.0, Math.round(((double) ans / eligible) * 1000.0) / 10.0) : 100.0;
+                itemDto.setTriggeredResponseRate(rate);
             }
             stats.add(itemDto);
         }
 
         return stats;
+    }
+
+    /**
+     * 建立前置解鎖條件快查表 (目標題 questionCode -> 觸發源題目名稱、選項文字與已選次數)
+     */
+    private Map<String, String[]> buildTriggerInfoMap(Survey survey) {
+        Map<String, String[]> map = new HashMap<>();
+        for (SurveyQuestion parentQ : survey.getQuestions()) {
+            if (parentQ.getOptions() == null) continue;
+            for (SurveyOption opt : parentQ.getOptions()) {
+                if (opt.getTriggerQuestionUid() != null && !opt.getTriggerQuestionUid().isBlank()) {
+                    Long count = answerRepository.countSelectionsByOptionIdNative(opt.getId());
+                    map.put(opt.getTriggerQuestionUid().trim(), new String[]{
+                            parentQ.getQuestionText(),
+                            opt.getOptionText(),
+                            String.valueOf(count != null ? count : 0L)
+                    });
+                }
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 填充題目條件解鎖狀態
+     */
+    private void populateTriggerCondition(SurveyQuestion q, Map<String, String[]> triggerInfoMap, QuestionStatDto.QuestionStatDtoBuilder builder) {
+        String qCode = q.getQuestionCode();
+        if (qCode != null && triggerInfoMap.containsKey(qCode.trim())) {
+            String[] info = triggerInfoMap.get(qCode.trim());
+            builder.isConditionTriggered(true)
+                    .triggerConditionDescription("依據前置題「" + info[0] + "」選取「" + info[1] + "」時解鎖開啟")
+                    .triggeredEligibleCount(Long.parseLong(info[2]));
+        }
+    }
+
+    /**
+     * 統計單選/多選/是非題型作答數據
+     */
+    private void populateChoiceQuestionStats(SurveyQuestion q, QuestionStatDto.QuestionStatDtoBuilder builder, long totalResponses) {
+        Map<String, Long> counts = new LinkedHashMap<>();
+        Map<String, Double> percentages = new LinkedHashMap<>();
+
+        List<SurveyOption> sortedOptions = q.getOptions() != null
+                ? q.getOptions().stream().sorted(Comparator.comparingInt(o -> o.getSortOrder() != null ? o.getSortOrder() : 0)).collect(Collectors.toList())
+                : new ArrayList<>();
+
+        if (q.getType() == QuestionType.BOOLEAN) {
+            counts.put("是", 0L);
+            counts.put("否", 0L);
+            for (SurveyOption o : sortedOptions) {
+                counts.putIfAbsent(o.getOptionText(), 0L);
+            }
+        } else {
+            for (SurveyOption o : sortedOptions) {
+                counts.put(o.getOptionText(), 0L);
+            }
+        }
+
+        List<Map<String, Object>> rawCounts = answerRepository.countSelectionsByQuestionNative(q.getId());
+        long sumSelections = 0;
+
+        for (Map<String, Object> row : rawCounts) {
+            Long optId = getLong(getCaseInsensitive(row, "optionId"));
+            Long count = getLong(getCaseInsensitive(row, "selectedCount"));
+            final long finalCount = count != null ? count : 0L;
+
+            if (optId != null) {
+                sortedOptions.stream().filter(o -> o.getId().equals(optId)).findFirst().ifPresent(o ->
+                    counts.put(o.getOptionText(), counts.getOrDefault(o.getOptionText(), 0L) + finalCount)
+                );
+            }
+            sumSelections += finalCount;
+        }
+
+        // 文字作答降級補全
+        List<String> rawTexts = answerRepository.findTextAnswersByQuestionNative(q.getId());
+        if (rawTexts != null && !rawTexts.isEmpty()) {
+            long textBackfillCount = backfillChoiceFromTextAnswers(q.getType(), rawTexts, counts);
+            if (sumSelections == 0 && textBackfillCount > 0) {
+                sumSelections = textBackfillCount;
+            }
+        }
+
+        final long denom = totalResponses > 0 ? totalResponses : 1;
+        for (Map.Entry<String, Long> entry : counts.entrySet()) {
+            double pct = Math.round(((double) entry.getValue() / denom * 100.0) * 10.0) / 10.0;
+            percentages.put(entry.getKey(), pct);
+        }
+
+        long effectiveAnswers = sumSelections;
+        if (q.getType() != QuestionType.MULTI && effectiveAnswers > totalResponses && totalResponses > 0) {
+            effectiveAnswers = totalResponses;
+        }
+
+        builder.totalAnswers(effectiveAnswers)
+                .optionCounts(counts)
+                .optionPercentages(percentages);
+    }
+
+    /**
+     * 自文字作答反向補全選項得票數
+     */
+    private long backfillChoiceFromTextAnswers(QuestionType type, List<String> rawTexts, Map<String, Long> counts) {
+        long count = 0;
+        for (String t : rawTexts) {
+            if (t == null || t.isBlank()) continue;
+            String trimmed = t.trim();
+
+            if (type == QuestionType.BOOLEAN) {
+                if ("是".equals(trimmed) || "true".equalsIgnoreCase(trimmed) || "1".equals(trimmed) || "yes".equalsIgnoreCase(trimmed)) {
+                    counts.put("是", counts.getOrDefault("是", 0L) + 1);
+                    count++;
+                } else if ("否".equals(trimmed) || "false".equalsIgnoreCase(trimmed) || "0".equals(trimmed) || "no".equalsIgnoreCase(trimmed)) {
+                    counts.put("否", counts.getOrDefault("否", 0L) + 1);
+                    count++;
+                }
+            } else if (type == QuestionType.SINGLE) {
+                boolean matched = false;
+                for (String optKey : counts.keySet()) {
+                    if (optKey.equalsIgnoreCase(trimmed)) {
+                        counts.put(optKey, counts.getOrDefault(optKey, 0L) + 1);
+                        count++;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched && !counts.isEmpty()) {
+                    counts.put(trimmed, counts.getOrDefault(trimmed, 0L) + 1);
+                    count++;
+                }
+            } else if (type == QuestionType.MULTI) {
+                for (String part : trimmed.split(",")) {
+                    String clean = part.trim();
+                    if (clean.isEmpty()) continue;
+                    for (String optKey : counts.keySet()) {
+                        if (optKey.equalsIgnoreCase(clean)) {
+                            counts.put(optKey, counts.getOrDefault(optKey, 0L) + 1);
+                            count++;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+    /**
+     * 統計評分量表題型作答數據 (平均分、NPS、標準差、中位數、眾數)
+     */
+    private void populateRatingQuestionStats(SurveyQuestion q, QuestionStatDto.QuestionStatDtoBuilder builder) {
+        Map<String, Object> ratingStats = answerRepository.calculateRatingStatsNative(q.getId());
+        Double avg = getDouble(getCaseInsensitive(ratingStats, "avgRating"));
+        Long count = getLong(getCaseInsensitive(ratingStats, "totalCount"));
+        long totalCount = count != null ? count : 0L;
+
+        int minR = q.getMinRating() != null ? q.getMinRating() : 1;
+        int maxR = q.getMaxRating() != null ? q.getMaxRating() : (avg != null && avg > 5.0 ? 10 : 5);
+
+        List<Map<String, Object>> rawDist = answerRepository.countRatingDistributionByQuestionNative(q.getId());
+        Map<Integer, Long> distMap = new TreeMap<>();
+
+        for (Map<String, Object> row : rawDist) {
+            Long rVal = getLong(getCaseInsensitive(row, "ratingValue"));
+            if (rVal != null) {
+                if (rVal < minR) minR = rVal.intValue();
+                if (rVal > maxR) maxR = rVal.intValue();
+            }
+        }
+
+        for (int score = minR; score <= maxR; score++) {
+            distMap.put(score, 0L);
+        }
+
+        List<Integer> allScores = new ArrayList<>();
+        long maxFrequency = 0L;
+        int modeScore = minR;
+        long detractorCount = 0L;
+        long passiveCount = 0L;
+        long promoterCount = 0L;
+
+        for (Map<String, Object> row : rawDist) {
+            Long rVal = getLong(getCaseInsensitive(row, "ratingValue"));
+            Long rCnt = getLong(getCaseInsensitive(row, "ratingCount"));
+            if (rVal != null && rCnt != null) {
+                int score = rVal.intValue();
+                distMap.put(score, rCnt);
+                for (int k = 0; k < rCnt; k++) {
+                    allScores.add(score);
+                }
+                if (rCnt > maxFrequency) {
+                    maxFrequency = rCnt;
+                    modeScore = score;
+                }
+
+                int category = classifyNpsCategory(score, maxR);
+                if (category < 0) detractorCount += rCnt;
+                else if (category == 0) passiveCount += rCnt;
+                else promoterCount += rCnt;
+            }
+        }
+
+        // 若無原生數字作答，自文字作答解析補全
+        if (totalCount == 0L) {
+            List<String> rawTexts = answerRepository.findTextAnswersByQuestionNative(q.getId());
+            for (String t : rawTexts) {
+                Integer score = com.surveyflow.common.converter.RatingScoreParser.parseRating(t);
+                if (score != null) {
+                    totalCount++;
+                    distMap.put(score, distMap.getOrDefault(score, 0L) + 1);
+                    allScores.add(score);
+                }
+            }
+            if (totalCount > 0) {
+                avg = allScores.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+            }
+        }
+
+        Collections.sort(allScores);
+        double median = 0.0;
+        if (!allScores.isEmpty()) {
+            int size = allScores.size();
+            median = (size % 2 == 1) ? allScores.get(size / 2) : (allScores.get(size / 2 - 1) + allScores.get(size / 2)) / 2.0;
+        }
+
+        double stdDev = 0.0;
+        if (totalCount > 1 && avg != null) {
+            double sumSqDiff = 0.0;
+            for (int score : allScores) {
+                sumSqDiff += Math.pow(score - avg, 2);
+            }
+            stdDev = Math.round(Math.sqrt(sumSqDiff / totalCount) * 10.0) / 10.0;
+        }
+
+        int itemNps = totalCount > 0 ? (int) Math.round(((double) (promoterCount - detractorCount) / totalCount) * 100.0) : 0;
+        Map<String, Long> npsBreakdown = Map.of(
+                "detractor", detractorCount,
+                "passive", passiveCount,
+                "promoter", promoterCount
+        );
+
+        builder.totalAnswers(totalCount)
+                .averageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0)
+                .minRating(minR)
+                .maxRating(maxR)
+                .ratingDistribution(distMap)
+                .modeRating(modeScore)
+                .medianRating(median)
+                .standardDeviation(stdDev)
+                .npsScore(itemNps)
+                .npsBreakdown(npsBreakdown);
+    }
+
+    /**
+     * 統計文字簡答/日期/時間題型作答明細
+     */
+    private void populateTextQuestionStats(SurveyQuestion q, QuestionStatDto.QuestionStatDtoBuilder builder) {
+        List<Map<String, Object>> structuredFeedbacks = answerRepository.findStructuredTextAnswersByQuestionNative(q.getId());
+        builder.totalAnswers((long) structuredFeedbacks.size())
+                .textFeedbacks(new ArrayList<>(structuredFeedbacks.stream().limit(100).collect(Collectors.toList())));
+    }
+
+    /**
+     * 判定量表分數之 NPS 分組 (1: Promoter 推薦者, 0: Passive 被動者, -1: Detractor 批評者)
+     */
+    private int classifyNpsCategory(int score, int maxRating) {
+        if (maxRating >= 10) {
+            return score <= 6 ? -1 : (score <= 8 ? 0 : 1);
+        }
+        return score <= 2 ? -1 : (score == 3 ? 0 : 1);
     }
 
     /**
@@ -594,10 +588,8 @@ public class AnalyticsService {
         Long qId = ratingQ.get().getId();
         List<Map<String, Object>> rawDist = answerRepository.countRatingDistributionByQuestionNative(qId);
         long detractorCount = 0L;
-        long passiveCount = 0L;
         long promoterCount = 0L;
         long totalCount = 0L;
-
         int maxR = ratingQ.get().getMaxRating() != null ? ratingQ.get().getMaxRating() : 5;
 
         for (Map<String, Object> row : rawDist) {
@@ -608,15 +600,9 @@ public class AnalyticsService {
                 totalCount += rCnt;
                 if (score > maxR) maxR = score;
 
-                if (maxR >= 10) {
-                    if (score <= 6) detractorCount += rCnt;
-                    else if (score <= 8) passiveCount += rCnt;
-                    else promoterCount += rCnt;
-                } else {
-                    if (score <= 2) detractorCount += rCnt;
-                    else if (score == 3) passiveCount += rCnt;
-                    else promoterCount += rCnt;
-                }
+                int category = classifyNpsCategory(score, maxR);
+                if (category < 0) detractorCount += rCnt;
+                else if (category > 0) promoterCount += rCnt;
             }
         }
 

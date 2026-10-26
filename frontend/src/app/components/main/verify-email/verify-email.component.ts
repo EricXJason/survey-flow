@@ -122,10 +122,7 @@ export class VerifyEmailComponent implements OnInit, OnDestroy {
           this._userState.setIdentity(profile);
         }
 
-        // 成功開通後 2 秒自動導向問卷大廳
-        setTimeout(() => {
-          this._router.navigateByUrl('/lobby');
-        }, 2000);
+        // 開通完成後停留於成功畫面，讓使用者掌握帳號狀態並自主選擇導航目的地
       },
       error: (err) => {
         this.isVerifying = false;
@@ -224,4 +221,12 @@ export class VerifyEmailComponent implements OnInit, OnDestroy {
   protected goToLobby(): void {
     this._router.navigateByUrl('/lobby');
   }
+
+  /**
+   * 前往個人問卷管理中心
+   */
+  protected goToManagement(): void {
+    this._router.navigateByUrl('/survey-management');
+  }
 }
+
