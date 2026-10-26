@@ -37,8 +37,22 @@
 系統採用前後端完全分離之現代化雲端拓撲，全面落實 Controller-Service-Repository 三層防線與單一真實來源 (SSOT)：
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent', 'fontFamily': 'system-ui, sans-serif' }}}%%
-flowchart TD
+%%{init: {
+  'theme': 'dark',
+  'themeVariables': {
+    'darkMode': true,
+    'background': '#030712',
+    'primaryColor': '#0b0f19',
+    'primaryTextColor': '#f8fafc',
+    'primaryBorderColor': '#00f0ff',
+    'lineColor': '#00f0ff',
+    'edgeLabelBackground': 'transparent',
+    'tertiaryColor': '#0b0f19'
+  },
+  'themeCSS': '.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: transparent !important; background-color: transparent !important; fill: transparent !important; border: none !important; } .edgeLabel, .edgeLabel span { color: #ffffff !important; fill: #ffffff !important; font-weight: 500 !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }',
+  'flowchart': { 'curve': 'linear' }
+}}%%
+flowchart LR
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
 
     subgraph CLIENT["【客戶端展示層 (Presentation)】"]
@@ -100,7 +114,21 @@ flowchart TD
 本系統關聯模型嚴格遵循第三正規化 (3NF)，由 [`backend/src/main/resources/database/schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql) 唯一真實來源 (SSOT) 主導。以下展開全系統 9 大實體資料表之全部欄位、型別、鍵值約束與關聯：
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'attributeBackgroundColorOdd': '#060a14', 'attributeBackgroundColorEven': '#0b0f19' }, 'themeCSS': '.er.relationshipLabelBox { fill: none !important; stroke: none !important; display: none !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }' }}%%
+%%{init: {
+  'theme': 'dark',
+  'themeVariables': {
+    'darkMode': true,
+    'background': '#030712',
+    'primaryColor': '#0b0f19',
+    'primaryTextColor': '#f8fafc',
+    'primaryBorderColor': '#00f0ff',
+    'lineColor': '#00f0ff',
+    'textColor': '#f8fafc',
+    'attributeBackgroundColorOdd': '#060a14',
+    'attributeBackgroundColorEven': '#0b0f19'
+  },
+  'themeCSS': '.er.relationshipLabelBox { fill: none !important; stroke: none !important; display: none !important; } .er.relationshipLabel { fill: #ffffff !important; color: #ffffff !important; font-weight: 500 !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }'
+}}%%
 erDiagram
     USERS ||--o{ SURVEYS : "1對多發起問卷"
     USERS |o--o{ VERIFICATION_TOKENS : "1對多驗證權杖"

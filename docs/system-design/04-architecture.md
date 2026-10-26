@@ -10,7 +10,21 @@
 ## 1. 系統全域分層架構拓撲圖 (Mermaid Tech HUD)
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent' }}}%%
+%%{init: {
+  'theme': 'dark',
+  'themeVariables': {
+    'darkMode': true,
+    'background': '#030712',
+    'primaryColor': '#0b0f19',
+    'primaryTextColor': '#f8fafc',
+    'primaryBorderColor': '#00f0ff',
+    'lineColor': '#00f0ff',
+    'edgeLabelBackground': 'transparent',
+    'tertiaryColor': '#0b0f19'
+  },
+  'themeCSS': '.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: transparent !important; background-color: transparent !important; fill: transparent !important; border: none !important; } .edgeLabel, .edgeLabel span { color: #ffffff !important; fill: #ffffff !important; font-weight: 500 !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }',
+  'flowchart': { 'curve': 'linear' }
+}}%%
 flowchart LR
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
 
@@ -33,7 +47,7 @@ flowchart LR
 
     subgraph DatabaseLayer ["MySQL 8.0.36 關聯式資料庫"]
         direction TB
-        DB_Tables[("實體資料表群 (8 Tables)<br/>surveys / survey_questions / submissions...")]:::hudCard
+        DB_Tables[("實體資料表群 (9 Tables)<br/>surveys / survey_questions / submissions...")]:::hudCard
     end
 
     FrontendApp -->|"HTTPS / RESTful API (JSON)"| BackendApp

@@ -113,13 +113,13 @@ SurveyFlow 的介面視覺風格摒棄浮誇、俗豔且失真的現代套版反
 系統所有架構圖與狀態流程圖，均遵循深黑背景 `#030712`、霓虹青邊框 `#00f0ff`、白字與非圓角直角卡片（`rx:0px, ry:0px`）之 HUD 科技儀表板風格：
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent' }}}%%
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'edgeLabelBackground': 'transparent' }, 'themeCSS': '.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: transparent !important; background-color: transparent !important; fill: transparent !important; border: none !important; } .edgeLabel, .edgeLabel span { color: #ffffff !important; fill: #ffffff !important; font-weight: 500 !important; } rect, .node rect, polygon { rx: 0px !important; ry: 0px !important; }', 'flowchart': { 'curve': 'linear' } }}%%
 flowchart LR
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
 
     StyleSystem["自研純原生 SCSS 樣式系統<br/>(紙張白底 / 雙層漫射微陰影)"]:::hudCard
     ChartSystem["12 色鮮明圖表調色盤<br/>(去灰濁 / 👑 暖金微徽章)"]:::hudCard
-    BadgeSystem["9 大領域語意分類標籤<br/>(靛藍/金橙/翠綠/天藍...)"]:::hudCard
+    BadgeSystem["12 大領域語意分類標籤<br/>(靛藍/金橙/翠綠/天藍...)"]:::hudCard
     FormSystem["7 大型態統一素雅題型<br/>(平滑跳題 / 統一卡片)"]:::hudCard
 
     StyleSystem --> FormSystem

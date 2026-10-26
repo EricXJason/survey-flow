@@ -1,6 +1,6 @@
 # 09. 全端資安防護、認證授權、加密與資料脫敏規格書 (Security & Data Protection Specifications)
 
-> **更新日期**: 2026-10-22  
+> **更新日期**: 2026-10-27  
 > **文件定位**: 規範 SurveyFlow 系統全域之認證授權架構、Argon2id 密碼雜湊、零信任雙權杖、機敏資料脫敏加密與 API 防護機制。
 
 ---
@@ -10,7 +10,7 @@
 SurveyFlow 實施多層縱深防禦，確保受訪者資料、問卷設定與後台維運均受到嚴密保護：
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent' }}}%%
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'edgeLabelBackground': 'transparent' }, 'themeCSS': '.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: transparent !important; background-color: transparent !important; fill: transparent !important; border: none !important; } .edgeLabel, .edgeLabel span { color: #ffffff !important; fill: #ffffff !important; font-weight: 500 !important; } rect, .node rect, polygon { rx: 0px !important; ry: 0px !important; }', 'flowchart': { 'curve': 'linear' } }}%%
 flowchart LR
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
     Client["前端客戶端<br/>HTTPS + 記憶體Token + HttpOnly Cookie"] -->|"CORS + RateLimit"| Gateway["Spring Security Filter<br/>短效 JWT + Redis 黑名單校驗"]
@@ -68,7 +68,7 @@ flowchart LR
 #### 認證授權與雙 Token 輪替全生命週期時序圖 (Zero-Trust Lifecycle)
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent' }}}%%
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc' }, 'themeCSS': 'rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; } .actor { font-weight: 600 !important; }' }}%%
 sequenceDiagram
     autonumber
     actor Client as 前端客戶端

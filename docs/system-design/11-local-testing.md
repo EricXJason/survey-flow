@@ -108,17 +108,17 @@ npm run build
 本機啟動後，可循以下路徑快速驗證全站核心業務流程：
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent' }}}%%
-flowchart TD
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'edgeLabelBackground': 'transparent' }, 'themeCSS': '.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: transparent !important; background-color: transparent !important; fill: transparent !important; border: none !important; } .edgeLabel, .edgeLabel span { color: #ffffff !important; fill: #ffffff !important; font-weight: 500 !important; } rect, .node rect, polygon { rx: 0px !important; ry: 0px !important; }', 'flowchart': { 'curve': 'linear' } }}%%
+flowchart LR
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
 
-    Step1["1. 訪客大廳瀏覽<br/>關鍵字搜尋 / 12大主題分類篩選"]:::hudCard
-    Step2["2. 問卷填答運行<br/>填寫輪廓 / 選A開B條件跳題 / 格式防呆"]:::hudCard
-    Step3["3. 會員登入認證<br/>testuser 登入 / 雙Token簽發"]:::hudCard
-    Step4["4. 視覺化問卷設計<br/>7大型態編排 / 拖曳排序 / 擬真預覽"]:::hudCard
-    Step5["5. 問卷專案管理<br/>時限設置 / 複製連結 / 軟刪除"]:::hudCard
-    Step6["6. 深度數據分析<br/>KPI指標 / 👑 皇冠微徽章 / SPSS CSV 匯出"]:::hudCard
-    Step7["7. 管理員治理後台<br/>admin 登入 / 會員狀態凍結啟用"]:::hudCard
+    Step1["1. 訪客大廳瀏覽<br/>關鍵字搜尋 / 12大分類"]:::hudCard
+    Step2["2. 問卷填答運行<br/>身分防呆 / 條件跳題"]:::hudCard
+    Step3["3. 會員登入認證<br/>雙Token簽發"]:::hudCard
+    Step4["4. 視覺化問卷設計<br/>7大型態 / 擬真預覽"]:::hudCard
+    Step5["5. 問卷專案管理<br/>時限設置 / 複製連結"]:::hudCard
+    Step6["6. 深度數據分析<br/>KPI指標 / 👑 皇冠徽章"]:::hudCard
+    Step7["7. 管理員治理後台<br/>會員狀態凍結啟用"]:::hudCard
 
     Step1 --> Step2 --> Step3 --> Step4 --> Step5 --> Step6 --> Step7
 ```

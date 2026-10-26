@@ -1,7 +1,7 @@
 # 07. 實體資料模型與資料庫架構 (Database ERD & Storage Models)
 
 > **持久化架構**: TiDB Cloud (Serverless) / MySQL 8.0 分散式關聯式資料庫 + Spring Data JPA  
-> **更新日期**: 2026-10-22  
+> **更新日期**: 2026-10-27  
 > **規格標準**: 嚴格貫徹 3NF 正規化無冗餘原則、定長物理欄位優化、TINYINT(1) 物理布林映射，100% 嚴格對齊後端 9 大實體資料表 (`users`, `verification_tokens`, `surveys`, `survey_basic_info_configs`, `survey_questions`, `survey_options`, `submissions`, `submission_basic_infos`, `submission_answers`)
 
 ---
@@ -9,7 +9,7 @@
 ## 1. 系統實體關聯圖 (Database ERD - Tech HUD Neon Style)
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'attributeBackgroundColorOdd': '#060a14', 'attributeBackgroundColorEven': '#0b0f19' }, 'themeCSS': '.er.relationshipLabelBox { fill: none !important; stroke: none !important; display: none !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }' }}%%
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'attributeBackgroundColorOdd': '#060a14', 'attributeBackgroundColorEven': '#0b0f19' }, 'themeCSS': '.er.relationshipLabelBox { fill: none !important; stroke: none !important; display: none !important; } .er.relationshipLabel { fill: #ffffff !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }' }}%%
 erDiagram
     USERS ||--o{ SURVEYS : "1對多發起問卷"
     USERS |o--o{ VERIFICATION_TOKENS : "1對多OTP權杖(選填關聯)"

@@ -2,6 +2,44 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
+## [2026-10-27 00:40] - 全域 Mermaid 圖表統一視覺標準：全面規範 Sci-Fi HUD 霓虹科技風、連線文字純白無背景色塊、統一橫向 LR 佈局並寫入協定中樞
+> **Commit 代碼**: `30e4724`
+
+- **改動原因**:
+  - 響應使用者核心要求：「然後我要求所有mermaid 風格一樣；但是要留意 流程圖中 線中間的文字用白色 不用背景 不然背景很怪 然後流程圖統一用橫的吧 然後配色都統一下吧 維持目前這種sci fi 風格 完整規範好 之後統一都這樣 寫清楚到md規範中 之後其他專案也要長這樣；然後直接push to master yy」。
+- **具體內容**:
+  - **核心協定中樞標準確立 ([`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) §4.3)**:
+    - 正式制定「全域 Mermaid Sci-Fi HUD 霓虹科技風唯一標準 (Mermaid Sci-Fi HUD Invariant)」。
+    - **消滅連線文字灰色背景塊**：透過 `themeVariables` 設定 `'edgeLabelBackground': 'transparent'` 並強制在 `themeCSS` 注入 `.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: transparent !important; fill: transparent !important; border: none !important; }`，徹底杜絕深色主題下怪異的灰底色塊。
+    - **連線文字純白高對比**：強制在 `themeCSS` 設定 `.edgeLabel, .edgeLabel span { color: #ffffff !important; fill: #ffffff !important; font-weight: 500 !important; }`。
+    - **統一橫向排版 (`flowchart LR`)**：嚴格禁止垂直長條拖沓排版，全站流程圖、架構圖一律橫向平鋪。
+    - **科技直角卡片**：全面強制注入 `rect, .node rect, polygon { rx: 0px !important; ry: 0px !important; }`，確保科技硬朗直角 HUD 質感。
+    - **ERD 關係線文字純白**：強制在 ERD 的 `themeCSS` 注入 `.er.relationshipLabel { fill: #ffffff !important; }`。
+  - **全系統規格書與文檔 Mermaid 圖表全面對齊升級**:
+    - [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md)：系統架構全景圖改為 `flowchart LR` 並套用標準 HUD 透明純白連線文字；9 大實體 ERD 關係線文字純白。
+    - [`01-overview.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/01-overview.md)：六大實體模組全景圖套用標準 Sci-Fi HUD init 與直角樣式。
+    - [`04-architecture.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/04-architecture.md)：三層架構全景圖更新為 9 大資料表，套用純白透明 edgeLabel。
+    - [`05-flowcharts.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/05-flowcharts.md)：問卷設計生命週期與受訪者填答跳題流程圖（「命中」、「未命中」、「通過」）全面消除灰底方框，連線文字純白高對比。
+    - [`07-specs-database.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md)：完整 9 大實體 ERD 關係線文字全面轉為純白高對比。
+    - [`08-ui-ux-standards.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/08-ui-ux-standards.md)：UI 體系架構圖套用標準 HUD init，並精準更新為 12 大主題分類標籤。
+    - [`09-security.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/09-security.md)：多層縱深防禦架構圖（「CORS + RateLimit」、「RBAC 角色校驗」、「參數化防禦 SQLi」）連線灰框全數消除，純白浮動顯示。
+    - [`10-deployment.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-deployment.md)：本地與雲端雙軌部署拓撲圖全面套用標準 HUD init。
+    - [`11-local-testing.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-local-testing.md)：冒煙測試 SOP 流程圖由 `flowchart TD` **全面改為橫向 `flowchart LR`**，套用純白透明文字。
+    - [`development-plan.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/development-plan.md)：目標使用者畫像圖由 `flowchart TD` **全面改為橫向 `flowchart LR`**，里程碑演進圖套用標準直角 HUD 樣式。
+- **影響範圍**:
+  - `AGENTS.md`
+  - `README.md`
+  - `docs/system-design/01-overview.md`
+  - `docs/system-design/04-architecture.md`
+  - `docs/system-design/05-flowcharts.md`
+  - `docs/system-design/07-specs-database.md`
+  - `docs/system-design/08-ui-ux-standards.md`
+  - `docs/system-design/09-security.md`
+  - `docs/system-design/10-deployment.md`
+  - `docs/system-design/11-local-testing.md`
+  - `docs/development-plan.md`
+  - `docs/change-log.md`
+
 ## [2026-10-27 00:30] - 達成頂級 GitHub 規格 README：完整 9 大實體 ERD 展開、線上體驗跳轉外鏈、全面依 system-design 逆向生成並整合四大核心 MD 消除重複
 > **Commit 代碼**: `63b1333`
 
