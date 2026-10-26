@@ -1,88 +1,283 @@
 # SurveyFlow | 現代實證調研與學術結構化數據採集系統
 
-> **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
-> **專案定位**: 專業級全端動態線上問卷調研與多維數據分析平台。支援 7 大型態動態題目編排、條件跳題動態解鎖、問卷預覽審查全卷結構檢視與來源標示、原生 DOM 雙向防誤判、首頁 6 大題型自動循環輪盤、即時統計圖表聚合、4 大專業格式匯出與三層身分授權治理。  
-> **語言與執行環境版本**:
-> - **前端 SPA**: Node.js 24.18.0 / Angular 19.0.0 / TypeScript 5.6.2 / Angular CDK 19.2.19 (Cloudflare Pages 託管，100% 純原生 SCSS/CSS，無外部樣式表，TS 零硬編碼色票)
-> - **後端 Web API**: Java 21 / Spring Boot 4.1.1 / Spring Data JPA / ModelMapper 3.2.2 / Spring Security / JJWT 0.12.6 / Argon2id (Render Docker 容器化)
-> - **持久化資料庫**: TiDB Cloud Serverless (MySQL 8.0.36 協定相容分散式關聯式資料庫，9 大實體資料表完整關聯)
+<div align="center">
+
+[![Angular](https://img.shields.io/badge/Angular-19.0.0-DD0031?style=for-the-badge&logo=angular&logoColor=white)](https://angular.dev/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
+[![TiDB Cloud](https://img.shields.io/badge/TiDB_Cloud-MySQL_8.0-336791?style=for-the-badge&logo=mysql&logoColor=white)](https://tidbcloud.com/)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-Edge_CDN-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://pages.cloudflare.com/)
+[![Render](https://img.shields.io/badge/Render-Docker_Web_Service-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com/)
+[![Tests](https://img.shields.io/badge/Tests-38%2F38_PASS-22c55e?style=for-the-badge&logo=junit5&logoColor=white)](https://junit.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+
+**專案作者**: 許哲誠 (HSU, CHE-CHENG)  
+**系統定位**: 專業級全端動態線上問卷調研與多維數據分析平台。支援 7 大型態動態題目編排、條件跳題動態解鎖、預覽審查全卷結構檢視與來源標記、原生 DOM 雙向防誤判、即時統計圖表聚合、4 大專業格式匯出 (CSV / SPSS / JSON / PDF) 與三層身分授權治理。
+
+</div>
 
 ---
 
-## 01. 系統願景、核心定位與模組總覽 (System Vision & Overview)
+## 01. 線上公開體驗環境 (Live Deployment)
 
-**SurveyFlow** 是一套專為個人研究者、學術系所與企業組織量身打造之**現代化動態線上問卷調研與多維數據採集系統**。系統旨在解決傳統問卷表單在複雜邏輯跳題、資料格式驗證失誤、高擬真數據分析及多格式統計匯出等面向的痛點，建立高可靠、零誤判、深層在地化且具備學術嚴謹度之調查平台。
+本系統已於雙軌雲端平台完成自動化部署，可直接點擊以下公開超連結存取體驗：
 
-### 線上公開部署網址 (具備雲端生產環境前提)
-本系統已完成全自動化雲端雙軌部署；若具備正式線上部署環境，可透過以下公開網址直接存取體驗：
-- **前端 SPA 展示站點 (Cloudflare Pages)**: `https://survey-flow.pages.dev`
-- **後端 Web API 伺服器 (Render Web Service)**: `https://survey-flow-9gt6.onrender.com`
-- **健康檢查保活探針 (Actuator)**: `https://survey-flow-9gt6.onrender.com/actuator/health`
+| 服務項目 | 託管平台 | 存取超連結 (可點擊跳轉) | 服務功能說明 |
+| :--- | :--- | :--- | :--- |
+| **前端 SPA 展示前台** | Cloudflare Pages | [https://survey-flow.pages.dev](https://survey-flow.pages.dev) | Angular 19 單頁應用，全球 Edge CDN 加速分發，純原生 SCSS/CSS 樣式。 |
+| **後端 Web API 伺服器** | Render Web Service | [https://survey-flow-9gt6.onrender.com](https://survey-flow-9gt6.onrender.com) | Docker 容器化 Java 21 / Spring Boot 服務，無狀態 JWT 雙權杖安全架構。 |
+| **健康檢查保活探針** | Render Actuator | [https://survey-flow-9gt6.onrender.com/actuator/health](https://survey-flow-9gt6.onrender.com/actuator/health) | 暴露 `{"status":"UP"}` 輕量探針，由外部 UptimeRobot 執行 24/7 保活監控。 |
 
-### 系統六大核心實體模組
+> 💡 **本地開發離線模式**: 在未配置雲端環境或離線開發時，預設本機前端存取點為 `http://localhost:4200`，後端 API 為 `http://localhost:8080`。
+
+---
+
+## 02. 系統全景架構拓撲 (System Architecture)
+
+系統採用前後端完全分離之現代化雲端拓撲，全面落實 Controller-Service-Repository 三層防線與單一真實來源 (SSOT)：
 
 ```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent', 'fontFamily': 'system-ui, sans-serif' }, 'flowchart': { 'curve': 'linear' } }}%%
-flowchart LR
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'edgeLabelBackground': 'transparent', 'fontFamily': 'system-ui, sans-serif' }}}%%
+flowchart TD
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
 
-    M1["01. 視覺化問卷設計<br/>(7大型態 / 拖曳排序 / 跳題解鎖)"]:::hudCard
-    M2["02. 問卷填答與審查運行器<br/>(雙軌入口 / 預覽全題目可見 / 跳題來源標示)"]:::hudCard
-    M3["03. 問卷專案管理<br/>(時限設定 / 雙維度狀態 / 專屬連結)"]:::hudCard
-    M4["04. 數據分析儀表板<br/>(KPI指標 / 題型聚合 / SPSS匯出)"]:::hudCard
-    M5["05. 會員認證體系<br/>(Gmail SMTP / 雙權杖輪替)"]:::hudCard
-    M6["06. 管理員營運後台<br/>(會員治理 / 凍結刪除 / 全站KPI)"]:::hudCard
+    subgraph CLIENT["【客戶端展示層 (Presentation)】"]
+        direction LR
+        FE_LOBBY["大廳檢索 (/lobby)<br/>12大分類 / 關鍵字搜尋 / ⌘K聚焦"]:::hudCard
+        FE_DESIGN["問卷工作台 (/survey-design)<br/>7大題型 / 條件跳題 / 自由插題"]:::hudCard
+        FE_RUNNER["填答運行器 (/survey-runner)<br/>DOM雙向檢驗 / 地理防呆"]:::hudCard
+        FE_DASH["分析儀表板 (/survey-management)<br/>5大KPI / SPSS匯出 / 圖表聚合"]:::hudCard
+    end
 
-    M1 --> M2 --> M3 --> M4
-    M5 -.-> M1
-    M5 -.-> M3
-    M6 -.-> M5
+    subgraph GATEWAY["【全球邊緣傳輸層 (Edge CDN)】"]
+        direction LR
+        CF_PAGES["Cloudflare Pages (Global Edge CDN)<br/>純原生 SCSS/CSS / 零外部樣式依賴"]:::hudCard
+    end
+
+    subgraph BACKEND["【核心業務服務層 (Spring Boot 4.1.1 + Java 21)】"]
+        direction TB
+        CTRL["Thin Controllers (HTTP / DTO驗證 / 狀態碼派發)"]:::hudCard
+        SERV["Use Case Services (事務邊界 @Transactional / 業務編排)"]:::hudCard
+        REPO["Repository Layer (100% 原生 SQL nativeQuery=true)"]:::hudCard
+        SECURITY["Security Filter (Argon2id / JJWT 雙權杖 RTR 輪替)"]:::hudCard
+
+        CTRL --> SERV
+        SERV --> REPO
+        SECURITY -.-> CTRL
+    end
+
+    subgraph STORAGE["【分散式資料庫持久化層 (TiDB Cloud)】"]
+        direction LR
+        TIDB[("TiDB Cloud Serverless (MySQL 8.0 Protocol)<br/>9大實體資料表 / 強制外鍵級聯 / 嚴禁自動DDL")]:::hudCard
+    end
+
+    CLIENT --> CF_PAGES
+    CF_PAGES -->|"RESTful HTTPS (GET, POST, PUT, DELETE)"| BACKEND
+    REPO -->|"JDBC (HikariCP 連線池 / TLS加密)"| STORAGE
 ```
-
----
-
-## 02. 使用者身分型別與功能權限矩陣 (Role & Permissions)
-
-系統嚴格劃分三大身分：**訪客 (`GUEST`)**、**一般會員 (`MEMBER`)** 與 **系統管理員 (`ADMIN`)**，18 項真實功能權限對照如下：
-
-| 功能項目與業務邊界 | 訪客 (`GUEST`) | 會員 (`MEMBER`) | 管理員 (`ADMIN`) |
-| :--- | :---: | :---: | :---: |
-| 瀏覽公開問卷大廳列表 | ✅ | ✅ | ✅ |
-| 搜尋與篩選 9 大領域分類問卷 | ✅ | ✅ | ✅ |
-| 透過公開大廳填寫開放中問卷 | ✅ | ✅ | ✅ |
-| 透過專屬直達連結參與填答 | ✅ | ✅ | ✅ |
-| 填寫受訪者個人輪廓資料 | ✅ | ✅ | ✅ |
-| 註冊會員帳號與郵件驗證開通 | ✅ | ❌ | ❌ |
-| 會員身分登入與換發雙 Token | ✅ | ✅ | ✅ |
-| 建立與編排全新問卷 (7 大型態) | ❌ | ✅ | ✅ |
-| 設定條件邏輯跳題規則 (選 A 開 B) | ❌ | ✅ | ✅ |
-| 編輯與修改名下既有問卷 | ❌ | ✅ | ✅ |
-| 複製專屬作答直達分享連結 | ❌ | ✅ | ✅ |
-| 動態切換問卷公開狀態與開放狀態 | ❌ | ✅ | ✅ |
-| 設定問卷開放填答起訖時效限制 | ❌ | ✅ | ✅ |
-| 查看個人名下問卷數據分析儀表板 | ❌ | ✅ | ✅ |
-| 匯出 4 大格式報表 (CSV / SPSS / JSON / PDF) | ❌ | ✅ | ✅ |
-| 維護個人基本資料與重設安全密碼 | ❌ | ✅ | ✅ |
-| 審查全站會員名冊與即時狀態管理 | ❌ | ❌ | ✅ |
-| 執行會員帳號凍結、啟用與安全刪除 | ❌ | ❌ | ✅ |
 
 ---
 
 ## 03. 技術選型矩陣與架構決策 (Tech Stack & ADR)
 
-| 維度分層 | 技術選型 | 版本規格 | 選型核心理由與工程權衡 |
+| 維度分層 | 技術選型 | 版本規格 | 關鍵架構決策理由 (ADR 摘要) |
 | :--- | :--- | :--- | :--- |
-| **前端框架** | Angular | `v19.0.0` | 完整 Signals 反應式原生狀態、強型別 DI 體系，適合複雜企業表單 |
-| **前端樣式** | 純原生 SCSS | 原生 CSS3 變數 | **100% 自研純原生樣式，零外部樣式表 (No Bootstrap/Tailwind)** |
-| **後端核心** | Spring Boot | `v4.1.1` (Java 21) | 虛擬執行緒支援、強型別依賴注入、高效能企業級 API 平台 |
-| **資料庫映射** | Spring Data JPA | 搭配 Hibernate (`ddl-auto=none`) | 實體生命週期管理；強制 `ddl-auto=none` 嚴禁自動 DDL，結構 100% 由 `schema.sql` 主導；**100% 強制使用原生 SQL (`nativeQuery = true`) 查詢**，徹底掌控執行計畫與索引；**全實體嚴格禁止 `@ManyToMany`**，雙向拆解為明確的一對多與多對一關係 |
-| **物件映射** | ModelMapper | `v3.2.2` (STRICT) | 嚴格策略雙向轉換 DTO 與 Entity，消除手工搬運雜訊 |
-| **密碼安全** | Argon2id | 國際標準參數 | 抵禦 GPU/ASIC 暴力破解之頂級密碼雜湊標準 |
-| **身分權杖** | JJWT | `v0.12.6` | 無狀態短效 Access Token (15m) + 長效 Refresh Token (7d) 輪替 |
+| **前端框架** | Angular | `v19.0.0` | 官方 Signals 反應式原生狀態、強型別依賴注入體系，適合複雜企業級表單。 |
+| **介面樣式** | 純原生 SCSS/CSS | 原生 CSS 自訂變數 | **100% 自研純原生樣式，零外部樣式表 (Strict No Bootstrap/Tailwind)**，極限打包體積。 |
+| **後端核心** | Spring Boot | `v4.1.1` (Java 21) | 虛擬執行緒 (Virtual Threads) 高併發非同步處理、強型別依賴注入、企業級 API 平台。 |
+| **安全防護** | Argon2id + JJWT | JJWT `v0.12.6` | 國際標準 Argon2id 密碼雜湊，無狀態 Access Token (15m) + Refresh Token (7d) 輪替。 |
+| **物件映射** | ModelMapper | `v3.2.2` (STRICT) | 嚴格策略雙向轉換 DTO 與 Entity，消滅手動搬運代碼，維持分層純淨。 |
+| **持久化資料庫** | TiDB Cloud | MySQL 8.0 協定 | Serverless 分散式關聯式資料庫，支援 ACID 交易與高併發寫入，免維運硬體成本。 |
+| **資料庫映射** | Spring Data JPA | Hibernate (`ddl-auto=none`) | 實體生命週期管理；強制 `ddl-auto=none` 嚴禁自動 DDL，結構 100% 由 `schema.sql` 主導。 |
+| **查詢核心方針** | 100% 原生 SQL | `nativeQuery = true` | **嚴格禁止 JPA 內建/衍生方法**；全檢索與統計強制顯式原生 SQL，徹底消滅 ORM 黑箱與 N+1。 |
+| **實體關聯鐵律** | 零 `@ManyToMany` | 顯式 1:N 與 N:1 拆解 | **嚴格禁止 `@ManyToMany`**；全數拆解為獨立中介實體，保留欄位擴充彈性，防止全表重插。 |
+| **通訊動詞規範** | RESTful HTTP | 4 大標準動詞 | **全域僅限 `POST`, `GET`, `PUT`, `DELETE`**；嚴格禁止 `PATCH`，更新一律調用 `PUT`。 |
 
 ---
 
-## 04. 系統分層架構與實體目錄拓撲 (System Architecture & Directory)
+## 04. 完整資料庫實體關聯模型 (Complete Database ERD)
+
+本系統關聯模型嚴格遵循第三正規化 (3NF)，由 [`backend/src/main/resources/database/schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql) 唯一真實來源 (SSOT) 主導。以下展開全系統 9 大實體資料表之全部欄位、型別、鍵值約束與關聯：
+
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'attributeBackgroundColorOdd': '#060a14', 'attributeBackgroundColorEven': '#0b0f19' }, 'themeCSS': '.er.relationshipLabelBox { fill: none !important; stroke: none !important; display: none !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }' }}%%
+erDiagram
+    USERS ||--o{ SURVEYS : "1對多發起問卷"
+    USERS |o--o{ VERIFICATION_TOKENS : "1對多驗證權杖"
+    SURVEYS ||--|| SURVEY_BASIC_INFO_CONFIGS : "1對1輪廓收集配置"
+    SURVEYS ||--o{ SURVEY_QUESTIONS : "1對多問卷題目"
+    SURVEY_QUESTIONS ||--o{ SURVEY_OPTIONS : "1對多題目選項"
+    SURVEYS ||--o{ SUBMISSIONS : "1對多填答主記錄"
+    SUBMISSIONS ||--|| SUBMISSION_BASIC_INFOS : "1對1受訪者輪廓明細"
+    SUBMISSIONS ||--o{ SUBMISSION_ANSWERS : "1對多答案明細"
+    SURVEY_QUESTIONS ||--o{ SUBMISSION_ANSWERS : "題目作答關聯"
+    SURVEY_OPTIONS |o--o{ SUBMISSION_ANSWERS : "選項選取關聯"
+
+    USERS {
+        bigint id PK "會員唯一流水號"
+        varchar username UK "帳號名稱(50)"
+        varchar email UK "電子郵件(100)"
+        varchar password_hash "Argon2id密碼雜湊(255)"
+        varchar full_name "真實姓名(50)"
+        char phone UK "定長聯絡手機(10)"
+        char identity_card UK "定長身分證統一編號(10)"
+        varchar role "系統權限角色(ROLE_USER, ROLE_ADMIN)"
+        varchar status "帳號狀態(ACTIVE, SUSPENDED, DELETED)"
+        datetime created_at "建立時間"
+        datetime updated_at "最後異動時間"
+        datetime deleted_at "軟刪除時間戳記(NULL代表有效)"
+    }
+
+    VERIFICATION_TOKENS {
+        bigint id PK "驗證碼流水號"
+        bigint user_id FK "關聯會員流水號(未註冊為NULL)"
+        varchar email "驗證目標電子郵件(100)"
+        varchar code "6至10位時效驗證碼(10)"
+        varchar token_type "業務類型(REGISTER, FORGOT_PASSWORD)"
+        datetime expires_at "過期時限戳記"
+        tinyint is_used "是否已核銷(0:未使用, 1:已使用)"
+        datetime created_at "生成時間"
+    }
+
+    SURVEYS {
+        bigint id PK "問卷唯一識別碼"
+        bigint user_id FK "發起人會員ID(關聯users.id)"
+        varchar title "問卷主題名稱(150)"
+        text description "問卷前言介紹與作答說明"
+        varchar category "12大主題分類標籤(50)"
+        tinyint is_public_to_lobby "是否公開於大廳(0:私有, 1:公開)"
+        tinyint is_open "是否開放填寫(0:關閉, 1:開放)"
+        longtext cover_image_url "主視覺封面URL或Base64"
+        datetime start_date "開放填答起始日期(NULL為無時限)"
+        datetime end_date "填答截止日期(NULL為無時限)"
+        int view_count "瀏覽閱覽次數計數器"
+        datetime created_at "建立時間"
+        datetime updated_at "最後更新時間"
+        datetime deleted_at "軟刪除時間戳記"
+    }
+
+    SURVEY_BASIC_INFO_CONFIGS {
+        bigint id PK "配置設定流水號"
+        bigint survey_id FK "所屬問卷ID(1對1唯一)"
+        tinyint collect_basic_info "啟用受訪者資料收集(0:關, 1:開)"
+        tinyint require_name "收集姓名(0:非必填, 1:必填)"
+        tinyint require_gender "收集生理性別(0:關, 1:開)"
+        tinyint require_age "收集年齡區間(0:關, 1:開)"
+        tinyint require_birthday "收集生日(0:關, 1:開)"
+        tinyint require_national_id "收集身分證字號(0:關, 1:開)"
+        tinyint require_phone "收集聯絡手機(0:關, 1:開)"
+        tinyint require_home_phone "收集住家市話(0:關, 1:開)"
+        tinyint require_email "收集電子信箱(0:關, 1:開)"
+        tinyint require_industry "收集所屬產業(0:關, 1:開)"
+        tinyint require_job_title "收集擔任職稱(0:關, 1:開)"
+        tinyint require_department "收集服務部門(0:關, 1:開)"
+        tinyint require_employee_id "收集員工工號(0:關, 1:開)"
+        tinyint require_academic_major "收集修讀科系(0:關, 1:開)"
+        tinyint require_class_name "收集就讀班級(0:關, 1:開)"
+        tinyint require_student_id "收集在校學號(0:關, 1:開)"
+        tinyint require_height "收集身高數據(0:關, 1:開)"
+        tinyint require_weight "收集體重數據(0:關, 1:開)"
+        tinyint require_residence "收集居住縣市(0:關, 1:開)"
+        tinyint require_registered_address "收集戶籍地址(0:關, 1:開)"
+    }
+
+    SURVEY_QUESTIONS {
+        bigint id PK "題目唯一流水號"
+        bigint survey_id FK "所屬問卷ID"
+        varchar question_code "前端題號標識代碼(Q1/UUID)"
+        varchar type "題型(SINGLE, MULTI, BOOLEAN, RATING, TEXT, TIME, DATE)"
+        varchar question_text "題目主體敘述文字(500)"
+        longtext image_url "題目附加附圖"
+        tinyint is_required "是否為必填題目(0:非必填, 1:必填)"
+        int sort_order "題目呈現排序"
+        int min_rating "評分題最小值(預設1或0)"
+        int max_rating "評分題最大值(預設5或10)"
+        datetime created_at "建立時間"
+        datetime updated_at "最後更新時間"
+    }
+
+    SURVEY_OPTIONS {
+        bigint id PK "選項唯一流水號"
+        bigint question_id FK "所屬題目ID"
+        varchar option_text "選項文字標籤(255)"
+        int sort_order "選項排列順序"
+        varchar trigger_question_uid "條件跳題解鎖目標題目UID"
+    }
+
+    SUBMISSIONS {
+        bigint id PK "填答事件流水號"
+        bigint survey_id FK "作答之問卷ID"
+        varchar ip_address "受訪者IP位址(45)"
+        int duration_seconds "填答總耗時秒數"
+        datetime submitted_at "提交作答時間戳記"
+    }
+
+    SUBMISSION_BASIC_INFOS {
+        bigint id PK "受訪者個資流水號"
+        bigint submission_id FK "關聯填答記錄ID(1對1唯一)"
+        varchar name "受訪者姓名(50)"
+        tinyint gender "生理性別(0:未指定, 1:男, 2:女, 3:其他)"
+        varchar age_group "年齡區間(30)"
+        varchar birthday "出生年月日(20)"
+        char national_id "身分證統一編號(10)"
+        char phone "聯絡電話(10)"
+        varchar home_phone "住家市話(20)"
+        varchar email "電子郵件(100)"
+        varchar industry "所屬產業(50)"
+        varchar job_title "職位職稱(50)"
+        varchar department "部門單位(50)"
+        varchar employee_id "公司工號(50)"
+        varchar academic_major "就讀系所(50)"
+        varchar class_name "班級名稱(50)"
+        varchar student_id "學生學號(50)"
+        double height "身高數據(cm)"
+        double weight "體重數據(kg)"
+        varchar residence "居住城市(50)"
+        varchar registered_address "戶籍完整地址(200)"
+    }
+
+    SUBMISSION_ANSWERS {
+        bigint id PK "單題作答明細流水號"
+        bigint submission_id FK "所屬填答記錄ID"
+        bigint question_id FK "作答題目ID"
+        bigint option_id FK "選取之選項ID(選擇題適用)"
+        text text_answer "簡答文字內容或日期時間"
+        int rating_value "評分量表數值(1至10)"
+    }
+```
+
+---
+
+## 05. 核心業務 RESTful API 路由矩陣
+
+全系統嚴格遵守標準 4 大 HTTP 通訊動詞 (`GET`, `POST`, `PUT`, `DELETE`)，杜絕 `PATCH`：
+
+| 模組分類 | 請求方法 | 路由端點 | 權限需求 | 業務功能規格說明 |
+| :--- | :---: | :--- | :---: | :--- |
+| **帳號認證** | `POST` | `/api/public/auth/register` | 公開 | 新會員註冊並寄發 6 碼信箱啟用驗證碼。 |
+| **帳號認證** | `POST` | `/api/public/auth/verify-registration-email` | 公開 | 輸入信箱 6 碼驗證碼開通帳號並簽發雙 Token。 |
+| **帳號認證** | `POST` | `/api/public/auth/login` | 公開 | 帳號密碼登入驗證，簽發短效 Access + 長效 Refresh Token。 |
+| **帳號認證** | `POST` | `/api/public/auth/refresh-token` | 公開 | 以 Refresh Token 執行單次輪替 (RTR) 換發新雙 Token。 |
+| **帳號認證** | `POST` | `/api/public/auth/forgot-password` | 公開 | 發送忘記密碼 15 分鐘時效 6 碼重設碼至信箱。 |
+| **帳號認證** | `POST` | `/api/public/auth/reset-password` | 公開 | 憑 6 碼驗證碼重設帳號登入新密碼。 |
+| **問卷公開** | `GET` | `/api/public/surveys` | 公開 | 分頁模糊搜尋公開大廳開放中之問卷列表。 |
+| **問卷公開** | `GET` | `/api/public/surveys/{id}` | 公開 | 取得特定問卷完整結構並累加瀏覽計數 (viewCount)。 |
+| **問卷填答** | `POST` | `/api/public/submissions` | 公開 | 受訪者提交問卷填答資料與個資輪廓（支援訪客與會員）。 |
+| **問卷管理** | `POST` | `/api/surveys` | 會員 | 建立全新問卷專案（支援 7 大型態題型與跳題配置）。 |
+| **問卷管理** | `GET` | `/api/surveys/my` | 會員 | 查詢當前會員名下建立之所有問卷清單與個人編號。 |
+| **問卷管理** | `PUT` | `/api/surveys/{id}` | 擁有者 | 修改問卷設定、題目結構、開放時限與大廳狀態。 |
+| **問卷管理** | `DELETE` | `/api/surveys/{id}` | 擁有者 | 軟刪除名下指定問卷專案。 |
+| **數據分析** | `GET` | `/api/surveys/{id}/analytics` | 擁有者 | 取得問卷多維度統計分析報表 (KPI、走勢圖、選項分佈)。 |
+| **會員管理** | `GET` | `/api/user/profile` | 會員 | 查詢當前登入會員之個人基本檔案。 |
+| **會員管理** | `PUT` | `/api/user/profile` | 會員 | 更新個人真實姓名、手機號碼等基本資料。 |
+| **會員管理** | `PUT` | `/api/user/password` | 會員 | 提供舊密碼驗證通過後更換新密碼。 |
+| **營運後台** | `GET` | `/api/admin/users` | 管理員 | 分頁檢視全站註冊會員名冊與即時狀態。 |
+| **營運後台** | `PUT` | `/api/admin/users/{id}/status` | 管理員 | 即時凍結 (SUSPENDED) 或啟用 (ACTIVE) 指定會員。 |
+| **營運後台** | `DELETE` | `/api/admin/users/{id}` | 管理員 | 安全軟刪除指定會員帳號（受保護管理員除外）。 |
+
+---
+
+## 06. 系統實體檔案目錄拓撲樹 (Directory Structure)
 
 ```text
 survey-flow/
@@ -90,21 +285,23 @@ survey-flow/
 ├── .dockerignore                      # Docker 排除建置資產清單
 ├── README.md                          # 專案全域規格總覽 (純臺灣繁體中文)
 ├── docs/                              # 專案架構文檔庫
+│   ├── development-plan.md            # 【前期】專案前期開發計劃書 (Why/What、痛點探索、起步藍圖)
 │   ├── change-log.md                  # 【常駐】修訂歷程庫 (最新異動置頂)
 │   ├── check-list.md                  # 【常駐】業務功能點收清單
-│   └── system-design/                 # 系統架構規格書 (01-11 循序合理編號、分則明確)
-│       ├── 01-overview.md             # 系統願景、核心定位與模組總覽
-│       ├── 02-role-type.md            # 使用者身分型別與功能權限矩陣
+│   └── system-design/                 # 【後期】系統架構規格書 (01-11 循序合理編號、分則明確)
+│       ├── 01-overview.md             # 系統願景、核心定位與模組總覽 (含線上體驗超連結)
+│       ├── 02-role-type.md            # 使用者身分型別與功能權限矩陣 (18項功能對照)
 │       ├── 03-tech-stack.md           # 技術選型矩陣與 ADR 架構決策
 │       ├── 04-architecture.md         # 分層架構與檔案物理索引字典
 │       ├── 05-flowcharts.md           # 核心業務流程圖與狀態機
-│       ├── 06-specs-api.md            # RESTful API 通訊協定規格書
-│       ├── 07-specs-database.md       # TiDB / MySQL 資料庫模型與 ERD
+│       ├── 06-specs-api.md            # RESTful API 通訊協定規格書 (嚴格四種動詞)
+│       ├── 07-specs-database.md       # TiDB / MySQL 資料庫模型與 ERD (100% 原生 SQL)
 │       ├── 08-ui-ux-standards.md      # 前端視覺設計風格與介面美學標準書
-│       ├── 09-security.md             # 全端資安防護、認證授權與資料脫敏
-│       ├── 10-deployment.md           # 雲端雙軌部署拓撲與維運規範書
-│       └── 11-local-testing.md        # 本地測試、建置與快速啟動指南
+│       ├── 09-security.md             # 全端資安防護、認證授權、加密與資料脫敏規格書
+│       ├── 10-deployment.md           # 雲端雙軌部署拓撲、環境變數 OCP 與維運保活
+│       └── 11-local-testing.md        # 本地測試指南、資料庫初始化與 38/38 測試驗證
 ├── frontend/                          # Angular 19 前端 SPA 專案 (純原生 SCSS)
+│   ├── public/                        # 靜態公開資產 (_headers, robots.txt, sitemap.xml, llms.txt)
 │   ├── src/app/
 │   │   ├── @interfaces/               # 強型別資料契約 DTO
 │   │   ├── @services/                 # 單一職責業務服務 (ApiClient, Getter, Emitter...)
@@ -112,215 +309,98 @@ survey-flow/
 │   ├── styles.scss                    # 全域原生樣式
 │   └── variables.scss                 # 品牌色票與中性 Token (統整圖表調色盤)
 └── backend/                           # Java 21 / Spring Boot 4.1.1 後端專案
-    └── src/
-        ├── main/java/com/surveyflow/  # Clean Architecture 乾淨分層 (Controller/Service/Repo/Entity)
-        ├── main/resources/database/   # schema.sql (9大表 DDL) 與 data.sql (測試種子)
-        └── test/                      # 31/31 全套 JUnit 5 + Mockito 單元與整合測試套件
+    ├── src/main/java/com/surveyflow/
+    │   ├── controller/                # 輕量 HTTP API 控制器 (Thin Controllers)
+    │   ├── service/                   # 業務意圖業務服務 (Use Case Services, 事務邊界)
+    │   ├── repository/                # 持久化資料存取 (100% 原生 SQL nativeQuery=true)
+    │   ├── entity/                    # 資料庫實體模型 (嚴禁 @ManyToMany)
+    │   ├── dto/                       # 傳輸資料物件 (Req / Res DTO)
+    │   └── security/                  # Spring Security 認證授權與 JWT 雙權杖過濾器
+    └── src/main/resources/database/
+        ├── schema.sql                 # 【SSOT】TiDB / MySQL 資料庫完整結構腳本 (9 大實體表)
+        └── data.sql                   # 測試種子資料腳本 (含 Argon2id 預設帳號與示範問卷)
 ```
 
 ---
 
-## 05. 核心業務流程與狀態流轉 (Business Flowcharts & State Machine)
+## 07. 環境變數外部化對照表 (OCP Externalized Configurations)
 
-```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff' } }}%%
-stateDiagram-v2
-    [*] --> 載入問卷專案: 透過問卷代碼或公開清單存取
-    載入問卷專案 --> 檢查作答權限: 檢核開放狀態、起訖時間、身分限制
-    檢查作答權限 --> 無效或已關閉: 未開放 / 已過期
-    檢查作答權限 --> 受訪者填寫基本輪廓: 符合填答資格 (若發起人開啟)
-    受訪者填寫基本輪廓 --> 動態問答區間: 基本資料防呆格式驗證通過
-    動態問答區間 --> 條件觸發判斷: 選擇特定單選或是非題選項
-    條件觸發判斷 --> 動態問答區間: 解鎖指定隱藏題目
-    動態問答區間 --> 必填與合法性深度稽核: 點擊提交問卷
-    必填與合法性深度稽核 --> 提交失敗: 必填項目缺漏或格式不合 (自動滾動定位)
-    必填與合法性深度稽核 --> 寫入資料庫: 通過驗證，交易持久化主紀錄與答案
-    寫入資料庫 --> 填答完成致謝畫面: 統計圖表即時更新聚合
-    填答完成致謝畫面 --> [*]
-```
+本系統恪守 OCP 開放封閉原則，所有系統參數與機敏金鑰 100% 透過環境變數外部化注入，嚴禁於代碼中寫死預設值：
 
----
-
-## 06. RESTful API 通訊協定規格 (API Specifications)
-
-全系統通訊嚴格遵循 RESTful 標準，**永遠僅使用 `GET`, `POST`, `PUT`, `DELETE` 四種動詞**，主要端點分群如下：
-
-| 端點路由 | HTTP 動詞 | 授權層級 | 業務職責說明 |
-| :--- | :---: | :---: | :--- |
-| `/api/surveys/lobby` | `GET` | 訪客公開 | 取得公開大廳問卷清單 (支援分類篩選與關鍵字搜尋) |
-| `/api/surveys/code/{code}` | `GET` | 訪客公開 | 依問卷專屬代碼載入題目與作答設定 |
-| `/api/surveys/{id}/submit` | `POST` | 訪客公開 | 提交受訪者作答資料與基本輪廓 |
-| `/api/auth/register` | `POST` | 訪客公開 | 會員帳號註冊 (發送 6 碼驗證信) |
-| `/api/auth/login` | `POST` | 訪客公開 | 會員登入 (驗證密碼，簽發雙 Token) |
-| `/api/auth/refresh` | `POST` | 訪客公開 | 傳入 Refresh Token 換發全新 Access Token |
-| `/api/surveys` | `GET` | 會員認證 | 查詢個人名下所有發起之問卷專案 |
-| `/api/surveys` | `POST` | 會員認證 | 建立全新問卷專案與題目結構 |
-| `/api/surveys/{id}` | `PUT` | 會員認證 | 更新問卷資訊、題目、跳題邏輯與開放時限 |
-| `/api/surveys/{id}` | `DELETE` | 會員認證 | 軟刪除指定問卷專案 |
-| `/api/surveys/{id}/statistics` | `GET` | 會員認證 | 取得多維聚合統計數據與 12 色圖表指標 |
-| `/api/admin/users` | `GET` | 管理員 | 審查全站會員清單與即時狀態 |
-| `/api/admin/users/{id}/status` | `PUT` | 管理員 | 切換會員狀態 (凍結 / 啟用) |
-| `/api/admin/users/{id}` | `DELETE` | 管理員 | 刪除指定會員帳號 |
+| 環境變數名稱 | 預設降級值 (本地開發) | 生產環境用途與安全性說明 |
+| :--- | :--- | :--- |
+| `SERVER_PORT` / `PORT` | `8080` | 後端 Web 容器動態監聽之 HTTP 通訊埠號。 |
+| `SPRING_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/survey_flow...` | TiDB Cloud 雲端分散式資料庫 JDBC 連線字串 (含 TLS 加密)。 |
+| `SPRING_DATASOURCE_USERNAME` | `root` | 資料庫連線使用者帳號。 |
+| `SPRING_DATASOURCE_PASSWORD` | `root1234` | 資料庫連線密碼。 |
+| `JWT_SECRET` | `SurveyFlowSecretKey...2026!` | HMAC-SHA256 簽署金鑰 (生產環境強制配置高強度自訂金鑰)。 |
+| `JWT_ACCESS_EXPIRATION_MS` | `900000` (15 分鐘) | 短效無狀態 Access Token 存活毫秒數。 |
+| `JWT_REFRESH_EXPIRATION_MS`| `604800000` (7 天) | 長效 Refresh Token 存活毫秒數。 |
+| `CORS_ALLOWED_ORIGINS` | `http://localhost:4200` | 允許跨域請求之前端來源 (生產設為 `https://survey-flow.pages.dev`)。 |
+| `MAIL_HOST` | `smtp.gmail.com` | SMTP 郵件伺服器主機。 |
+| `MAIL_PORT` | `587` | SMTP TLS 通訊埠號。 |
+| `MAIL_USERNAME` | *(無預設值)* | 寄信專用電子郵件地址 (由環境變數外部注入)。 |
+| `MAIL_PASSWORD` | *(無預設值)* | Google 應用程式 16 碼安全密碼 (由環境變數外部注入)。 |
+| `MAIL_FROM` | `no-reply@surveyflow.tw` | 系統外發信件之顯示寄件者地址。 |
+| `FRONTEND_BASE_URL` | `http://localhost:4200` | 前端根網址 (用於組裝信件中之 6 碼開通與重設連結)。 |
+| `BREVO_API_KEY` | *(選填/雲端推薦)* | Brevo HTTP API 金鑰 (走 HTTPS 443 埠號，突破 Render 免費方案 SMTP 阻斷)。 |
+| `RESEND_API_KEY` | *(選填/雲端推薦)* | Resend HTTP API 金鑰 (走 HTTPS 443 埠號，備用外寄服務)。 |
+| `MAIL_PROVIDER` | `AUTO` | 郵件提供商模式 (`AUTO`: 自動偵測 Brevo -> Resend -> SMTP)。 |
 
 ---
 
-## 07. 資料庫實體模型與 ERD 關聯 (Database ERD - 9 大資料表)
+## 08. 本機建置、測試與快速啟動指南 (Quick Start)
 
-```mermaid
-%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'attributeBackgroundColorOdd': '#060a14', 'attributeBackgroundColorEven': '#0b0f19' }, 'themeCSS': '.er.relationshipLabelBox { fill: none !important; stroke: none !important; display: none !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }' }}%%
-erDiagram
-    USERS ||--o{ SURVEYS : "發起問卷"
-    USERS |o--o{ VERIFICATION_TOKENS : "驗證權杖"
-    SURVEYS ||--|| SURVEY_BASIC_INFO_CONFIGS : "收集配置"
-    SURVEYS ||--o{ SURVEY_QUESTIONS : "問卷題目"
-    SURVEY_QUESTIONS ||--o{ SURVEY_OPTIONS : "題目選項"
-    SURVEYS ||--o{ SUBMISSIONS : "填答紀錄"
-    SUBMISSIONS ||--|| SUBMISSION_BASIC_INFOS : "受訪者輪廓"
-    SUBMISSIONS ||--o{ SUBMISSION_ANSWERS : "答案明細"
-    SURVEY_QUESTIONS ||--o{ SUBMISSION_ANSWERS : "作答關聯"
-    SURVEY_OPTIONS |o--o{ SUBMISSION_ANSWERS : "選項關聯"
+依據 [`docs/system-design/11-local-testing.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-local-testing.md) 規範，可在本機快速完成端對端啟動與測試：
 
-    USERS {
-        bigint id PK
-        varchar username UK
-        varchar email UK
-        varchar password_hash
-        varchar full_name
-        char phone UK
-        char identity_card UK
-        varchar role
-        varchar status
-    }
-    SURVEYS {
-        bigint id PK
-        bigint user_id FK
-        varchar title
-        text description
-        varchar category
-        tinyint is_public_to_lobby
-        tinyint is_open
-        datetime start_date
-        datetime end_date
-    }
-    SURVEY_QUESTIONS {
-        bigint id PK
-        bigint survey_id FK
-        varchar type
-        varchar question_text
-        tinyint is_required
-        int sort_order
-    }
-    SURVEY_OPTIONS {
-        bigint id PK
-        bigint question_id FK
-        varchar option_text
-        varchar trigger_question_uid
-    }
-    SUBMISSIONS {
-        bigint id PK
-        bigint survey_id FK
-        varchar ip_address
-        int duration_seconds
-        datetime submitted_at
-    }
-    SUBMISSION_BASIC_INFOS {
-        bigint id PK
-        bigint submission_id FK
-        varchar name
-        char national_id
-        char phone
-    }
-    SUBMISSION_ANSWERS {
-        bigint id PK
-        bigint submission_id FK
-        bigint question_id FK
-        bigint option_id FK
-        text text_answer
-        int rating_value
-    }
-```
-
----
-
-## 08. 前端視覺設計風格與介面美學 (Visual Aesthetics & Standards)
-
-SurveyFlow 的介面視覺體系回歸現代實證研究與頂級學術期刊之專業質感，核心美學元素包含：
-
-1. **極簡純淨紙張白底色 (`#fbfbfa` / `#ffffff`)**: 模擬高階學術印刷紙質，帶來沉著專業且長時間閱讀舒適之體驗。
-2. **100% 自研純原生 SCSS/CSS 系統**: 全站零引入第三方外部樣式表（嚴格禁止 Bootstrap / Tailwind），確保極致載入效能與樣式自主掌控。
-3. **12 色鮮明高對比數據圖表調色盤**: 告別死灰濁色，採用寶藍 (`#2563eb`)、翠綠 (`#059669`)、金橙 (`#d97706`)、亮紫 (`#7c3aed`) 等 12 組純淨高對比色彩，搭配淺灰藍槽底（`#f1f5f9`），層次清晰明亮。
-4. **冠軍最高票 👑 皇冠立體微徽章風格**: 是非題、單選、多選排行榜與評分量表中，最高票項目即時渲染暖金微徽章（`#f59e0b` 描邊、微光陰影與 👑 膠囊），第一視覺直觀捕捉民意共識。
-5. **9 大主題領域分類膠囊標籤語意調色**: 沉穩靛藍 (學術教育)、琥珀金橙 (商業行銷)、翡翠翠綠 (滿意度)、科技天藍 (產品體驗)、洋紅紫粉 (社群生活)、珊瑚玫瑰 (娛樂日常)、薄荷青綠 (醫療健康)、典雅紫 (人資行政)，語意辨識度極高。
-6. **自適應無橫向捲動垂直卡片流**: 行動端自動轉譯為乾淨垂直卡片流，防破版容器設計，手指滑動順暢自如。
-7. **深黑 HUD 直角線條架構圖**: 文檔架構圖均以深黑背景 `#030712`、霓虹青邊框 `#00f0ff` 與直角 HUD 儀表板風格繪製。
-
----
-
-## 09. 全端資安防護與認證規範 (Security & Privacy)
-
-1. **密碼雜湊標準**: 全面採用 **Argon2id**（$m=4096, t=3, p=1$），完全杜絕暴力破解風險。
-2. **無狀態雙權杖輪替 (RTR)**: 短效 15 分鐘 Access Token + 長效 7 天 Refresh Token，兼顧體驗與安全吊銷。
-3. **在地化格式雙向防呆**: 深度整合身分證字號雙向權重校驗（Modulo 10 演算法）與臺灣手機 09 開頭 10 碼檢核。
-4. **防禦性程式設計**: 全站防範 SQL 注入（JPA 參數化綁定）、XSS 攻擊（Angular 內建 Sanitization 消毒）與 CSRF 防護。
-
----
-
-## 10. 雲端雙軌部署拓撲與維運規範 (Cloud Deployment)
-
-系統採極致解耦之雲端現代架構：
-- **前端 SPA**: 部署於 **Cloudflare Pages** (`https://survey-flow.pages.dev`)，享有 Edge CDN 全球邊緣加速。
-- **後端 Web API**: 部署於 **Render Web Service** (`https://survey-flow-9gt6.onrender.com`)，以 Docker 多階段容器化運作，由 **UptimeRobot** 外部探針 24/7 全天候發送請求至 `/actuator/health` 維持熱機保活。
-- **持久化資料庫**: 託管於 **TiDB Cloud Serverless** 分散式叢集，具備 TLS 加密傳輸與自動容錯擴展。
-- **環境變數 OCP 外部化**: 連線資訊、JWT 金鑰、郵件發信金鑰 100% 外部化管理，嚴禁硬編碼。
-- **Lighthouse 滿分體系與 Agentic AI 規範**: 網站根目錄配置國際標準之 [`llms.txt`](file:///Users/hsuche-cheng/Documents/project/survey-flow/frontend/public/llms.txt)、`robots.txt`、`sitemap.xml` 與 `_headers` 長效快取，消除 Render-blocking 字型阻斷首次繪製，全站達到 Performance、Accessibility、Best Practices、SEO 與 Agentic Browsing 滿分標準。
-
----
-
-## 11. 本地測試、建置與快速啟動指南 (Local Testing & Build)
-
-### 11.1 前置需求
-- **Node.js**: `24.x` (或相容之 LTS)
+### 1. 前置依賴需求
+- **Node.js**: `v20.x` 或以上 (推薦 Node.js 24.x LTS)
 - **Java JDK**: `21` (推薦 Eclipse Temurin 21)
-- **MySQL / TiDB**: `8.0+`（資料庫初始化腳本位於 `backend/src/main/resources/database/`）
+- **MySQL / TiDB**: `8.0+` (本地 3306 埠或 TiDB Serverless)
 
-### 11.2 資料庫初始化 (SSOT)
-在 MySQL 或 TiDB 執行 `schema.sql` 與 `data.sql`：
+### 2. 資料庫初始化 (SSOT)
 ```sql
-CREATE DATABASE IF NOT EXISTS surveyflow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE surveyflow;
--- 執行 backend/src/main/resources/database/schema.sql
--- 執行 backend/src/main/resources/database/data.sql
+CREATE DATABASE IF NOT EXISTS survey_flow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE survey_flow;
+-- 依序執行 backend/src/main/resources/database/schema.sql 重建 9 大實體資料表
+-- (可選) 執行 backend/src/main/resources/database/data.sql 載入測試種子資料
 ```
 
-### 11.3 後端測試驗證與本地啟動
+### 3. 後端單元測試與 API 伺服器啟動
 ```bash
 cd backend
-# 執行全套單元與整合測試 (38/38 全數 PASS)
+
+# 執行全套單元與整合測試 (38/38 PASS 驗證)
 ./mvnw clean test
 
-# 啟動後端 Spring Boot 服務 (預設監聽 http://localhost:8080)
+# 啟動後端 Spring Boot 服務 (預設監聽: 8080)
 ./mvnw spring-boot:run
 ```
+- API 根端點: `http://localhost:8080/api`
+- Actuator 健康探針: `http://localhost:8080/actuator/health`
 
-### 11.4 前端安裝與本機啟動
+### 4. 前端 Angular 啟動與建置
 ```bash
 cd frontend
+
 # 安裝相依套件
 npm install
 
-# 啟動前端開發伺服器 (瀏覽器存取 http://localhost:4200，自動代理至 localhost:8080)
+# 啟動本機開發伺服器 (支援熱重載)
 npm start
-
-# 生產環境編譯打包驗證
-npm run build
 ```
+- 瀏覽器開啟存取：`http://localhost:4200`
+- 驗證生產打包：`npm run build` (產物輸出於 `dist/survey-flow-frontend/browser`)
 
-### 11.5 本地預設測試帳號清單
-- **系統最高管理員**: `admin` / `Admin123!` (`ROLE_ADMIN`，具備會員凍結/解凍/刪除權限)
-- **測試一般會員**: `testuser` / `User1234!` (`ROLE_USER`，具備問卷建立/編輯/管理/報表權限)
+### 5. 預設測試種子帳號
+- **系統最高管理員**: `admin` / `Admin123!` (權限: `ROLE_ADMIN`)
+- **一般測試會員**: `testuser` / `User1234!` (權限: `ROLE_USER`)
 
 ---
 
-## 12. 版權與開源宣告
+<div align="center">
 
-Copyright © 2026 許哲誠 (HSU, CHE-CHENG). All Rights Reserved.
+**SurveyFlow** | 現代實證調研與學術結構化數據採集系統  
+版權所有 © 2026 [許哲誠 (HSU, CHE-CHENG)](https://github.com/EricXJason). All Rights Reserved.
+
+</div>

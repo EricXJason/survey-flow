@@ -43,7 +43,7 @@ flowchart LR
 | **前端 SPA** | **Cloudflare Pages** | `https://survey-flow.pages.dev` | Angular 19 獨立組件架構；樣式 100% 採用純原生 SCSS/CSS（嚴禁引用 Bootstrap、Tailwind 等任何外部樣式表）；靜態資源由全球 Edge CDN 快取分發。 |
 | **後端 Web API** | **Render Web Service** | `https://survey-flow-9gt6.onrender.com` | Docker 容器化執行 Java 21 / Spring Boot 3.4 服務；配置 `/actuator/health` 探針；無狀態 Stateless JWT 認證架構。 |
 | **持久化資料庫** | **TiDB Cloud (Serverless)** | 雲端分散式 MySQL 端點 | MySQL 8.0 協定相容之分散式關聯式資料庫；外鍵完整約束、utf8mb4 編碼、ACID 交易隔離；HikariCP 連線池安全存取。 |
-| **持續整合與交付** | **GitHub Actions** | CI/CD 自動化工作流 | 推送時自動執行 Maven 單元測試 (16/16 PASS) 與前端生產打包驗證。 |
+| **持續整合與交付** | **GitHub Actions** | CI/CD 自動化工作流 | 推送時自動執行 Maven 單元測試 (38/38 PASS) 與前端生產打包驗證。 |
 
 ---
 

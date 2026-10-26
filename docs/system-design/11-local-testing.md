@@ -46,13 +46,13 @@
 cd backend
 ```
 
-### 3.1 執行全套單元與整合測試 (29/29 PASS)
-系統內建涵蓋 Controller、Service、Security 與資料驗證的 29 項 JUnit 5 / Mockito 測試套件：
+### 3.1 執行全套單元與整合測試 (38/38 PASS)
+系統內建涵蓋 Controller、Service、Security、原生 SQL 與資料驗證的 38 項 JUnit 5 / Mockito 測試套件：
 ```bash
 # 執行全套測試並輸出測試報表
 ./mvnw clean test
 ```
-預期結果：**Tests run: 29, Failures: 0, Errors: 0, Skipped: 0**，構建成功（BUILD SUCCESS）。
+預期結果：**Tests run: 38, Failures: 0, Errors: 0, Skipped: 0**，構建成功（BUILD SUCCESS）。
 
 ### 3.2 本地啟動 Spring Boot Web API
 ```bash
@@ -112,7 +112,7 @@ npm run build
 flowchart TD
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
 
-    Step1["1. 訪客大廳瀏覽<br/>關鍵字搜尋 / 9大領域分類篩選"]:::hudCard
+    Step1["1. 訪客大廳瀏覽<br/>關鍵字搜尋 / 12大主題分類篩選"]:::hudCard
     Step2["2. 問卷填答運行<br/>填寫輪廓 / 選A開B條件跳題 / 格式防呆"]:::hudCard
     Step3["3. 會員登入認證<br/>testuser 登入 / 雙Token簽發"]:::hudCard
     Step4["4. 視覺化問卷設計<br/>7大型態編排 / 拖曳排序 / 擬真預覽"]:::hudCard
@@ -123,7 +123,7 @@ flowchart TD
     Step1 --> Step2 --> Step3 --> Step4 --> Step5 --> Step6 --> Step7
 ```
 
-1. **訪客大廳瀏覽**: 存取 `http://localhost:4200/lobby`，點選主題分類下拉選單測試 9 大語意標籤篩選與關鍵字即時模糊搜尋。
+1. **訪客大廳瀏覽**: 存取 `http://localhost:4200/lobby`，點選主題分類下拉選單測試 12 大語意標籤篩選與關鍵字即時模糊搜尋。
 2. **問卷填答運行**: 進入任一開放問卷，驗證身分證號（Modulo 10）與手機（09 開頭 10 碼）防呆；點選特定單選選項確認目標題目平滑解鎖展開。
 3. **會員登入**: 以 `testuser / User1234!` 登入，確認右上角導航即時切換為會員選單。
 4. **問卷設計**: 進入 `/survey-design`，新增是非、評分量表與單選題，設定跳題邏輯並點擊「即時擬真預覽」。

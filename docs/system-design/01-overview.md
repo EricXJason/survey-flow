@@ -17,11 +17,11 @@
 4. **真實數據與學術級分析**: 報表真實取自資料庫最新作答時間戳（絕無虛假時間），支援 CSV (UTF-8 BOM)、SPSS 語法檔 (`.sps`)、JSON 與原生列印。
 5. **雲端現代雙軌部署**: 前端 SPA（Cloudflare Pages，純原生 SCSS/CSS）與後端 Web API（Render Web Service + TiDB Cloud Serverless）完全解耦，具備極致效能與全球加速。
 
-### 線上公開部署網址 (具備雲端生產環境前提)
-本系統已完成全自動化雲端雙軌部署；若具備正式線上部署環境，可透過以下公開網址直接存取體驗：
-- **前端 SPA 展示站點 (Cloudflare Pages)**: `https://survey-flow.pages.dev`
-- **後端 Web API 伺服器 (Render Web Service)**: `https://survey-flow-9gt6.onrender.com`
-- **健康檢查保活探針 (Actuator)**: `https://survey-flow-9gt6.onrender.com/actuator/health`
+### 線上公開部署網址 (正式雲端生產環境)
+本系統已完成全自動化雲端雙軌部署，可透過以下公開網址直接存取體驗：
+- **前端 SPA 展示站點 (Cloudflare Pages)**: [https://survey-flow.pages.dev](https://survey-flow.pages.dev)
+- **後端 Web API 伺服器 (Render Web Service)**: [https://survey-flow-9gt6.onrender.com](https://survey-flow-9gt6.onrender.com)
+- **健康檢查保活探針 (Actuator)**: [https://survey-flow-9gt6.onrender.com/actuator/health](https://survey-flow-9gt6.onrender.com/actuator/health)
 
 > 註：在未配置雲端環境或本機離線開發情境下，系統則回歸本機服務（預設前端為 `http://localhost:4200`，後端為 `http://localhost:8080`）。
 
@@ -71,8 +71,8 @@ flowchart LR
 | [04-architecture.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/04-architecture.md) | **分層架構與目錄拓撲** | 前端 Standalone 結構、後端 Controller-Service-Repository 三層防線。 |
 | [05-flowcharts.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/05-flowcharts.md) | **業務流程與狀態流轉圖** | 問卷生命週期、條件跳題動態解析、作答持久化與雙 Token 換發循序圖。 |
 | [06-specs-api.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/06-specs-api.md) | **RESTful API 通訊協定規格** | 公開端點、會員專區、管理專用路由，嚴格四種 HTTP 動詞 (GET/POST/PUT/DELETE)。 |
-| [07-specs-database.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md) | **TiDB 資料庫模型與 ERD** | 8 張關聯資料表、複合索引優化、外鍵級聯約束與聚合查詢規範。 |
+| [07-specs-database.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md) | **TiDB 資料庫模型與 ERD** | 9 大實體關聯資料表、複合索引優化、外鍵級聯約束與 100% 原生 SQL 查詢。 |
 | [08-ui-ux-standards.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/08-ui-ux-standards.md) | **前端 UI/UX 與原生樣式** | 100% 純原生 SCSS/CSS、去 AI 化中性設計語言、零橫向拖曳自適應。 |
 | [09-security.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/09-security.md) | **資安防護與資料脫敏** | Argon2id 參數規格、身分證 Modulo 10 演算法、SQL 注入防禦。 |
 | [10-deployment.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-deployment.md) | **雲端部署拓撲與維運規範** | Cloudflare Pages + Render + TiDB 拓撲、Docker 多階段建置、環境變數 OCP、Actuator 保活探針。 |
-| [11-local-testing.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-local-testing.md) | **本地測試與建置指南** | 前置相依環境、資料庫初始化、後端 29/29 測試全數驗證、前端啟動與冒煙測試 SOP。 |
+| [11-local-testing.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-local-testing.md) | **本地測試與建置指南** | 前置相依環境、資料庫初始化、後端 38/38 測試全數驗證、前端啟動與冒煙測試 SOP。 |
