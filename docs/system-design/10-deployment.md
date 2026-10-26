@@ -94,27 +94,40 @@ ENTRYPOINT ["sh", "-c", "exec java -XX:+UseContainerSupport -XX:MaxRAMPercentage
 
 依據 OCP 開放封閉原則，所有系統參數與連線端點一律透過環境變數注入，嚴禁於代碼或設定檔中硬編碼業務預設值：
 
-### 後端環境變數清單 (Render 控制台配置)
+### 5.1 雲端生產環境 (Render 控制台配置) 8 大核心變數 (100% 精準對齊)
 
-| 環境變數名稱 | 預設降級值 (本地開發) | 生產環境用途與安全性說明 |
+| 環境變數名稱 | 範例 / 推薦設定值 | 生產環境用途與安全性說明 |
 | :--- | :--- | :--- |
-| `PORT` / `SERVER_PORT` | `8080` | Render 容器動態指派之 HTTP 通訊埠 |
-| `SPRING_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/survey_flow...` | TiDB Cloud 雲端資料庫 JDBC 連線字串 (含 TLS 授權) |
-| `SPRING_DATASOURCE_USERNAME` | `root` | TiDB Cloud 連線帳號 |
-| `SPRING_DATASOURCE_PASSWORD` | `root1234` | TiDB Cloud 連線密碼 |
-| `JWT_SECRET` | `SurveyFlowSecretKey...2026!` | HMAC-SHA256 簽署金鑰 (生產環境強制自訂高強度金鑰) |
+| **`SPRING_DATASOURCE_URL`** | `jdbc:mysql://<TiDB_HOST>:4000/survey_flow...` | TiDB Cloud 雲端資料庫 JDBC 連線字串 (含 TLS 證書授權與時區) |
+| **`SPRING_DATASOURCE_USERNAME`** | `<TIDB_USER>.root` | TiDB Cloud 分散式資料庫連線帳號 |
+| **`SPRING_DATASOURCE_PASSWORD`** | `********` | TiDB Cloud 分散式資料庫連線密碼 |
+| **`JWT_SECRET`** | `SurveyFlowSecretKey...2026!` (>=256 bits) | HMAC-SHA256 簽署短效 Token 與雙權杖之防偽金鑰 |
+| **`CORS_ALLOWED_ORIGINS`** | `https://survey-flow.pages.dev` | 允許跨域請求之前端 Cloudflare Pages 生產網址 |
+| **`FRONTEND_BASE_URL`** | `https://survey-flow.pages.dev` | 前端 SPA 根網址 (用於組裝驗證信中之一鍵開通與密碼重設直達連結) |
+| **`BREVO_API_KEY`** | `xkeysib-********` | **主力郵件服務商**：Brevo HTTP REST API 金鑰 (走 HTTPS Port 443 突破 Render 免費方案 SMTP 阻斷，每日免費 300 封，**全面取代傳統 Gmail SMTP**) |
+| **`MAIL_FROM`** | `service@surveyflow.tw` | 系統外發信件之寄件者顯示信箱 (需於 Brevo 完成寄件者網域或信箱驗證) |
+
+### 5.2 雲端環境查整：確認為多餘且可安全移除之無效變數
+
+以下 3 個變數在專案代碼中 **0 引用**（系統管理員帳號由關聯式資料庫 `schema.sql` / `data.sql` 種子資料管理，而非啟動時讀取環境變數），於 Render 控制台屬於多餘殘留，**可安全直接刪除 (Delete)**：
+
+| 變數名稱 | 查整狀態 | 說明與建議處置 |
+| :--- | :---: | :--- |
+| `APP_ADMIN_USERNAME` | ❌ **多餘殘留** | 專案代碼無引用。管理員由資料庫種子管轄 (`admin / Admin123!`)，可於 Render 控制台直接刪除。 |
+| `APP_ADMIN_PASSWORD` | ❌ **多餘殘留** | 專案代碼無引用。密碼以 Argon2id 儲存於資料庫，可於 Render 控制台直接刪除。 |
+| `APP_ADMIN_EMAIL` | ❌ **多餘殘留** | 專案代碼無引用。管理員 Email 儲存於 `users` 表，可於 Render 控制台直接刪除。 |
+
+### 5.3 本地開發與備用降級變數 (Local & Fallback)
+
+| 環境變數名稱 | 預設降級值 (本地開發) | 說明 |
+| :--- | :--- | :--- |
+| `PORT` / `SERVER_PORT` | `8080` | Render 容器動態指派之 HTTP 通訊埠 (平台自動注入) |
+| `RESEND_API_KEY` | *(選填/備用)* | Resend HTTP API 金鑰 (走 HTTPS 443 備用外寄管道) |
+| `MAIL_PROVIDER` | `AUTO` | 郵件提供商調度模式 (`AUTO`: 自動偵測 Brevo -> Resend -> SMTP) |
 | `JWT_ACCESS_EXPIRATION_MS` | `900000` (15 分鐘) | 短效 Access Token 存活毫秒數 |
 | `JWT_REFRESH_EXPIRATION_MS` | `604800000` (7 天) | 長效 Refresh Token 存活毫秒數 |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:4200` | 允許跨域之前端來源 (生產設為 `https://survey-flow.pages.dev`) |
-| `MAIL_HOST` | `smtp.gmail.com` | SMTP 電子郵件主機 |
-| `MAIL_PORT` | `587` | SMTP TLS 通訊埠 |
-| `MAIL_USERNAME` | *(無預設值)* | 寄信專用電子郵件地址 (由環境變數注入，嚴禁代碼寫死) |
-| `MAIL_PASSWORD` | *(無預設值)* | Google 應用程式 16 碼安全密碼 (由環境變數注入) |
-| `MAIL_FROM` | `no-reply@surveyflow.tw` | 寄件人顯示信箱地址 |
-| `FRONTEND_BASE_URL` | `http://localhost:4200` | 前端根網址 (用於產生驗證信中之一鍵開通與密碼重設連結) |
-| `BREVO_API_KEY` | *(選填/雲端推薦)* | Brevo (原 Sendinblue) HTTP API 金鑰，走 HTTPS Port 443 突破 Render 免費方案 SMTP 阻斷限制 (每日免費 300 封) |
-| `RESEND_API_KEY` | *(選填/雲端推薦)* | Resend HTTP API 金鑰，走 HTTPS Port 443 突破 Render 免費方案 SMTP 阻斷限制 (每月免費 3,000 封) |
-| `MAIL_PROVIDER` | `AUTO` | 郵件提供商調度模式 (`AUTO`: 自動偵測 Brevo -> Resend -> SMTP, `BREVO`, `RESEND`, `SMTP`) |
+| `MAIL_HOST` / `MAIL_PORT` | `smtp.gmail.com` / `587` | 本地離線開發用 Gmail SMTP 主機與通訊埠 (生產環境已被 Brevo 100% 取代) |
+| `MAIL_USERNAME` / `MAIL_PASSWORD`| *(無預設值)* | 本地離線開發用 Gmail 帳號與 16 碼應用程式密碼 |
 
 ---
 

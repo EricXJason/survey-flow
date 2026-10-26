@@ -46,6 +46,7 @@
     'primaryTextColor': '#f8fafc',
     'primaryBorderColor': '#00f0ff',
     'lineColor': '#00f0ff',
+    'textColor': '#f8fafc',
     'edgeLabelBackground': 'transparent',
     'tertiaryColor': '#0b0f19'
   },
@@ -55,39 +56,30 @@
 flowchart LR
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
 
-    subgraph CLIENT["【客戶端展示層 (Presentation)】"]
-        direction LR
-        FE_LOBBY["大廳檢索 (/lobby)<br/>12大分類 / 關鍵字搜尋 / ⌘K聚焦"]:::hudCard
-        FE_DESIGN["問卷工作台 (/survey-design)<br/>7大題型 / 條件跳題 / 自由插題"]:::hudCard
-        FE_RUNNER["填答運行器 (/survey-runner)<br/>DOM雙向檢驗 / 地理防呆"]:::hudCard
-        FE_DASH["分析儀表板 (/survey-management)<br/>5大KPI / SPSS匯出 / 圖表聚合"]:::hudCard
-    end
-
-    subgraph GATEWAY["【全球邊緣傳輸層 (Edge CDN)】"]
-        direction LR
-        CF_PAGES["Cloudflare Pages (Global Edge CDN)<br/>純原生 SCSS/CSS / 零外部樣式依賴"]:::hudCard
-    end
-
-    subgraph BACKEND["【核心業務服務層 (Spring Boot 4.1.1 + Java 21)】"]
+    subgraph FE ["Angular 19.0.0 前端客戶端 (Cloudflare Pages)"]
         direction TB
-        CTRL["Thin Controllers (HTTP / DTO驗證 / 狀態碼派發)"]:::hudCard
-        SERV["Use Case Services (事務邊界 @Transactional / 業務編排)"]:::hudCard
-        REPO["Repository Layer (100% 原生 SQL nativeQuery=true)"]:::hudCard
-        SECURITY["Security Filter (Argon2id / JJWT 雙權杖 RTR 輪替)"]:::hudCard
-
-        CTRL --> SERV
-        SERV --> REPO
-        SECURITY -.-> CTRL
+        FE_UI["表現層 (Components)<br/>Home / Lobby / Design / Runner / Admin"]:::hudCard
+        FE_STATE["服務與狀態層 (Services & Signals)<br/>UserState / SurveyGetter / UserEmitter"]:::hudCard
+        FE_MODEL["型別契約層 (@interfaces)<br/>survey-model / account-model"]:::hudCard
+        FE_UI --> FE_STATE --> FE_MODEL
     end
 
-    subgraph STORAGE["【分散式資料庫持久化層 (TiDB Cloud)】"]
-        direction LR
-        TIDB[("TiDB Cloud Serverless (MySQL 8.0 Protocol)<br/>9大實體資料表 / 強制外鍵級聯 / 嚴禁自動DDL")]:::hudCard
+    subgraph BE ["Spring Boot 4.1.1 後端核心 (Render Web Service)"]
+        direction TB
+        BE_CTRL["REST 控制器層 (Controllers)<br/>Public / User / Admin / Auth"]:::hudCard
+        BE_SERV["商務邏輯層 (Services)<br/>Survey / Submission / Analytics / Auth"]:::hudCard
+        BE_REPO["資料庫訪問層 (Repositories)<br/>Native Query 100% 參數化綁定"]:::hudCard
+        BE_ENTITY["領域模型實體層 (Entities)<br/>User / Survey / Question / Submission"]:::hudCard
+        BE_CTRL --> BE_SERV --> BE_REPO --> BE_ENTITY
     end
 
-    CLIENT --> CF_PAGES
-    CF_PAGES -->|"RESTful HTTPS (GET, POST, PUT, DELETE)"| BACKEND
-    REPO -->|"JDBC (HikariCP 連線池 / TLS加密)"| STORAGE
+    subgraph DB ["TiDB Cloud / MySQL 分散式資料庫"]
+        direction TB
+        DB_TABLES[("實體資料表群 (9 Tables)<br/>surveys / survey_questions<br/>submissions / users...")]:::hudCard
+    end
+
+    FE -->|"HTTPS / RESTful API (JSON)"| BE
+    BE -->|"HikariCP 連線池 / 原生 SQL"| DB
 ```
 
 ---
@@ -353,27 +345,42 @@ survey-flow/
 
 ## 07. 環境變數外部化對照表 (OCP Externalized Configurations)
 
-本系統恪守 OCP 開放封閉原則，所有系統參數與機敏金鑰 100% 透過環境變數外部化注入，嚴禁於代碼中寫死預設值：
+本系統恪守 OCP 開放封閉原則，所有系統參數與機敏金鑰 100% 透過環境變數外部化注入，嚴禁於代碼中寫死業務預設值：
 
-| 環境變數名稱 | 預設降級值 (本地開發) | 生產環境用途與安全性說明 |
+### 1. 雲端生產環境 (Render Web Service) 8 大核心環境變數 (100% 對齊生產現況)
+
+| 環境變數 KEY | 範例 / 推薦設定值 | 生產環境用途與安全性說明 |
 | :--- | :--- | :--- |
-| `SERVER_PORT` / `PORT` | `8080` | 後端 Web 容器動態監聽之 HTTP 通訊埠號。 |
-| `SPRING_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/survey_flow...` | TiDB Cloud 雲端分散式資料庫 JDBC 連線字串 (含 TLS 加密)。 |
-| `SPRING_DATASOURCE_USERNAME` | `root` | 資料庫連線使用者帳號。 |
-| `SPRING_DATASOURCE_PASSWORD` | `root1234` | 資料庫連線密碼。 |
-| `JWT_SECRET` | `SurveyFlowSecretKey...2026!` | HMAC-SHA256 簽署金鑰 (生產環境強制配置高強度自訂金鑰)。 |
+| **`SPRING_DATASOURCE_URL`** | `jdbc:mysql://<TiDB_HOST>:4000/survey_flow...` | TiDB Cloud 雲端分散式資料庫 JDBC 連線字串 (含 TLS 證書與時區設定)。 |
+| **`SPRING_DATASOURCE_USERNAME`** | `<TIDB_USER>.root` | TiDB Cloud 分散式資料庫連線帳號。 |
+| **`SPRING_DATASOURCE_PASSWORD`** | `********` | TiDB Cloud 分散式資料庫連線密碼。 |
+| **`JWT_SECRET`** | `SurveyFlowSecretKey...2026!` (>=256 bits) | HMAC-SHA256 簽署短效 Token 與雙權杖之防偽金鑰。 |
+| **`CORS_ALLOWED_ORIGINS`** | `https://survey-flow.pages.dev` | 允許跨域請求之前端 Cloudflare Pages 生產網址。 |
+| **`FRONTEND_BASE_URL`** | `https://survey-flow.pages.dev` | 前端 SPA 根網址 (用於組裝註冊驗證與忘記密碼信件中之直達連結)。 |
+| **`BREVO_API_KEY`** | `xkeysib-********` | **主力郵件服務商**：Brevo HTTP REST API 金鑰 (走 HTTPS Port 443 穿透 Render 防火牆，每日免費 300 封，**全面取代傳統 Gmail SMTP**)。 |
+| **`MAIL_FROM`** | `service@surveyflow.tw` | 系統外發信件之寄件者顯示信箱 (需於 Brevo 驗證為合規寄件人)。 |
+
+### 2. 雲端環境查整結果：確認為多餘且可安全移除之無效變數
+
+以下 3 個變數在專案代碼中 **0 引用**（系統最高管理員帳號由關聯式資料庫 `schema.sql` / `data.sql` 種子資料治理解析，而非啟動時讀取環境變數），於 Render 控制台屬於多餘殘留，**可安全直接刪除 (Delete)**：
+
+| 變數名稱 | 查整狀態 | 說明與建議處置 |
+| :--- | :---: | :--- |
+| `APP_ADMIN_USERNAME` | ❌ **多餘殘留** | 專案代碼無引用。管理員由資料庫種子管轄 (`admin / Admin123!`)，可於 Render 刪除。 |
+| `APP_ADMIN_PASSWORD` | ❌ **多餘殘留** | 專案代碼無引用。密碼以 Argon2id 儲存於資料庫，可於 Render 刪除。 |
+| `APP_ADMIN_EMAIL` | ❌ **多餘殘留** | 專案代碼無引用。管理員 Email 儲存於 `users` 表，可於 Render 刪除。 |
+
+### 3. 本地開發與可選備用降級參數 (Local & Optional Fallback)
+
+| 環境變數名稱 | 預設降級值 (本地開發) | 說明 |
+| :--- | :--- | :--- |
+| `PORT` / `SERVER_PORT` | `8080` | 後端 Web 容器動態監聽之 HTTP 通訊埠號 (Render 部署時由平台自動動態注入)。 |
+| `RESEND_API_KEY` | *(選填/備用)* | Resend HTTP API 金鑰 (備用 HTTP 443 外寄管道)。 |
+| `MAIL_PROVIDER` | `AUTO` | 郵件提供商調度模式 (`AUTO`: 自動優先偵測 Brevo -> Resend -> SMTP)。 |
 | `JWT_ACCESS_EXPIRATION_MS` | `900000` (15 分鐘) | 短效無狀態 Access Token 存活毫秒數。 |
 | `JWT_REFRESH_EXPIRATION_MS`| `604800000` (7 天) | 長效 Refresh Token 存活毫秒數。 |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:4200` | 允許跨域請求之前端來源 (生產設為 `https://survey-flow.pages.dev`)。 |
-| `MAIL_HOST` | `smtp.gmail.com` | SMTP 郵件伺服器主機。 |
-| `MAIL_PORT` | `587` | SMTP TLS 通訊埠號。 |
-| `MAIL_USERNAME` | *(無預設值)* | 寄信專用電子郵件地址 (由環境變數外部注入)。 |
-| `MAIL_PASSWORD` | *(無預設值)* | Google 應用程式 16 碼安全密碼 (由環境變數外部注入)。 |
-| `MAIL_FROM` | `no-reply@surveyflow.tw` | 系統外發信件之顯示寄件者地址。 |
-| `FRONTEND_BASE_URL` | `http://localhost:4200` | 前端根網址 (用於組裝信件中之 6 碼開通與重設連結)。 |
-| `BREVO_API_KEY` | *(選填/雲端推薦)* | Brevo HTTP API 金鑰 (走 HTTPS 443 埠號，突破 Render 免費方案 SMTP 阻斷)。 |
-| `RESEND_API_KEY` | *(選填/雲端推薦)* | Resend HTTP API 金鑰 (走 HTTPS 443 埠號，備用外寄服務)。 |
-| `MAIL_PROVIDER` | `AUTO` | 郵件提供商模式 (`AUTO`: 自動偵測 Brevo -> Resend -> SMTP)。 |
+| `MAIL_HOST` / `MAIL_PORT` | `smtp.gmail.com` / `587` | 本地離線開發用 Gmail SMTP 主機與通訊埠 (生產環境已全面由 Brevo 取代)。 |
+| `MAIL_USERNAME` / `MAIL_PASSWORD`| *(無預設值)* | 本地離線開發用 Gmail 寄信帳號與 16 碼應用程式密碼。 |
 
 ---
 

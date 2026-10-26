@@ -2,6 +2,34 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
+## [2026-10-27 00:55] - 深度查整環境變數矩陣與架構圖排版：消滅極端長條扁平圖表、確立「三欄平衡流」黃金比例、確立 Brevo 為唯一雲端生產郵件服務商並標明多餘殘留變數
+> **Commit 代碼**: `d3379d6`
+
+- **改動原因**:
+  - 響應使用者核心要求：「然後 目前 07. 環境變數外部化對照表 (OCP Externalized Configurations) 似乎和實際不對 而且我發現目前這邊部署上去的是否有多餘的 嚴格查整 都修正好後push to master yy 有問題要和我嚴格確認；例如 gmail不是改用 BREVO 了嗎；這種極難閱讀的排版設計一定要嚴格避免；要記得寫入規範」。
+- **具體內容**:
+  - **杜絕極端扁長架構圖排版反模式 ([`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) §4.3 & [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md))**:
+    - 徹底糾正先前將 Controller ➔ Service ➔ Repo ➔ DB 全部一字橫排導致整張圖橫向延伸數千像素、在畫面中被等比壓縮成一條極扁細線、文字完全無法閱讀的重大排版反模式。
+    - **正式寫入協定中樞規範**：架構全景圖強制採用「三欄式水平流拓撲 (Three-Column Balanced Architecture)」——左欄為前端展示層、中欄為後端核心業務層（內部強制垂直自上而下堆疊 Controller ➔ Service ➔ Repo ➔ Entity）、右欄為資料庫層。使全圖長寬比嚴格維持在 **16:9 至 4:3 之黃金可讀比例**，字體清晰大氣，杜絕任何失真扁縮。
+  - **雲端環境變數靜態稽核與多餘殘留查整**:
+    - 全面靜態掃描後端 Java 代碼、設定檔與 Docker 腳本，確認 Render 控制台之 `APP_ADMIN_USERNAME`、`APP_ADMIN_PASSWORD`、`APP_ADMIN_EMAIL` 在全專案中 **0 引用**。
+    - 系統管理員權限由關聯式資料庫 `schema.sql` / `data.sql` 種子資料管理 (`admin / Admin123!`)，非啟動時由環境變數讀取。
+    - **明確標註上述 3 個變數在 Render Web Service 為多餘項目，可安全刪除**。
+  - **郵件服務商架構明確化 (Brevo HTTP API 主力化)**:
+    - 因 Render 免費主機封鎖 SMTP 587/465 埠，雲端生產環境**全面由 Brevo HTTP REST API (`BREVO_API_KEY`，走 HTTPS Port 443) 獨佔承擔發信**，零阻斷發送 OTP 與驗證信，徹底取代傳統 Gmail SMTP。
+    - 更新 `backend/src/main/resources/application.properties`，將 Brevo HTTP API 提升為主設定區塊，並將 Gmail SMTP 標註為僅限本地離線開發之降級備用。
+  - **全系統規格書精準對齊真實生產矩陣**:
+    - [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md) 與 [`docs/system-design/10-deployment.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-deployment.md)：
+      - 清晰歸納 **Render 生產環境 8 大核心環境變數** (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET`, `CORS_ALLOWED_ORIGINS`, `FRONTEND_BASE_URL`, `BREVO_API_KEY`, `MAIL_FROM`)。
+      - 建立「雲端多餘無效變數查整清單」與處置建議。
+      - 將 Gmail SMTP 與其他參數歸入「本地開發與備用降級參數」。
+- **影響範圍**:
+  - `AGENTS.md`
+  - `backend/src/main/resources/application.properties`
+  - `README.md`
+  - `docs/system-design/10-deployment.md`
+  - `docs/change-log.md`
+
 ## [2026-10-27 00:40] - 全域 Mermaid 圖表統一視覺標準：全面規範 Sci-Fi HUD 霓虹科技風、連線文字純白無背景色塊、統一橫向 LR 佈局並寫入協定中樞
 > **Commit 代碼**: `30e4724`
 
