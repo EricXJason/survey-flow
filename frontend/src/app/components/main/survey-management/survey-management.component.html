@@ -260,39 +260,24 @@
                   </td>
                 </ng-container>
 
-                <!-- 狀態欄位 (三大維度：時效狀態、大廳展示、連結填答) -->
+                <!-- 狀態欄位 (兩個狀態維度：大廳展示與連結填答) -->
                 <ng-container matColumnDef="status">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header class="th-status">狀態</th>
                   <td mat-cell *matCellDef="let item" class="col-status">
                     <div class="dual-status-chips">
-                      <!-- 維度一：時效狀態 (若有設定時限) -->
-                      @if (getTimeStatus(item) === 'expired') {
-                        <span class="status-chip chip-expired" title="此問卷已超過截止填答時間，已自動停止填答">
-                          <span class="status-dot dot-expired" aria-hidden="true"></span>
-                          <span>已過期</span>
-                        </span>
-                      } @else if (getTimeStatus(item) === 'upcoming') {
-                        <span class="status-chip chip-upcoming" title="此問卷尚未到達開放填答時間">
-                          <span class="status-dot dot-upcoming" aria-hidden="true"></span>
-                          <span>未開始</span>
-                        </span>
-                      } @else if (getTimeStatus(item) === 'active') {
-                        <span class="status-chip chip-running" title="此問卷在有效時限內正常開放中">
-                          <span class="status-dot dot-running" aria-hidden="true"></span>
-                          <span>進行中</span>
-                        </span>
-                      }
-
-                      <!-- 維度二：大廳公開狀態 -->
+                      <!-- 維度一：大廳公開狀態 -->
                       @if (item.isPublicToLobby) {
-                        <span
-                          class="status-chip chip-open"
-                          [class.chip-muted]="getTimeStatus(item) === 'expired'"
-                          [title]="getTimeStatus(item) === 'expired' ? '已開啟大廳展示，但因已過期故大廳不予顯示' : '已於問卷大廳公開展示'"
-                        >
-                          <span class="status-dot dot-open" aria-hidden="true"></span>
-                          <span>{{ getTimeStatus(item) === 'expired' ? '大廳-過期隱藏' : '大廳-開放' }}</span>
-                        </span>
+                        @if (getTimeStatus(item) === 'expired') {
+                          <span class="status-chip chip-expired" title="已開啟大廳展示，但因已逾期故大廳不予顯示">
+                            <span class="status-dot dot-expired" aria-hidden="true"></span>
+                            <span>大廳-過期</span>
+                          </span>
+                        } @else {
+                          <span class="status-chip chip-open" title="已於問卷大廳公開展示">
+                            <span class="status-dot dot-open" aria-hidden="true"></span>
+                            <span>大廳-開放</span>
+                          </span>
+                        }
                       } @else {
                         <span class="status-chip chip-closed" title="未發布至大廳，屬私人專案">
                           <span class="status-dot dot-closed" aria-hidden="true"></span>
@@ -300,16 +285,19 @@
                         </span>
                       }
 
-                      <!-- 維度三：填答開放狀態 (專屬問卷連結) -->
+                      <!-- 維度二：填答開放狀態 (專屬問卷連結) -->
                       @if (item.isPublished) {
-                        <span
-                          class="status-chip chip-open"
-                          [class.chip-muted]="getTimeStatus(item) === 'expired'"
-                          [title]="getTimeStatus(item) === 'expired' ? '問卷開關為開啟，但已過截止時間無法填答' : '專屬問卷連結開放填寫中'"
-                        >
-                          <span class="status-dot dot-open" aria-hidden="true"></span>
-                          <span>{{ getTimeStatus(item) === 'expired' ? '連結-已截止' : '連結-開放' }}</span>
-                        </span>
+                        @if (getTimeStatus(item) === 'expired') {
+                          <span class="status-chip chip-expired" title="問卷開關為開啟，但已超過截止填答時間">
+                            <span class="status-dot dot-expired" aria-hidden="true"></span>
+                            <span>連結-過期</span>
+                          </span>
+                        } @else {
+                          <span class="status-chip chip-open" title="專屬問卷連結開放填寫中">
+                            <span class="status-dot dot-open" aria-hidden="true"></span>
+                            <span>連結-開放</span>
+                          </span>
+                        }
                       } @else {
                         <span class="status-chip chip-closed" title="問卷連結已關閉，停止填寫">
                           <span class="status-dot dot-closed" aria-hidden="true"></span>
