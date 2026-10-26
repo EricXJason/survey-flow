@@ -2,8 +2,24 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
-## [2026-10-27 01:00] - 達成極致 SSOT：CORS 與前端網址自動連動統一、README 納入 16 大角色功能權限矩陣並確認資料庫無異動發布
-> **Commit 代碼**: `15fbd4a`
+## [2026-10-27 01:05] - 確立跨領域專案調度適配矩陣：規範純前端、純後端、Unity 遊戲與起步無 System Design 之通用執行 SOP
+> **Commit 代碼**: `58b963d`
+
+- **改動原因**:
+  - 響應使用者核心要求：「嚴格確保我未來專案的規範 跑這日個agent md 可以達成和這個專案一樣的效果 然後要釐清楚 如果只是前端 或是只有後端 或是這是遊戲專案 或是 system design 沒做規劃時 其他專案怎麼跑 要寫清楚規範 讓這照md可以適用於全端專案 app專案 unity遊戲專案；push to yy」。
+- **具體內容**:
+  - **核心協定跨專案調度矩陣建立 ([`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) §1.4)**:
+    - **全端 Web 專案**: 啟用全量雙中樞與雙特化協定（`AGENTS-FRONT` + `AGENTS-BACK`），資料庫 SQL SSOT、3NF、Controller-Service-Repo、純原生 SCSS、規格書 01~11 全量運行。
+    - **純前端 / 跨平台 App 專案**: 僅載入 `AGENTS-FRONT`，`07-specs-database.md` 轉為「本地持久化與狀態模型」或顯式標註無實體 DB；`06-specs-api.md` 專注於 API 消費契約與 Mock；聚焦 UI/UX、排版防破版與零色票硬編碼。
+    - **純後端 / 微服務專案**: 僅載入 `AGENTS-BACK`，`08-ui-ux-standards.md` 顯式標註無前端 UI；聚焦 Controller-Service-Repo、100% 原生 SQL、Docker 容器化與 Actuator 探針。
+    - **Unity 遊戲專案**: 僅載入 `AGENTS-UNITY`；**嚴格禁止執行「`嚴格專案最佳化`」**（一旦檢測到 `Assets/`、`ProjectSettings/` 強制阻斷刪除與目錄重組以防 GUID 斷裂）；規格書聚焦於 GameLoop、FSM 狀態機、ECS、物件池與 GC 最佳化。
+  - **專案起步期（未做 System Design 規劃前）運行 SOP (§1.4.1)**:
+    - 確立「策略藍圖先行 (`docs/development-plan.md`)」原則：起步期專注於「Why」與「What」，無 `system-design/` 乃完全合法之工程事實，嚴禁無中生有捏造規格。
+    - README 依據計劃書誠實陳述，未實體化之端點強制標註「⚠️【尚未規劃】」。
+    - 待核心業務代碼成型後，人類下達指令 **`專案系統分析建立`**，始啟動逆向掃描實體代碼生成 `docs/system-design/` (01~11)，達成完美閉環。
+- **影響範圍**:
+  - `AGENTS.md`
+  - `docs/change-log.md`
 
 - **改動原因**:
   - 響應使用者核心反饋與指令：「這兩個怎麼沒有統一 (指 CORS_ALLOWED_ORIGINS 與 FRONTEND_BASE_URL)；然後目前資料庫有需要動嗎 都沒有的話 就push to master yy；然後read me 可以放 角色功能比較表啊」。
