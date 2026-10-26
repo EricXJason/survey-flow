@@ -49,7 +49,7 @@
 | **複製問卷專屬作答連結** | ❌ | ✅ | ✅ | 複製唯一分享 URL 直達問卷填答頁面 |
 | **調整名下問卷開放狀態與時限** | ❌ | ✅ | ✅ | `PUT /api/user/surveys/{id}/settings` (雙狀態開關與時限) |
 | **即時關閉名下問卷填答通道** | ❌ | ✅ | ✅ | 即時停止填答，阻斷新受訪者存取 |
-| **調閱名下問卷數據分析報表** | ❌ | ✅ | ✅ | `GET /api/user/surveys/{id}/analytics` (非擁有者 403 阻斷) |
+| **調閱名下問卷數據分析報表** | ❌ | ✅ | ✅ | `GET /api/analytics/surveys/{id}` (非擁有者 403 阻斷) |
 | **4 大格式匯出名下問卷數據** | ❌ | ✅ | ✅ | 支援 CSV、SPSS 語法檔 (.sps)、JSON 與列印 PDF 匯出 |
 | **刪除名下問卷專案** | ❌ | ✅ | ✅ | `DELETE /api/user/surveys/{id}` 安全軟刪除 |
 | **維護個人基本資料** | ❌ | ✅ | ✅ | `PUT /api/user/profile` (身分證號唯讀安全保護) |
@@ -300,30 +300,37 @@ erDiagram
 
 ## 06. 核心業務 RESTful API 路由矩陣
 
-全系統嚴格遵守標準 4 大 HTTP 通訊動詞 (`GET`, `POST`, `PUT`, `DELETE`)，杜絕 `PATCH`：
+全系統嚴格依循 RFC 7231 與 RFC 5789 標準 RESTful 語意，以業務意圖為導向精準劃分端點防線，100% 對齊後端 Controller 實體路由 (SSOT)：
 
 | 模組分類 | 請求方法 | 路由端點 | 權限需求 | 業務功能規格說明 |
 | :--- | :---: | :--- | :---: | :--- |
 | **帳號認證** | `POST` | `/api/public/auth/register` | 公開 | 新會員註冊並寄發 6 碼信箱啟用驗證碼。 |
-| **帳號認證** | `POST` | `/api/public/auth/verify-registration-email` | 公開 | 輸入信箱 6 碼驗證碼開通帳號並簽發雙 Token。 |
+| **帳號認證** | `POST` | `/api/public/auth/verify-email` | 公開 | 輸入信箱 6 碼驗證碼開通帳號並簽發雙 Token。 |
+| **帳號認證** | `POST` | `/api/public/auth/resend-verification` | 公開 | 重新寄發信箱開通 6 碼驗證碼。 |
 | **帳號認證** | `POST` | `/api/public/auth/login` | 公開 | 帳號密碼登入驗證，簽發短效 Access + 長效 Refresh Token。 |
-| **帳號認證** | `POST` | `/api/public/auth/refresh-token` | 公開 | 以 Refresh Token 執行單次輪替 (RTR) 換發新雙 Token。 |
-| **帳號認證** | `POST` | `/api/public/auth/forgot-password` | 公開 | 發送忘記密碼 15 分鐘時效 6 碼重設碼至信箱。 |
+| **帳號認證** | `POST` | `/api/public/auth/refresh` | 公開 | 以 Refresh Token 換發短效 Access Token。 |
+| **帳號認證** | `POST` | `/api/user/auth/logout` | 會員 | 註銷當前連線 Session 與權杖狀態。 |
+| **帳號認證** | `POST` | `/api/public/auth/forget-password` | 公開 | 發送忘記密碼 15 分鐘時效 6 碼重設碼至信箱。 |
 | **帳號認證** | `POST` | `/api/public/auth/reset-password` | 公開 | 憑 6 碼驗證碼重設帳號登入新密碼。 |
-| **問卷公開** | `GET` | `/api/public/surveys` | 公開 | 分頁模糊搜尋公開大廳開放中之問卷列表。 |
+| **問卷公開** | `GET` | `/api/public/surveys/lobby` | 公開 | 分頁模糊搜尋公開大廳開放中之問卷列表 (支援分類過濾)。 |
 | **問卷公開** | `GET` | `/api/public/surveys/{id}` | 公開 | 取得特定問卷完整結構並累加瀏覽計數 (viewCount)。 |
 | **問卷填答** | `POST` | `/api/public/submissions` | 公開 | 受訪者提交問卷填答資料與個資輪廓（支援訪客與會員）。 |
-| **問卷管理** | `POST` | `/api/surveys` | 會員 | 建立全新問卷專案（支援 7 大型態題型與跳題配置）。 |
-| **問卷管理** | `GET` | `/api/surveys/my` | 會員 | 查詢當前會員名下建立之所有問卷清單與個人編號。 |
-| **問卷管理** | `PUT` | `/api/surveys/{id}` | 擁有者 | 修改問卷設定、題目結構、開放時限與大廳狀態。 |
-| **問卷管理** | `DELETE` | `/api/surveys/{id}` | 擁有者 | 軟刪除名下指定問卷專案。 |
-| **數據分析** | `GET` | `/api/surveys/{id}/analytics` | 擁有者 | 取得問卷多維度統計分析報表 (KPI、走勢圖、選項分佈)。 |
+| **問卷管理** | `GET` | `/api/user/surveys` | 會員 | 查詢當前會員名下建立之所有問卷清單 (相容 `/api/surveys/my`)。 |
+| **問卷管理** | `POST` | `/api/user/surveys` | 會員 | 建立全新問卷專案（支援 7 大型態題型與跳題配置）。 |
+| **問卷管理** | `GET` | `/api/user/surveys/{id}` | 擁有者 | 讀取名下指定問卷之完整題目結構以進行編輯。 |
+| **問卷管理** | `PUT` | `/api/user/surveys/{id}` | 擁有者 | 完整覆蓋更新問卷題目與選項結構 (PUT 完整替換)。 |
+| **問卷管理** | `PUT` | `/api/user/surveys/{id}/settings` | 擁有者 | 局部更新問卷開放時限與大廳展示狀態 (狀態開關調整)。 |
+| **問卷管理** | `DELETE` | `/api/user/surveys/{id}` | 擁有者 | 軟刪除名下指定問卷專案。 |
+| **數據分析** | `GET` | `/api/analytics/surveys/{id}` | 擁有者 | 調閱問卷多維度統計分析報表 (KPI、走勢圖、題目分佈)。 |
 | **會員管理** | `GET` | `/api/user/profile` | 會員 | 查詢當前登入會員之個人基本檔案。 |
 | **會員管理** | `PUT` | `/api/user/profile` | 會員 | 更新個人真實姓名、手機號碼等基本資料。 |
-| **會員管理** | `PUT` | `/api/user/password` | 會員 | 提供舊密碼驗證通過後更換新密碼。 |
+| **會員管理** | `PUT` | `/api/user/password` | 會員 | 提供舊密碼驗證通過後以 Argon2id 更換新密碼。 |
 | **營運後台** | `GET` | `/api/admin/users` | 管理員 | 分頁檢視全站註冊會員名冊與即時狀態。 |
-| **營運後台** | `PUT` | `/api/admin/users/{id}/status` | 管理員 | 即時凍結 (SUSPENDED) 或啟用 (ACTIVE) 指定會員。 |
+| **營運後台** | `PUT` | `/api/admin/users/{id}/status` | 管理員 | 即時凍結 (SUSPENDED) 或啟用 (ACTIVE) 指定會員狀態。 |
 | **營運後台** | `DELETE` | `/api/admin/users/{id}` | 管理員 | 安全軟刪除指定會員帳號（受保護管理員除外）。 |
+| **營運後台** | `GET` | `/api/admin/surveys` | 管理員 | 分頁檢視全站所有問卷清單與即時數據。 |
+| **營運後台** | `DELETE` | `/api/admin/surveys/{id}` | 管理員 | 運維強制下架違規或違法問卷專案。 |
+| **營運後台** | `GET` | `/api/admin/analytics/overview` | 管理員 | 平台整體營運 KPI、填答總量與活耀度總覽。 |
 
 ---
 

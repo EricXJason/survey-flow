@@ -3,18 +3,19 @@
 > **通訊協定**: RESTful HTTPS API / JSON Payload (Spring Boot 4.1.1 Web API)  
 > **更新日期**: 2026-10-22  
 
-## 0. HTTP 通訊方法鐵律 (HTTP Method Invariants)
+## 0. HTTP 通訊方法與語意標準 (HTTP Method & RESTful Semantics)
 
-全系統 API 交互永遠僅限使用以下四種標準 RESTful HTTP 動詞，**全專案嚴格禁止使用 `PATCH`、`HEAD` 等非標準或部分更新動詞**：
+全系統 API 交互嚴格遵循 RFC 7231 與 RFC 5789 國際標準 RESTful 語意，依據業務意圖精準調度 HTTP 動詞：
 
-| HTTP 動詞 | 業務責任與使用時機 | 典型範例 |
+| HTTP 動詞 | 語意責任與使用時機 (RFC 標準) | 專案典型實作端點 (SSOT) |
 | :--- | :--- | :--- |
-| **`GET`** | 資源讀取與查詢（冪等且安全） | 查詢問卷清單、調閱個人資料、取得報表統計 |
-| **`POST`** | 資源新建、身分驗證與高階流程觸發 | 會員註冊、使用者登入、提交問卷填答、換發 Token |
-| **`PUT`** | 資源完整或狀態屬性更新（全量/設定覆蓋） | 修改個人資料、更新問卷設定時限、變更會員狀態 |
-| **`DELETE`** | 資源刪除或邏輯軟刪除（冪等） | 刪除自有名下問卷、管理員刪除帳號 |
+| **`GET`** | 資源讀取與檢索（等冪、安全無副作用） | `GET /api/public/surveys/lobby`、`GET /api/analytics/surveys/{id}` |
+| **`POST`** | 資源新建、身分驗證核驗與高階流程觸發 | `POST /api/public/auth/login`、`POST /api/user/surveys`、`POST /api/public/submissions` |
+| **`PUT`** | 資源完整替換或特定子資源狀態覆蓋更新（等冪） | `PUT /api/user/surveys/{id}` (整份問卷結構替換)、`PUT /api/user/profile` |
+| **`PATCH` / 子資源 `PUT`** | 局部狀態修改（部分屬性更新） | `PUT /api/user/surveys/{id}/settings` (開關時限)、`PUT /api/admin/users/{id}/status` (狀態切換) |
+| **`DELETE`** | 資源刪除或邏輯軟刪除（等冪） | `DELETE /api/user/surveys/{id}`、`DELETE /api/admin/users/{id}` |
 
-> ⚠️ **統一更新原則**: 所有局部更新（如會員啟用/凍結狀態切換、問卷發布時限修改）**一律統一採用 `PUT`**，徹底杜絕前端與後端對動詞語意之歧異。
+> 📌 **語意邊界規範**: 完整實體更新使用 `PUT`；局部狀態開關（如凍結/解凍、開放/關閉）以特定子資源端點（如 `.../status`、`.../settings`）之 `PUT` 或標準 `PATCH` 承載，前後端維持 100% 契約一致。
 
 ---
 
@@ -194,13 +195,13 @@
   ```
 
 ### 2.4 問卷填答數據與統計分析報表 (Get Survey Analytics Report)
-- **端點路徑**: `GET /api/surveys/{surveyId}/analytics`
+- **端點路徑**: `GET /api/analytics/surveys/{surveyId}`
 - **安全與權限控制 (Spring Security)**:
   - 角色要求：`@PreAuthorize("hasRole('ADMIN') or @surveySecurity.isAuthor(#surveyId, authentication.name)")`
   - 規則：系統管理員可檢視全站問卷；一般會員僅限擁有者 (Author) 存取；未授權回傳 `403 Forbidden`。
 - **Java Spring Boot 控制器契約 (Java Controller Contract)**:
   ```java
-  @GetMapping("/api/surveys/{surveyId}/analytics")
+  @GetMapping("/surveys/{surveyId}")
   @PreAuthorize("hasRole('ADMIN') or @surveySecurity.isAuthor(#surveyId, authentication.name)")
   public ResponseEntity<ApiResponse<SurveyAnalyticsReportDTO>> getSurveyAnalytics(
       @PathVariable("surveyId") String surveyId

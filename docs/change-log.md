@@ -2,8 +2,56 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
+## [2026-10-27 01:50] - 根絕 README 與規格書路由漂移 (Documentation Drift) 並升級 RESTful PUT/PATCH 國際標準語意規範
+> **Commit 代碼**: `d6d57c3`
+
+- **改動原因**:
+  - 響應使用者關鍵代碼稽核反饋：
+    1. **RESTful 語意精準度**：指出「全域嚴格禁止 PATCH」削弱了 RESTful 語意之精準度（PUT 為等冪完整替換，PATCH 為局部狀態修改）。
+    2. **路由文檔漂移 (Documentation Drift)**：發現 `README.md` 第 02 節與第 06 節在同一個功能上路由不一致（如大廳列表、建立問卷、數據分析、信箱驗證等）。
+- **具體內容**:
+  - **100% 依據後端 Controller 程式碼與前端實際呼叫 (SSOT) 統一 API 路由**:
+    - **大廳列表**: 全域統一為 `GET /api/public/surveys/lobby`。
+    - **建立問卷**: 全域統一為 `POST /api/user/surveys` (相容 `/api/surveys`)。
+    - **問卷結構更新**: 全域統一為 `PUT /api/user/surveys/{id}`。
+    - **問卷開關設定**: 全域統一為 `PUT /api/user/surveys/{id}/settings`。
+    - **問卷數據分析**: 全域統一為 `GET /api/analytics/surveys/{id}`。
+    - **帳號驗證與換發**: 全域統一為 `/api/public/auth/verify-email`、`/api/public/auth/resend-verification`、`/api/public/auth/refresh`。
+    - **會員狀態切換**: 全域統一為 `PUT /api/admin/users/{id}/status`。
+    - **覆蓋範圍**: 同步修訂 [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md)（第 02 節與第 06 節）、[`docs/system-design/02-role-type.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/02-role-type.md) 與 [`docs/system-design/06-specs-api.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/06-specs-api.md)。
+  - **升級 RESTful PUT/PATCH 規範並寫入防漂移鐵律 ([`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) §3 & [`AGENTS-BACK.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS-BACK.md))**:
+    - 依據 RFC 7231 與 RFC 5789 解除「嚴格禁止 PATCH」過度限制，回歸「完整替換用 PUT、局部更新用 PATCH 或專屬狀態子資源 PUT 端點」之標準語意。
+    - 確立「**杜絕文檔漂移鐵律 (Documentation Drift Strict Prohibition)**」為全域不可逾越之工程底線。
+- **影響範圍**:
+  - `README.md`
+  - `AGENTS.md`
+  - `AGENTS-BACK.md`
+  - `docs/system-design/02-role-type.md`
+  - `docs/system-design/06-specs-api.md`
+  - `docs/change-log.md`
+
+## [2026-10-27 01:45] - 全面確立全域協定檔案職責矩陣、標註精確時間戳並寫入 GitHub Mermaid 零右側空白鐵律
+> **Commit 代碼**: `c6c31dc`
+
+- **改動原因**:
+  - 響應使用者核心中樞擴展指令：「合理多了 寫入md規範中 然後這個專案的完整專案度之後其他專案都要嚴格確保能達到喔 所以md規範要清楚 請分清楚哪個檔案說明什麼 還有要求md規範內 更新日期 時間 要標好糗要高效能 低token 完整agent 理解度」。
+- **具體內容**:
+  - **確立全域協定檔案職責說明矩陣 ([`AGENTS.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/AGENTS.md) §1.1)**:
+    - 嚴格界定 `AGENTS.md`（工程中樞）、`AGENTS-GIT.md`（版控防禦）、`AGENTS-FRONT.md`（前端UI/UX）、`AGENTS-BACK.md`（後端/SQL）、`AGENTS-UNITY.md`（遊戲引擎）、`development-plan.md`（前期藍圖）、`change-log.md`（修訂歷程）、`check-list.md`（點收驗證）與 `system-design/` (01~11 規格書) 之精確責任與邊界。
+    - 明確規範未來任何全端、App、後端、遊戲專案只要導入此協定體系，即可 100% 複製 SurveyFlow 頂級完整度與工程品質。
+  - **落實精確日期與時間戳規範**:
+    - 全面於 `AGENTS.md`、`AGENTS-GIT.md`、`AGENTS-FRONT.md`、`AGENTS-BACK.md` 頂部 Header 標註標準 ISO/精確至分秒之更新時間（`2026-10-27 01:35:00`）。
+  - **寫入 Mermaid Subgraph 零右側空白與高度對齊鐵律 (§4.3)**:
+    - 正式將「`subgraph` 標題字串長度嚴格小於內部卡片文字寬度」、「三欄高度 3:3:3 完美平齊對稱」、「統一 HUD 直角卡片」與「連線文字深色獨立底襯」確立為不可逾越之視覺工程鐵律。
+- **影響範圍**:
+  - `AGENTS.md`
+  - `AGENTS-GIT.md`
+  - `AGENTS-FRONT.md`
+  - `AGENTS-BACK.md`
+  - `docs/change-log.md`
+
 ## [2026-10-27 01:32] - 徹底根除 GitHub Mermaid Subgraph 內部右側大空白：標題寬度收斂與卡片寬度齊平
-> **Commit 代碼**: `bff5353`
+> **Commit 代碼**: `7262c14`
 
 - **改動原因**:
   - 響應使用者關鍵視覺反饋：「每一個部分當中右邊多有大空白 和ide內部看 完全不一樣」。

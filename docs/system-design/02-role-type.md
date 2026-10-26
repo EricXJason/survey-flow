@@ -44,7 +44,7 @@
 | **複製問卷專屬作答連結** | ❌ | ✅ | ✅ | 複製直達作答 URL 分享受訪者 |
 | **調整名下問卷開放狀態與時限** | ❌ | ✅ | ✅ | `PUT /api/user/surveys/{id}/settings` (雙狀態切換與時限) |
 | **關閉名下問卷填答通道** | ❌ | ✅ | ✅ | 即時停止填答，阻斷新受訪者作答 |
-| **調閱名下問卷數據分析報表** | ❌ | ✅ | ✅ | `GET /api/user/surveys/{id}/analytics`，非擁有者拋出 403 |
+| **調閱名下問卷數據分析報表** | ❌ | ✅ | ✅ | `GET /api/analytics/surveys/{id}`，非擁有者拋出 403 |
 | **匯出名下問卷統計數據** | ❌ | ✅ | ✅ | 支援 CSV、Excel (UTF-8 BOM)、SPSS (.sps)、JSON 匯出 |
 | **刪除名下問卷專案** | ❌ | ✅ | ✅ | `DELETE /api/user/surveys/{id}` 軟刪除 |
 | **維護個人基本資料** | ❌ | ✅ | ✅ | `PUT /api/user/profile` (身分證字號唯讀保護) |
