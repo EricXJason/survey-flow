@@ -590,13 +590,46 @@
     flex-shrink: 0;
 
     &.dot-open,
-    &.dot-published {
+    &.dot-published,
+    &.dot-active,
+    &.dot-running {
       background: #10b981;
     }
 
     &.dot-closed {
       background: #94a3b8;
     }
+
+    &.dot-expired {
+      background: #ef4444;
+    }
+
+    &.dot-upcoming {
+      background: #3b82f6;
+    }
+  }
+
+  // 已過期 / 已截止狀態：警示朱紅（Rose / Red）
+  &.chip-expired {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    font-weight: 700;
+  }
+
+  // 未開始狀態：沉穩冷調藍（Blue）
+  &.chip-upcoming {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+
+  // 進行中狀態：活力綠（Green）
+  &.chip-active,
+  &.chip-running {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
   }
 
   // 開放狀態：統一乾淨翡翠綠（Emerald）
@@ -615,6 +648,31 @@
     background: #f1f5f9;
     color: #475569;
     border: 1px solid #cbd5e1;
+  }
+
+  // 降級柔和標籤（例如大廳已過期隱藏）
+  &.chip-muted {
+    opacity: 0.7;
+    border-style: dashed;
+  }
+}
+
+.time-expired-alert {
+  margin-top: 1.2rem;
+  padding: 1rem 1.4rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--r-xs, 0.4rem);
+  color: #991b1b;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+
+  .alert-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
   }
 }
 

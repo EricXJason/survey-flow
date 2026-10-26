@@ -246,7 +246,8 @@ public class SurveyService {
      */
     @Transactional(readOnly = true)
     public Page<SurveySummaryResponse> searchLobbySurveys(String category, String keyword, Pageable pageable) {
-        Page<Survey> page = surveyRepository.searchPublishedSurveysNative(category, keyword, pageable);
+        LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Taipei"));
+        Page<Survey> page = surveyRepository.searchPublishedSurveysNative(category, keyword, now, pageable);
         return page.map(this::convertToSummaryResponse);
     }
 

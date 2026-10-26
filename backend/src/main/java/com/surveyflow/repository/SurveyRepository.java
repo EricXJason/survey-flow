@@ -21,29 +21,36 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
 public interface SurveyRepository extends JpaRepository<Survey, Long> {
 
     /**
-     * 原生 SQL 大廳多條件模糊搜尋公開問卷
+     * 原生 SQL 大廳多條件模糊搜尋公開問卷 (嚴格過濾未開始或已過期截止之問卷)
      * @param category 分類 (若為 null 則不限)
      * @param keyword 關鍵字 (標題或說明)
+     * @param now 臺灣當前時間 (Asia/Taipei)
      * @param pageable 分頁參數
      * @return 符合條件之分頁列表
      */
     @Query(value = "SELECT * FROM surveys s WHERE s.is_open = 1 AND s.is_public_to_lobby = 1 AND s.deleted_at IS NULL " +
+                   "AND (s.start_date IS NULL OR s.start_date <= :now) " +
+                   "AND (s.end_date IS NULL OR s.end_date >= :now) " +
                    "AND (:category IS NULL OR :category = '' OR s.category = :category) " +
                    "AND (:keyword IS NULL OR :keyword = '' OR LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
                    "     OR LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%')))",
            countQuery = "SELECT COUNT(*) FROM surveys s WHERE s.is_open = 1 AND s.is_public_to_lobby = 1 AND s.deleted_at IS NULL " +
+                        "AND (s.start_date IS NULL OR s.start_date <= :now) " +
+                        "AND (s.end_date IS NULL OR s.end_date >= :now) " +
                         "AND (:category IS NULL OR :category = '' OR s.category = :category) " +
                         "AND (:keyword IS NULL OR :keyword = '' OR LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
                         "     OR LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%')))",
            nativeQuery = true)
     Page<Survey> searchPublishedSurveysNative(@Param("category") String category,
                                               @Param("keyword") String keyword,
+                                              @Param("now") LocalDateTime now,
                                               Pageable pageable);
 
     /**

@@ -131,6 +131,14 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
   /** 彈窗中複製連結成功視覺反饋信號 */
   public readonly isCopiedFromModal = signal<boolean>(false);
 
+  /** 計算屬性：目前彈窗設定的結束時間是否已早於當前時間（已過期） */
+  public readonly isSettingsExpired = computed<boolean>(() => {
+    const endStr = this.settingsEndDate();
+    if (!endStr) return false;
+    const end = new Date(endStr.replace(' ', 'T'));
+    return !isNaN(end.getTime()) && new Date() > end;
+  });
+
   // ─────────────────────────────────────────────────────────────────────────
   // 簡答題過濾搜尋與視覺化狀態信號
   // ─────────────────────────────────────────────────────────────────────────
@@ -1226,4 +1234,30 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
       this._fallbackCopyShareLink(survey, shareUrl);
     }
   }
+
+  /**
+   * 判定指定問卷的時效狀態
+   * @param item 問卷概要項目
+   * @returns 'expired' (已過期/已截止) | 'upcoming' (未開始) | 'active' (進行中) | 'none' (常態無時限)
+   */
+  public getTimeStatus(item: SurveySummaryItem): 'expired' | 'upcoming' | 'active' | 'none' {
+    if (!item.startDate && !item.endDate) {
+      return 'none';
+    }
+    const now = new Date();
+    if (item.endDate) {
+      const end = new Date(item.endDate.replace(' ', 'T'));
+      if (!isNaN(end.getTime()) && now > end) {
+        return 'expired';
+      }
+    }
+    if (item.startDate) {
+      const start = new Date(item.startDate.replace(' ', 'T'));
+      if (!isNaN(start.getTime()) && now < start) {
+        return 'upcoming';
+      }
+    }
+    return 'active';
+  }
 }
+

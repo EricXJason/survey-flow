@@ -119,10 +119,32 @@ export class LobbyComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * 計算屬性：依據搜尋關鍵字與選取類別進行即時多重篩選後的問卷列表
+   * 判定問卷是否處於進行中有效填答期間（排除未到達開放日或已逾期截止之問卷）
+   * @param survey 問卷資料
+   * @returns boolean 是否為進行中有效問卷
+   */
+  public isSurveyActive(survey: SurveySummaryItem): boolean {
+    const now = new Date();
+    if (survey.endDate) {
+      const end = new Date(survey.endDate.replace(' ', 'T'));
+      if (!isNaN(end.getTime()) && now > end) {
+        return false;
+      }
+    }
+    if (survey.startDate) {
+      const start = new Date(survey.startDate.replace(' ', 'T'));
+      if (!isNaN(start.getTime()) && now < start) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
+   * 計算屬性：依據搜尋關鍵字與選取類別進行即時多重篩選後的問卷列表（自動過濾已過期問卷）
    */
   public readonly filteredSurveys = computed(() => {
-    let list = this.surveyList();
+    let list = this.surveyList().filter((s) => this.isSurveyActive(s));
     const category = this.selectedCategory();
     if (category !== 'all') {
       list = list.filter((survey) => survey.category === category);
@@ -219,7 +241,8 @@ export class LobbyComponent implements OnInit, AfterViewInit {
     this.isServerUnavailable.set(false);
     this._surveyGetter.getLobbySurveys().subscribe({
       next: (surveys) => {
-        this.surveyList.set(surveys);
+        const activeSurveys = (surveys || []).filter((s) => this.isSurveyActive(s));
+        this.surveyList.set(activeSurveys);
         this.isLoading.set(false);
       },
       error: () => {
