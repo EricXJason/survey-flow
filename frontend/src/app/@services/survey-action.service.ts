@@ -307,7 +307,7 @@ export class SurveyActionService {
       }
 
       const numericId = parseInt(surveyId.replace(/\D/g, ''), 10) || surveyId;
-      this.apiClient.put<any>(`/api/user/surveys/${numericId}/settings`, {
+      this.apiClient.patch<any>(`/api/user/surveys/${numericId}/settings`, {
         isPublicToLobby: nextPublishedState,
       }).subscribe({
         next: () => {
@@ -354,7 +354,7 @@ export class SurveyActionService {
       ? `/api/user/surveys/${surveyId}/settings`
       : `/api/user/surveys/${numericId}/settings`;
 
-    this.apiClient.put<any>(endpoint, settings).subscribe({
+    this.apiClient.patch<any>(endpoint, settings).subscribe({
       next: () => {
         const successData: DialogData = {
           title: '設定更新成功',

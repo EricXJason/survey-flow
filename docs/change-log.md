@@ -2,6 +2,40 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
+## [2026-10-27 02:00] - 全端實裝標準 RESTful PATCH 動詞支援、清理多餘標註並通過 39/39 全量測試
+> **Commit 代碼**: `871abec`
+
+- **改動原因**:
+  - 響應使用者關鍵指導：「目前這個專案也符合規範喔 你嚴格確認喔」、「這類什麼更新 的不要說出來 其他部分也是」。
+  - 專案實體全棧真正落實標準 RESTful PATCH 局部狀態修改，並清除規格書與文檔中贅餘的語意解說標註，回歸純粹的業務責任描述。
+- **具體內容**:
+  - **後端端點與安全性支援 PATCH (`AdminController`, `SurveyController`, `SecurityConfig`)**:
+    - 會員狀態切換 `/api/admin/users/{userId}/status` 實體支援 PATCH（兼相容 PUT）。
+    - 問卷設定更新 `/api/user/surveys/{id}/settings` 實體支援 PATCH（兼相容 PUT）。
+    - 後端 CORS 配置 (`application.properties`、`SecurityConfig.java`) 正式開放 `PATCH` 方法。
+  - **前端客戶端與組件調用升級 (`api-client.service.ts`, `survey-action.service.ts`, `user-management.component.ts`)**:
+    - `ApiClientService` 封裝標準 `patch<T>(endpoint, body)` 方法。
+    - 問卷開放設定與大廳展示狀態切換改以 `patch` 請求傳輸。
+    - 後台會員停權/啟用狀態切換改以 `patch` 請求傳輸。
+  - **規格書與 README 純淨化 (`README.md`, `06-specs-api.md`, `02-role-type.md`)**:
+    - 全面清除括號語意解說（如「PUT 完整替換」、「PATCH 局部狀態更新」等），直接標明精準動詞與純粹業務目的。
+    - 移除規格書中過度說明的「語意邊界規範」文字區塊，回歸專業精鍊之工程規格。
+  - **全套構建與單元測試 100% 綠燈**:
+    - 後端新增 PATCH 端點測試，全量 39/39 測試通過。
+    - 前端 Angular 19 構建 0 錯誤。
+- **影響範圍**:
+  - `README.md`
+  - `backend/src/main/java/com/surveyflow/controller/AdminController.java`
+  - `backend/src/main/java/com/surveyflow/security/SecurityConfig.java`
+  - `backend/src/main/resources/application.properties`
+  - `backend/src/test/java/com/surveyflow/controller/AdminControllerTest.java`
+  - `docs/system-design/02-role-type.md`
+  - `docs/system-design/06-specs-api.md`
+  - `frontend/src/app/@services/api-client.service.ts`
+  - `frontend/src/app/@services/survey-action.service.ts`
+  - `frontend/src/app/components/main/user-management/user-management.component.ts`
+  - `docs/change-log.md`
+
 ## [2026-10-27 01:50] - 根絕 README 與規格書路由漂移 (Documentation Drift) 並升級 RESTful PUT/PATCH 國際標準語意規範
 > **Commit 代碼**: `d6d57c3`
 

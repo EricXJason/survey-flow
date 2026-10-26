@@ -86,4 +86,20 @@ class AdminControllerTest {
                 .andExpect(jsonPath("$.data.totalSurveys").value(10))
                 .andExpect(jsonPath("$.data.totalSubmissions").value(520));
     }
+
+    /**
+     * 測試以標準 RESTful PATCH 修改會員狀態端點
+     * 驗證情境: 呼叫 PATCH /api/admin/users/1/status?status=SUSPENDED 時，預期成功回傳 200 與成功訊息
+     */
+    @Test
+    @DisplayName("管理端點測試: 請求 PATCH /api/admin/users/{userId}/status 應成功局部更新會員狀態")
+    void updateUserStatus_WithPatch_Returns200() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .patch("/api/admin/users/1/status")
+                        .param("status", "SUSPENDED")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("會員狀態已成功更新"));
+    }
 }

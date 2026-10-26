@@ -101,10 +101,20 @@ export class ApiClientService {
   }
 
   /**
-   * PUT 請求封裝
+   * PUT 請求封裝 (完整資源替換)
    */
   public put<T>(endpoint: string, body: unknown): Observable<ApiResponse<T>> {
     return this.http.put<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, body, {
+      headers: this.getHeaders(),
+      withCredentials: true,
+    });
+  }
+
+  /**
+   * PATCH 請求封裝 (局部狀態修改)
+   */
+  public patch<T>(endpoint: string, body: unknown = {}): Observable<ApiResponse<T>> {
+    return this.http.patch<ApiResponse<T>>(`${this.baseUrl}${endpoint}`, body, {
       headers: this.getHeaders(),
       withCredentials: true,
     });

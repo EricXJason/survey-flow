@@ -54,12 +54,12 @@ public class AdminController {
     }
 
     /**
-     * 修改特定會員帳號狀態 (ACTIVE / SUSPENDED)
+     * 修改特定會員帳號狀態 (ACTIVE / SUSPENDED，支援標準 RESTful PUT 與 PATCH 局部更新)
      * @param userId 會員識別碼
      * @param status 新狀態
      * @return 操作結果
      */
-    @PutMapping("/users/{userId}/status")
+    @RequestMapping(value = "/users/{userId}/status", method = {RequestMethod.PUT, RequestMethod.PATCH})
     public ResponseEntity<ApiResponse<Void>> updateUserStatus(
             @PathVariable Long userId,
             @RequestParam String status) {

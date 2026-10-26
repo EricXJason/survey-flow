@@ -337,7 +337,7 @@ export class UserManagementComponent implements OnInit, AfterViewInit {
       return;
     }
     const targetStatus = user.status === 'active' ? 'SUSPENDED' : 'ACTIVE';
-    this._apiClient.put(`/api/admin/users/${user.id}/status?status=${targetStatus}`, {}).subscribe({
+    this._apiClient.patch(`/api/admin/users/${user.id}/status?status=${targetStatus}`, {}).subscribe({
       next: () => {
         this.usersList.update((list) =>
           list.map((u) => (u.id === user.id ? { ...u, status: targetStatus === 'ACTIVE' ? 'active' : 'suspended' } : u)),

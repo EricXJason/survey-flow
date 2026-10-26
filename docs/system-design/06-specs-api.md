@@ -9,13 +9,11 @@
 
 | HTTP 動詞 | 語意責任與使用時機 (RFC 標準) | 專案典型實作端點 (SSOT) |
 | :--- | :--- | :--- |
-| **`GET`** | 資源讀取與檢索（等冪、安全無副作用） | `GET /api/public/surveys/lobby`、`GET /api/analytics/surveys/{id}` |
-| **`POST`** | 資源新建、身分驗證核驗與高階流程觸發 | `POST /api/public/auth/login`、`POST /api/user/surveys`、`POST /api/public/submissions` |
-| **`PUT`** | 資源完整替換或特定子資源狀態覆蓋更新（等冪） | `PUT /api/user/surveys/{id}` (整份問卷結構替換)、`PUT /api/user/profile` |
-| **`PATCH` / 子資源 `PUT`** | 局部狀態修改（部分屬性更新） | `PUT /api/user/surveys/{id}/settings` (開關時限)、`PUT /api/admin/users/{id}/status` (狀態切換) |
-| **`DELETE`** | 資源刪除或邏輯軟刪除（等冪） | `DELETE /api/user/surveys/{id}`、`DELETE /api/admin/users/{id}` |
-
-> 📌 **語意邊界規範**: 完整實體更新使用 `PUT`；局部狀態開關（如凍結/解凍、開放/關閉）以特定子資源端點（如 `.../status`、`.../settings`）之 `PUT` 或標準 `PATCH` 承載，前後端維持 100% 契約一致。
+| **`GET`** | 資源讀取與檢索 | `GET /api/public/surveys/lobby`、`GET /api/analytics/surveys/{id}` |
+| **`POST`** | 資源新建與流程發起 | `POST /api/public/auth/login`、`POST /api/user/surveys`、`POST /api/public/submissions` |
+| **`PUT`** | 資源完整更新 | `PUT /api/user/surveys/{id}`、`PUT /api/user/profile` |
+| **`PATCH`** | 局部狀態更新 | `PATCH /api/user/surveys/{id}/settings`、`PATCH /api/admin/users/{id}/status` |
+| **`DELETE`** | 資源移除 | `DELETE /api/user/surveys/{id}`、`DELETE /api/admin/users/{id}` |
 
 ---
 

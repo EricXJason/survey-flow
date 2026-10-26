@@ -50,7 +50,7 @@
 | **維護個人基本資料** | ❌ | ✅ | ✅ | `PUT /api/user/profile` (身分證字號唯讀保護) |
 | **修改登入密碼** | ❌ | ✅ | ✅ | `PUT /api/user/password` 驗證舊密碼並更新 |
 | **檢視全站會員清單** | ❌ | ❌ | ✅ | `GET /api/admin/users` 僅限 ROLE_ADMIN |
-| **調整會員帳號狀態 (啟用/凍結)** | ❌ | ❌ | ✅ | `PUT /api/admin/users/{id}/status` 即時凍結/啟用會員 |
+| **調整會員帳號狀態 (啟用/凍結)** | ❌ | ❌ | ✅ | `PATCH /api/admin/users/{id}/status` 即時凍結/啟用會員 |
 | **刪除會員帳號資料** | ❌ | ❌ | ✅ | `DELETE /api/admin/users/{id}` (內建 admin 保護機制) |
 
 ---

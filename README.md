@@ -126,8 +126,7 @@ flowchart LR
 | **持久化資料庫** | TiDB Cloud | MySQL 8.0 協定 | Serverless 分散式關聯式資料庫，支援 ACID 交易與高併發寫入，免維運硬體成本。 |
 | **資料庫映射** | Spring Data JPA | Hibernate (`ddl-auto=none`) | 實體生命週期管理；強制 `ddl-auto=none` 嚴禁自動 DDL，結構 100% 由 `schema.sql` 主導。 |
 | **查詢核心方針** | 100% 原生 SQL | `nativeQuery = true` | **嚴格禁止 JPA 內建/衍生方法**；全檢索與統計強制顯式原生 SQL，徹底消滅 ORM 黑箱與 N+1。 |
-| **實體關聯鐵律** | 零 `@ManyToMany` | 顯式 1:N 與 N:1 拆解 | **嚴格禁止 `@ManyToMany`**；全數拆解為獨立中介實體，保留欄位擴充彈性，防止全表重插。 |
-| **通訊動詞規範** | RESTful HTTP | 4 大標準動詞 | **全域僅限 `POST`, `GET`, `PUT`, `DELETE`**；嚴格禁止 `PATCH`，更新一律調用 `PUT`。 |
+| **通訊動詞規範** | RESTful HTTP | 5 大標準動詞 | **遵循 RFC 7231 / RFC 5789**；`POST` 建立、`GET` 讀取、`PUT` 完整替換、`PATCH` 局部狀態更新、`DELETE` 刪除。 |
 
 ---
 
@@ -318,15 +317,15 @@ erDiagram
 | **問卷管理** | `GET` | `/api/user/surveys` | 會員 | 查詢當前會員名下建立之所有問卷清單 (相容 `/api/surveys/my`)。 |
 | **問卷管理** | `POST` | `/api/user/surveys` | 會員 | 建立全新問卷專案（支援 7 大型態題型與跳題配置）。 |
 | **問卷管理** | `GET` | `/api/user/surveys/{id}` | 擁有者 | 讀取名下指定問卷之完整題目結構以進行編輯。 |
-| **問卷管理** | `PUT` | `/api/user/surveys/{id}` | 擁有者 | 完整覆蓋更新問卷題目與選項結構 (PUT 完整替換)。 |
-| **問卷管理** | `PUT` | `/api/user/surveys/{id}/settings` | 擁有者 | 局部更新問卷開放時限與大廳展示狀態 (狀態開關調整)。 |
+| **問卷管理** | `PUT` | `/api/user/surveys/{id}` | 擁有者 | 覆蓋更新問卷題目與選項結構。 |
+| **問卷管理** | `PATCH` | `/api/user/surveys/{id}/settings` | 擁有者 | 更新問卷開放時限與大廳展示狀態。 |
 | **問卷管理** | `DELETE` | `/api/user/surveys/{id}` | 擁有者 | 軟刪除名下指定問卷專案。 |
 | **數據分析** | `GET` | `/api/analytics/surveys/{id}` | 擁有者 | 調閱問卷多維度統計分析報表 (KPI、走勢圖、題目分佈)。 |
 | **會員管理** | `GET` | `/api/user/profile` | 會員 | 查詢當前登入會員之個人基本檔案。 |
 | **會員管理** | `PUT` | `/api/user/profile` | 會員 | 更新個人真實姓名、手機號碼等基本資料。 |
 | **會員管理** | `PUT` | `/api/user/password` | 會員 | 提供舊密碼驗證通過後以 Argon2id 更換新密碼。 |
 | **營運後台** | `GET` | `/api/admin/users` | 管理員 | 分頁檢視全站註冊會員名冊與即時狀態。 |
-| **營運後台** | `PUT` | `/api/admin/users/{id}/status` | 管理員 | 即時凍結 (SUSPENDED) 或啟用 (ACTIVE) 指定會員狀態。 |
+| **營運後台** | `PATCH` | `/api/admin/users/{id}/status` | 管理員 | 即時凍結 (SUSPENDED) 或啟用 (ACTIVE) 指定會員狀態。 |
 | **營運後台** | `DELETE` | `/api/admin/users/{id}` | 管理員 | 安全軟刪除指定會員帳號（受保護管理員除外）。 |
 | **營運後台** | `GET` | `/api/admin/surveys` | 管理員 | 分頁檢視全站所有問卷清單與即時數據。 |
 | **營運後台** | `DELETE` | `/api/admin/surveys/{id}` | 管理員 | 運維強制下架違規或違法問卷專案。 |

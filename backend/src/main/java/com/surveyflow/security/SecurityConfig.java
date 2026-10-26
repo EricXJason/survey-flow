@@ -135,7 +135,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource(
             @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:}") String allowedOrigins,
             @org.springframework.beans.factory.annotation.Value("${app.frontend.base-url:http://localhost:4200}") String frontendBaseUrl,
-            @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}") String allowedMethods,
+            @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-methods:GET,POST,PUT,PATCH,DELETE,OPTIONS}") String allowedMethods,
             @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-headers:Authorization,Content-Type,X-Requested-With,Accept}") String allowedHeaders,
             @org.springframework.beans.factory.annotation.Value("${app.cors.max-age-seconds:3600}") long maxAgeSeconds) {
         CorsConfiguration configuration = new CorsConfiguration();
