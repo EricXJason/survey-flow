@@ -2,8 +2,36 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
+## [2026-10-27 01:20] - 最佳化 GitHub 原生 Mermaid 渲染相容性、移除多餘殘留變數表格並統一前端 pnpm 指令
+> **Commit 代碼**: `8debeb2`
+
+- **改動原因**:
+  - 響應使用者即時反饋：「和上去的不一樣 github版本 好怪」、「錯誤的 多餘的不用標上啊」、「我們是用pnpm吧」。
+  - 排查並修正三項核心工程文檔細節：
+    1. **Mermaid 拓撲失衡**：中欄後端堆疊過高、右欄資料庫僅有 1 個單薄方塊，且 Subgraph 外框暗淡、連線文字穿透。
+    2. **冗餘變數污染規格書**：在生產環境 `README.md` 中無須列出被廢棄的多餘殘留變數表格。
+    3. **套件管理工具不一致**：前端全域統一採用 `pnpm`，規格書中殘留之 `npm` 指令全數精準校正。
+- **具體內容**:
+  - **重構三欄 3:3:3 黃金高度平衡拓撲**:
+    - **前端客戶端 (Cloudflare Pages)**：3 區塊（UI 表現層、Signals 狀態層、契約防護層）。
+    - **後端核心服務 (Render Web Service)**：3 區塊（安全接入層、商務邏輯層、100% 原生 SQL 持久化層）。
+    - **分散式儲存與通訊雲 (Storage & Cloud Services)**：3 區塊（TiDB 9 大實體資料表、實體關聯規範、Brevo REST API 雲端發信）。
+    - **效果**：左、中、右三欄高度 1:1:1 絕對對齊平齊，徹底根除「中柱聳立、左右懸空」之視覺怪異感。
+  - **GitHub Mermaid CSS 深度適配**:
+    - 外層框架 `.cluster rect` 注入亮青虛線邊框 (`stroke: #00f0ff !important; stroke-dasharray: 4 2 !important; fill: #060a14 !important; rx: 4px !important;`)。
+    - 連線文字加上獨立科技深色底框與天藍色文字 (`background: #0b0f19 !important; border: 1px solid #1e293b !important; color: #38bdf8 !important;`)，確保連線穿過時文字背後被實體遮擋，排版乾淨俐落。
+  - **清除多餘環境變數表格**:
+    - 徹底移除 `README.md` 中「2. 雲端環境查整結果：確認為多餘或可省略之變數」表格，回歸純粹的生產環境 7 大核心變數與本機選用參數。
+  - **全域統一採用 `pnpm` 指令**:
+    - [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md) 與 [`docs/system-design/11-local-testing.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-local-testing.md) 中的前端安裝與建置指令全面校正為 `pnpm install`、`pnpm start`、`pnpm build`、`pnpm test`。
+- **影響範圍**:
+  - `README.md`
+  - `docs/system-design/04-architecture.md`
+  - `docs/system-design/11-local-testing.md`
+  - `docs/change-log.md`
+
 ## [2026-10-27 01:05] - 確立跨領域專案調度適配矩陣：規範純前端、純後端、Unity 遊戲與起步無 System Design 之通用執行 SOP
-> **Commit 代碼**: `58b963d`
+> **Commit 代碼**: `4cccabd`
 
 - **改動原因**:
   - 響應使用者核心要求：「嚴格確保我未來專案的規範 跑這日個agent md 可以達成和這個專案一樣的效果 然後要釐清楚 如果只是前端 或是只有後端 或是這是遊戲專案 或是 system design 沒做規劃時 其他專案怎麼跑 要寫清楚規範 讓這照md可以適用於全端專案 app專案 unity遊戲專案；push to yy」。

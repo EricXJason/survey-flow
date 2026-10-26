@@ -72,23 +72,28 @@ cd backend
 cd frontend
 ```
 
-### 4.1 安裝相依套件
+### 4.1 安裝相依套件 (全域統一使用 pnpm)
 ```bash
-npm install
+pnpm install
 ```
 
 ### 4.2 啟動本機開發伺服器 (支援熱重載)
 ```bash
-npm start
+pnpm start
 ```
 - 開啟瀏覽器存取：`http://localhost:4200`
 - 前端會自動動態解析後端網址（偵測為 localhost 即自動連線至 `http://localhost:8080`）。
 
 ### 4.3 驗證生產環境編譯打包 (Production Build)
 ```bash
-npm run build
+pnpm build
 ```
 預期結果：零錯誤構建，於 `dist/survey-flow-frontend/browser` 產出靜態網站資源。
+
+### 4.4 執行前端單元測試
+```bash
+pnpm test
+```
 
 ---
 

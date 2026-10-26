@@ -75,35 +75,37 @@
     'primaryBorderColor': '#00f0ff',
     'lineColor': '#00f0ff',
     'textColor': '#f8fafc',
-    'edgeLabelBackground': 'transparent',
+    'edgeLabelBackground': '#0b0f19',
     'tertiaryColor': '#0b0f19'
   },
-  'themeCSS': '.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: transparent !important; background-color: transparent !important; fill: transparent !important; border: none !important; } .edgeLabel, .edgeLabel span { color: #ffffff !important; fill: #ffffff !important; font-weight: 500 !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }',
+  'themeCSS': '.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: #0b0f19 !important; background-color: #0b0f19 !important; fill: #0b0f19 !important; border: 1px solid #1e293b !important; } .edgeLabel, .edgeLabel span { color: #38bdf8 !important; fill: #38bdf8 !important; font-weight: 600 !important; font-size: 11px !important; } .cluster rect { stroke: #00f0ff !important; stroke-width: 1.5px !important; stroke-dasharray: 4 2 !important; fill: #060a14 !important; rx: 4px !important; ry: 4px !important; } .cluster text, .cluster span.nodeLabel { fill: #00f0ff !important; color: #00f0ff !important; font-weight: 700 !important; font-size: 13px !important; } rect, .node rect, rect.actor { rx: 2px !important; ry: 2px !important; }',
   'flowchart': { 'curve': 'linear' }
 }}%%
 flowchart LR
-    classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
+    classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:2px,ry:2px;
 
     subgraph FE ["Angular 19.0.0 前端客戶端 (Cloudflare Pages)"]
         direction TB
-        FE_UI["表現層 (Components)<br/>Home / Lobby / Design / Runner / Admin"]:::hudCard
-        FE_STATE["服務與狀態層 (Services & Signals)<br/>UserState / SurveyGetter / UserEmitter"]:::hudCard
-        FE_MODEL["型別契約層 (@interfaces)<br/>survey-model / account-model"]:::hudCard
-        FE_UI --> FE_STATE --> FE_MODEL
+        FE_UI["表現層 (UI Views & Components)<br/>Home / Lobby / Design / Runner / Admin"]:::hudCard
+        FE_STATE["狀態與反應層 (Signals & Services)<br/>UserState / SurveyGetter / UserEmitter"]:::hudCard
+        FE_CONTRACT["契約與防護層 (Contracts & Guard)<br/>Auth Interceptor / API Models / Error Guard"]:::hudCard
+        FE_UI --> FE_STATE --> FE_CONTRACT
     end
 
     subgraph BE ["Spring Boot 4.1.1 後端核心 (Render Web Service)"]
         direction TB
-        BE_CTRL["REST 控制器層 (Controllers)<br/>Public / User / Admin / Auth"]:::hudCard
-        BE_SERV["商務邏輯層 (Services)<br/>Survey / Submission / Analytics / Auth"]:::hudCard
-        BE_REPO["資料庫訪問層 (Repositories)<br/>Native Query 100% 參數化綁定"]:::hudCard
-        BE_ENTITY["領域模型實體層 (Entities)<br/>User / Survey / Question / Submission"]:::hudCard
-        BE_CTRL --> BE_SERV --> BE_REPO --> BE_ENTITY
+        BE_CTRL["接入與安全防線 (Controllers & Security)<br/>Argon2id + JWT / RBAC Guard / REST APIs"]:::hudCard
+        BE_SERV["商務邏輯運算層 (Business Services)<br/>Survey / Submission / Analytics / OTP Engine"]:::hudCard
+        BE_REPO["數據持久化存取層 (Native Repositories)<br/>100% Native SQL (@Query) / HikariCP Pool"]:::hudCard
+        BE_CTRL --> BE_SERV --> BE_REPO
     end
 
-    subgraph DB ["TiDB Cloud / MySQL 分散式資料庫"]
+    subgraph DB ["分散式儲存與通訊雲 (Storage & Cloud Services)"]
         direction TB
-        DB_TABLES[("實體資料表群 (9 Tables)<br/>surveys / survey_questions<br/>submissions / users...")]:::hudCard
+        DB_TABLES[("TiDB Cloud Serverless 分散式資料庫<br/>9 大實體資料表 (3NF 規範化模型)")]:::hudCard
+        DB_ENTITY["領域模型實體層 (Domain Entities)<br/>Strict 零 @ManyToMany / 1:N 關聯拆解"]:::hudCard
+        DB_GATEWAY["雲端通訊閘道 (External Cloud Gateway)<br/>Brevo REST API (HTTPS:443 獨佔主力發信)"]:::hudCard
+        DB_TABLES --> DB_ENTITY --> DB_GATEWAY
     end
 
     FE -->|"HTTPS / RESTful API (JSON)"| BE
@@ -389,16 +391,7 @@ survey-flow/
 | **`BREVO_API_KEY`** | `xkeysib-********` | **主力郵件服務商**：Brevo HTTP REST API 金鑰 (走 HTTPS Port 443 穿透 Render 防火牆，每日免費 300 封，**全面取代傳統 Gmail SMTP**)。 |
 | **`MAIL_FROM`** | `service@surveyflow.tw` | 系統外發信件之寄件者顯示信箱 (需於 Brevo 驗證為合規寄件人)。 |
 
-### 2. 雲端環境查整結果：確認為多餘或可省略之變數 (Render 控制台可直接刪除)
-
-| 變數名稱 | 查整狀態 | 說明與處置建議 |
-| :--- | :---: | :--- |
-| `CORS_ALLOWED_ORIGINS` | 🟢 **已與 FRONTEND_BASE_URL 統一** | 代碼已自動讀取 `FRONTEND_BASE_URL` 作為 CORS 許可來源。若無額外多個次網域需求，**可於 Render 控制台直接安全刪除**。 |
-| `APP_ADMIN_USERNAME` | ❌ **多餘殘留** | 專案代碼 0 引用。管理員由資料庫種子管轄 (`admin / Admin123!`)，可於 Render 刪除。 |
-| `APP_ADMIN_PASSWORD` | ❌ **多餘殘留** | 專案代碼 0 引用。密碼以 Argon2id 儲存於資料庫，可於 Render 刪除。 |
-| `APP_ADMIN_EMAIL` | ❌ **多餘殘留** | 專案代碼 0 引用。管理員 Email 儲存於 `users` 表，可於 Render 刪除。 |
-
-### 3. 本地開發與可選進階參數 (Local & Optional Fallback)
+### 2. 本地開發與可選進階參數 (Local & Optional Fallback)
 
 | 環境變數名稱 | 預設降級值 (本地開發) | 說明 |
 | :--- | :--- | :--- |
@@ -419,6 +412,7 @@ survey-flow/
 
 ### 1. 前置依賴需求
 - **Node.js**: `v20.x` 或以上 (推薦 Node.js 24.x LTS)
+- **套件管理工具**: `pnpm` (`v9.x` 或以上，**專案全域統一採用 pnpm 嚴格鎖定相依版本**)
 - **Java JDK**: `21` (推薦 Eclipse Temurin 21)
 - **MySQL / TiDB**: `8.0+` (本地 3306 埠或 TiDB Serverless)
 
@@ -447,14 +441,15 @@ cd backend
 ```bash
 cd frontend
 
-# 安裝相依套件
-npm install
+# 安裝相依套件 (全域統一使用 pnpm)
+pnpm install
 
 # 啟動本機開發伺服器 (支援熱重載)
-npm start
+pnpm start
 ```
 - 瀏覽器開啟存取：`http://localhost:4200`
-- 驗證生產打包：`npm run build` (產物輸出於 `dist/survey-flow-frontend/browser`)
+- 驗證生產打包：`pnpm build` (產物輸出於 `dist/survey-flow-frontend/browser`)
+- 執行前端單元測試：`pnpm test`
 
 ### 5. 預設測試種子帳號
 - **系統最高管理員**: `admin` / `Admin123!` (權限: `ROLE_ADMIN`)

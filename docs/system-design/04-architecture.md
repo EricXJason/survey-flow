@@ -19,35 +19,38 @@
     'primaryTextColor': '#f8fafc',
     'primaryBorderColor': '#00f0ff',
     'lineColor': '#00f0ff',
-    'edgeLabelBackground': 'transparent',
+    'textColor': '#f8fafc',
+    'edgeLabelBackground': '#0b0f19',
     'tertiaryColor': '#0b0f19'
   },
-  'themeCSS': '.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: transparent !important; background-color: transparent !important; fill: transparent !important; border: none !important; } .edgeLabel, .edgeLabel span { color: #ffffff !important; fill: #ffffff !important; font-weight: 500 !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }',
+  'themeCSS': '.edgeLabel, .edgeLabel rect, .edgeLabel span, .labelBkg { background: #0b0f19 !important; background-color: #0b0f19 !important; fill: #0b0f19 !important; border: 1px solid #1e293b !important; } .edgeLabel, .edgeLabel span { color: #38bdf8 !important; fill: #38bdf8 !important; font-weight: 600 !important; font-size: 11px !important; } .cluster rect { stroke: #00f0ff !important; stroke-width: 1.5px !important; stroke-dasharray: 4 2 !important; fill: #060a14 !important; rx: 4px !important; ry: 4px !important; } .cluster text, .cluster span.nodeLabel { fill: #00f0ff !important; color: #00f0ff !important; font-weight: 700 !important; font-size: 13px !important; } rect, .node rect, rect.actor { rx: 2px !important; ry: 2px !important; }',
   'flowchart': { 'curve': 'linear' }
 }}%%
 flowchart LR
-    classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:0px,ry:0px;
+    classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:2px,ry:2px;
 
-    subgraph FrontendApp ["Angular 19.0.0 前端客戶端"]
+    subgraph FrontendApp ["Angular 19.0.0 前端客戶端 (Cloudflare Pages)"]
         direction TB
-        UI_Components["表現層 (Components)<br/>Home / Lobby / Design / Runner / Admin"]:::hudCard
-        UI_Services["服務與狀態層 (Services & Signals)<br/>UserState / SurveyGetter / UserEmitter"]:::hudCard
-        UI_Contracts["型別契約層 (@interfaces)<br/>survey-model / account-model"]:::hudCard
+        UI_Components["表現層 (UI Views & Components)<br/>Home / Lobby / Design / Runner / Admin"]:::hudCard
+        UI_Services["狀態與反應層 (Signals & Services)<br/>UserState / SurveyGetter / UserEmitter"]:::hudCard
+        UI_Contracts["契約與防護層 (Contracts & Guard)<br/>Auth Interceptor / API Models / Error Guard"]:::hudCard
         UI_Components --> UI_Services --> UI_Contracts
     end
 
-    subgraph BackendApp ["Spring Boot 4.1.1 後端核心"]
+    subgraph BackendApp ["Spring Boot 4.1.1 後端核心 (Render Web Service)"]
         direction TB
-        BE_Controllers["REST 控制器層 (Controllers)<br/>Public / User / Admin / Auth"]:::hudCard
-        BE_Services["商務邏輯層 (Services)<br/>Survey / Submission / Analytics / Auth"]:::hudCard
-        BE_Repos["資料庫訪問層 (Repositories)<br/>Native Query 100% 參數化綁定"]:::hudCard
-        BE_Entities["領域模型實體層 (Entities)<br/>User / Survey / Question / Submission"]:::hudCard
-        BE_Controllers --> BE_Services --> BE_Repos --> BE_Entities
+        BE_Controllers["接入與安全防線 (Controllers & Security)<br/>Argon2id + JWT / RBAC Guard / REST APIs"]:::hudCard
+        BE_Services["商務邏輯運算層 (Business Services)<br/>Survey / Submission / Analytics / OTP Engine"]:::hudCard
+        BE_Repos["數據持久化存取層 (Native Repositories)<br/>100% Native SQL (@Query) / HikariCP Pool"]:::hudCard
+        BE_Controllers --> BE_Services --> BE_Repos
     end
 
-    subgraph DatabaseLayer ["MySQL 8.0.36 關聯式資料庫"]
+    subgraph DatabaseLayer ["分散式儲存與通訊雲 (Storage & Cloud Services)"]
         direction TB
-        DB_Tables[("實體資料表群 (9 Tables)<br/>surveys / survey_questions / submissions...")]:::hudCard
+        DB_Tables[("TiDB Cloud Serverless 分散式資料庫<br/>9 大實體資料表 (3NF 規範化模型)")]:::hudCard
+        DB_Entities["領域模型實體層 (Domain Entities)<br/>Strict 零 @ManyToMany / 1:N 關聯拆解"]:::hudCard
+        DB_Gateway["雲端通訊閘道 (External Cloud Gateway)<br/>Brevo REST API (HTTPS:443 獨佔主力發信)"]:::hudCard
+        DB_Tables --> DB_Entities --> DB_Gateway
     end
 
     FrontendApp -->|"HTTPS / RESTful API (JSON)"| BackendApp
