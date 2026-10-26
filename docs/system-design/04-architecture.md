@@ -29,7 +29,7 @@
 flowchart LR
     classDef hudCard fill:#0b0f19,stroke:#00f0ff,stroke-width:1.5px,color:#f8fafc,rx:2px,ry:2px;
 
-    subgraph FrontendApp ["Angular 19.0.0 前端客戶端 (Cloudflare Pages)"]
+    subgraph FrontendApp ["前端展示層 (Angular 19)"]
         direction TB
         UI_Components["表現層 (UI Views & Components)<br/>Home / Lobby / Design / Runner / Admin"]:::hudCard
         UI_Services["狀態與反應層 (Signals & Services)<br/>UserState / SurveyGetter / UserEmitter"]:::hudCard
@@ -37,7 +37,7 @@ flowchart LR
         UI_Components --> UI_Services --> UI_Contracts
     end
 
-    subgraph BackendApp ["Spring Boot 4.1.1 後端核心 (Render Web Service)"]
+    subgraph BackendApp ["後端核心服務 (Spring Boot 4)"]
         direction TB
         BE_Controllers["接入與安全防線 (Controllers & Security)<br/>Argon2id + JWT / RBAC Guard / REST APIs"]:::hudCard
         BE_Services["商務邏輯運算層 (Business Services)<br/>Survey / Submission / Analytics / OTP Engine"]:::hudCard
@@ -45,11 +45,11 @@ flowchart LR
         BE_Controllers --> BE_Services --> BE_Repos
     end
 
-    subgraph DatabaseLayer ["分散式儲存與通訊雲 (Storage & Cloud Services)"]
+    subgraph DatabaseLayer ["分散式雲儲存 (TiDB Serverless)"]
         direction TB
-        DB_Tables[("TiDB Cloud Serverless 分散式資料庫<br/>9 大實體資料表 (3NF 規範化模型)")]:::hudCard
+        DB_Tables["分散式關聯資料庫 (TiDB Cloud 3NF)<br/>9 大實體資料表 / 強制索引最佳化"]:::hudCard
         DB_Entities["領域模型實體層 (Domain Entities)<br/>Strict 零 @ManyToMany / 1:N 關聯拆解"]:::hudCard
-        DB_Gateway["雲端通訊閘道 (External Cloud Gateway)<br/>Brevo REST API (HTTPS:443 獨佔主力發信)"]:::hudCard
+        DB_Gateway["雲端通訊發信閘道 (Cloud Services)<br/>Brevo REST API (HTTPS:443 穿透發信)"]:::hudCard
         DB_Tables --> DB_Entities --> DB_Gateway
     end
 
