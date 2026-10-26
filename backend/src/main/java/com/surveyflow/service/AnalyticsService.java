@@ -184,13 +184,15 @@ public class AnalyticsService {
                 genderMap.merge(info.getGender().trim(), 1L, Long::sum);
             }
             if (info.getAgeGroup() != null && !info.getAgeGroup().trim().isEmpty()) {
-                ageMap.merge(info.getAgeGroup().trim(), 1L, Long::sum);
+                String standardAge = normalizeAgeGroup(info.getAgeGroup());
+                ageMap.merge(standardAge, 1L, Long::sum);
             }
             if (info.getIndustry() != null && !info.getIndustry().trim().isEmpty()) {
                 industryMap.merge(info.getIndustry().trim(), 1L, Long::sum);
             }
             if (info.getResidence() != null && !info.getResidence().trim().isEmpty()) {
-                residenceMap.merge(info.getResidence().trim(), 1L, Long::sum);
+                String standardResidence = normalizeResidence(info.getResidence());
+                residenceMap.merge(standardResidence, 1L, Long::sum);
             }
         }
 
@@ -205,6 +207,59 @@ public class AnalyticsService {
                 .industryDistribution(industryMap)
                 .residenceDistribution(residenceMap)
                 .build();
+    }
+
+    /**
+     * 將受訪者年齡資料標準化歸類至五大標準分組
+     * @param raw 原始年齡字串 (如 "22", "22歲", "25-34", "未滿18")
+     * @return 標準分組字串 (18歲以下, 18-24歲, 25-34歲, 35-44歲, 45歲以上)
+     */
+    private String normalizeAgeGroup(String raw) {
+        if (raw == null || raw.isBlank()) return "其他";
+        String s = raw.trim();
+        if (s.contains("18歲以下") || s.contains("未滿18") || s.contains("<18")) return "18歲以下";
+        if (s.contains("18-24") || s.contains("18~24") || s.contains("18至24")) return "18-24歲";
+        if (s.contains("25-34") || s.contains("25~34") || s.contains("25至34")) return "25-34歲";
+        if (s.contains("35-44") || s.contains("35~44") || s.contains("35至44")) return "35-44歲";
+        if (s.contains("45歲以上") || s.contains("45以上") || s.contains(">=45")) return "45歲以上";
+
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\d+").matcher(s);
+        if (m.find()) {
+            try {
+                int age = Integer.parseInt(m.group());
+                if (age < 18) return "18歲以下";
+                if (age <= 24) return "18-24歲";
+                if (age <= 34) return "25-34歲";
+                if (age <= 44) return "35-44歲";
+                return "45歲以上";
+            } catch (NumberFormatException ignored) {}
+        }
+        return s;
+    }
+
+    /**
+     * 將受訪者居住地址字串標準化為縣市層級 (如 臺北市、新北市、臺中市 等)
+     * @param raw 原始地址或地區字串
+     * @return 標準化縣市名稱
+     */
+    private String normalizeResidence(String raw) {
+        if (raw == null || raw.isBlank()) return "其他地區";
+        String s = raw.trim().replace("台北", "臺北").replace("台中", "臺中").replace("台南", "臺南").replace("台東", "臺東");
+        String[] taiwanCounties = {
+            "基隆市", "臺北市", "新北市", "桃園市", "新竹市", "新竹縣", "苗栗縣",
+            "臺中市", "彰化縣", "南投縣", "雲林縣", "嘉義市", "嘉義縣", "臺南市",
+            "高雄市", "屏東縣", "宜蘭縣", "花蓮縣", "臺東縣", "澎湖縣", "金門縣", "連江縣"
+        };
+        for (String county : taiwanCounties) {
+            if (s.contains(county) || s.startsWith(county.substring(0, 2))) {
+                return county;
+            }
+        }
+        // 若為海外或其他非標準地址，截取前 6 個字元避免完整地址洩漏
+        if (s.length() > 6) {
+            return s.substring(0, 6);
+        }
+        return s;
     }
 
     /**

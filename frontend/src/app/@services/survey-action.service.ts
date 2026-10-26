@@ -94,13 +94,21 @@ export class SurveyActionService {
         return;
       }
 
-      const now = new Date();
-      const startDate = payload.timeLimit?.startDate
-        ? `${payload.timeLimit.startDate}T00:00:00`
-        : now.toISOString().slice(0, 19);
-      const endDate = payload.timeLimit?.endDate
-        ? `${payload.timeLimit.endDate}T23:59:59`
-        : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 19);
+      let startDate: string | null = null;
+      let endDate: string | null = null;
+
+      if (payload.hasTimeLimit && payload.timeLimit?.startDate) {
+        const sTime = payload.timeLimit.startTime && payload.timeLimit.startTime.trim()
+          ? payload.timeLimit.startTime.trim()
+          : '00:00';
+        startDate = `${payload.timeLimit.startDate}T${sTime.length === 5 ? sTime + ':00' : sTime}`;
+      }
+      if (payload.hasTimeLimit && payload.timeLimit?.endDate) {
+        const eTime = payload.timeLimit.endTime && payload.timeLimit.endTime.trim()
+          ? payload.timeLimit.endTime.trim()
+          : '23:59';
+        endDate = `${payload.timeLimit.endDate}T${eTime.length === 5 ? eTime + ':59' : eTime}`;
+      }
 
       const requestBody = {
         title: payload.title,
@@ -409,7 +417,7 @@ export class SurveyActionService {
         basicInfo: payload.basicInfo ? {
           name: payload.basicInfo.name || null,
           gender: payload.basicInfo.gender || null,
-          ageGroup: payload.basicInfo.age != null ? `${payload.basicInfo.age}歲` : (payload.basicInfo['ageGroup'] || null),
+          ageGroup: this.computeStandardAgeGroup(payload.basicInfo.age, payload.basicInfo['ageGroup']),
           birthday: payload.basicInfo.birthday || null,
           nationalId: payload.basicInfo.nationalId || null,
           phone: payload.basicInfo.mobilePhone || payload.basicInfo['phone'] || null,
@@ -422,8 +430,8 @@ export class SurveyActionService {
           academicMajor: payload.basicInfo.academicMajor || null,
           className: payload.basicInfo.className || null,
           studentId: payload.basicInfo.studentId || null,
-          height: payload.basicInfo.height != null ? Number(payload.basicInfo.height) : null,
-          weight: payload.basicInfo.weight != null ? Number(payload.basicInfo.weight) : null,
+          height: payload.basicInfo.height != null && !isNaN(Number(payload.basicInfo.height)) ? Number(payload.basicInfo.height) : null,
+          weight: payload.basicInfo.weight != null && !isNaN(Number(payload.basicInfo.weight)) ? Number(payload.basicInfo.weight) : null,
           residence: payload.basicInfo.residentialAddress || payload.basicInfo['residence'] || null,
           registeredAddress: payload.basicInfo.registeredAddress || null,
         } : null,
@@ -485,18 +493,16 @@ export class SurveyActionService {
 
       this.apiClient.post<any>('/api/public/submissions', submissionDto).subscribe({
         next: () => {
-          const isMember = this.userState.isLoggedIn();
-          const targetUrl = isMember ? '/survey-management' : '/lobby';
           const completeData: DialogData = {
             title: '填答成功',
             message: '感謝您的耐心填答！作答結果已成功記錄。',
             mode: 'noticeMode',
-            confirmText: isMember ? '返回問卷管理' : '探索問卷大廳',
+            confirmText: '探索問卷大廳',
             showCloseButton: true,
           };
 
           this.dialogService.showDialog(completeData).subscribe(() => {
-            this.router.navigateByUrl(targetUrl);
+            this.router.navigateByUrl('/lobby');
             setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
           });
         },
@@ -513,5 +519,38 @@ export class SurveyActionService {
         },
       });
     });
+  }
+
+  /**
+   * 計算並標準化受訪者所屬年齡層級
+   */
+  private computeStandardAgeGroup(age: any, rawAgeGroup: any): string | null {
+    if (age != null && age !== '') {
+      const num = Number(age);
+      if (!isNaN(num)) {
+        if (num < 18) return '18歲以下';
+        if (num <= 24) return '18-24歲';
+        if (num <= 34) return '25-34歲';
+        if (num <= 44) return '35-44歲';
+        return '45歲以上';
+      }
+    }
+    if (rawAgeGroup) {
+      const s = String(rawAgeGroup).trim();
+      const match = s.match(/\d+/);
+      if (match) {
+        const num = parseInt(match[0], 10);
+        if (s.includes('-') || s.includes('~') || s.includes('至')) {
+          return s;
+        }
+        if (num < 18) return '18歲以下';
+        if (num <= 24) return '18-24歲';
+        if (num <= 34) return '25-34歲';
+        if (num <= 44) return '35-44歲';
+        return '45歲以上';
+      }
+      return s;
+    }
+    return null;
   }
 }

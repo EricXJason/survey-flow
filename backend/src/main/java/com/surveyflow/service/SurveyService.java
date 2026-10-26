@@ -201,24 +201,38 @@ public class SurveyService {
      */
     @Transactional
     public SurveyResponse getPublicSurvey(Long surveyId) {
+        return getPublicSurvey(surveyId, false);
+    }
+
+    /**
+     * 受訪者進入填答前或管理者預覽時獲取問卷
+     * @param surveyId 問卷 ID
+     * @param isPreview 是否為預覽模式 (預覽模式不累加瀏覽次數且不阻擋時效檢查)
+     * @return 完整填答結構
+     */
+    @Transactional
+    public SurveyResponse getPublicSurvey(Long surveyId, boolean isPreview) {
         Survey survey = surveyRepository.findByIdAndDeletedAtIsNullNative(surveyId)
                 .orElseThrow(() -> new IllegalArgumentException("問卷不存在或已下架"));
 
-        if (Boolean.FALSE.equals(survey.getIsOpen())) {
-            throw new IllegalArgumentException("此問卷目前尚未開放填答，或已由發起人手動關閉");
-        }
+        if (!isPreview) {
+            if (Boolean.FALSE.equals(survey.getIsOpen())) {
+                throw new IllegalArgumentException("此問卷目前尚未開放填答，或已由發起人手動關閉");
+            }
 
-        LocalDateTime now = LocalDateTime.now();
-        if (survey.getStartDate() != null && now.isBefore(survey.getStartDate())) {
-            throw new IllegalArgumentException("此問卷尚未到達開放填答時間，請於 " + survey.getStartDate() + " 後再次嘗試");
-        }
-        if (survey.getEndDate() != null && now.isAfter(survey.getEndDate())) {
-            throw new IllegalArgumentException("此問卷已過截止期限，無法再進行填答");
-        }
+            LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Taipei"));
+            java.time.format.DateTimeFormatter taiwanFmt = java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+            if (survey.getStartDate() != null && now.isBefore(survey.getStartDate())) {
+                throw new IllegalArgumentException("此問卷尚未到達開放填答時間，預計於 " + survey.getStartDate().format(taiwanFmt) + " 開放填寫");
+            }
+            if (survey.getEndDate() != null && now.isAfter(survey.getEndDate())) {
+                throw new IllegalArgumentException("此問卷已於 " + survey.getEndDate().format(taiwanFmt) + " 截止填答，已無法再進行填寫");
+            }
 
-        // 累加瀏覽次數
-        survey.setViewCount(survey.getViewCount() + 1);
-        surveyRepository.save(survey);
+            // 累加瀏覽次數 (僅真實填答累加，管理者預覽不累加)
+            survey.setViewCount(survey.getViewCount() + 1);
+            surveyRepository.save(survey);
+        }
 
         return convertToDetailResponse(survey);
     }

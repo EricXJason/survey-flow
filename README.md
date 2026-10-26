@@ -414,7 +414,7 @@ survey-flow/
 
 ## 09. 本機建置、測試與快速啟動指南 (Quick Start)
 
-依據 [`docs/system-design/11-local-testing.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-local-testing.md) 規範，可在本機快速完成端對端啟動與測試：
+依據 [`docs/11-local-testing.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/11-local-testing.md) 規範，可在本機快速完成端對端啟動與測試：
 
 ### 1. 前置依賴需求
 - **Node.js**: `v20.x` 或以上 (推薦 Node.js 24.x LTS)

@@ -65,14 +65,14 @@ flowchart LR
 
 | 序號與文檔檔名 | 專職負責領域 | 核心內容要點 |
 | :--- | :--- | :--- |
-| [01-overview.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/01-overview.md) | **系統願景與核心定位** | 業務背景、痛點解決、六大核心模組全貌與規格導航。 |
-| [02-role-type.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/02-role-type.md) | **使用者身分與權限矩陣** | 訪客、會員、管理員三大身分之 18 項真實操作功能對照矩陣與路由守衛。 |
-| [03-tech-stack.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/03-tech-stack.md) | **技術選型矩陣與 ADR** | Java 21, Spring Boot 4.1.1, Angular 19, 純原生 SCSS, TiDB MySQL 選型理由。 |
-| [04-architecture.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/04-architecture.md) | **分層架構與目錄拓撲** | 前端 Standalone 結構、後端 Controller-Service-Repository 三層防線。 |
-| [05-flowcharts.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/05-flowcharts.md) | **業務流程與狀態流轉圖** | 問卷生命週期、條件跳題動態解析、作答持久化與雙 Token 換發循序圖。 |
-| [06-specs-api.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/06-specs-api.md) | **RESTful API 通訊協定規格** | 公開端點、會員專區、管理專用路由，嚴格四種 HTTP 動詞 (GET/POST/PUT/DELETE)。 |
-| [07-specs-database.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/07-specs-database.md) | **TiDB 資料庫模型與 ERD** | 9 大實體關聯資料表、複合索引優化、外鍵級聯約束與 100% 原生 SQL 查詢。 |
-| [08-ui-ux-standards.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/08-ui-ux-standards.md) | **前端 UI/UX 與原生樣式** | 100% 純原生 SCSS/CSS、去 AI 化中性設計語言、零橫向拖曳自適應。 |
-| [09-security.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/09-security.md) | **資安防護與資料脫敏** | Argon2id 參數規格、身分證 Modulo 10 演算法、SQL 注入防禦。 |
-| [10-deployment.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/10-deployment.md) | **雲端部署拓撲與維運規範** | Cloudflare Pages + Render + TiDB 拓撲、Docker 多階段建置、環境變數 OCP、Actuator 保活探針。 |
-| [11-local-testing.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-local-testing.md) | **本地測試與建置指南** | 前置相依環境、資料庫初始化、後端 38/38 測試全數驗證、前端啟動與冒煙測試 SOP。 |
+| [01-overview.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/01-overview.md) | **系統願景與核心定位** | 業務背景、痛點解決、六大核心模組全貌與規格導航。 |
+| [02-role-type.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/02-role-type.md) | **使用者身分與權限矩陣** | 訪客、會員、管理員三大身分之 18 項真實操作功能對照矩陣與路由守衛。 |
+| [03-tech-stack.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/03-tech-stack.md) | **技術選型矩陣與 ADR** | Java 21, Spring Boot 4.1.1, Angular 19, 純原生 SCSS, TiDB MySQL 選型理由。 |
+| [04-architecture.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/04-architecture.md) | **分層架構與目錄拓撲** | 前端 Standalone 結構、後端 Controller-Service-Repository 三層防線。 |
+| [05-flowcharts.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/05-flowcharts.md) | **業務流程與狀態流轉圖** | 問卷生命週期、條件跳題動態解析、作答持久化與雙 Token 換發循序圖。 |
+| [06-specs-api.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/06-specs-api.md) | **RESTful API 通訊協定規格** | 公開端點、會員專區、管理專用路由，嚴格四種 HTTP 動詞 (GET/POST/PUT/DELETE)。 |
+| [07-specs-database.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/07-specs-database.md) | **TiDB 資料庫模型與 ERD** | 9 大實體關聯資料表、複合索引優化、外鍵級聯約束與 100% 原生 SQL 查詢。 |
+| [08-ui-ux-standards.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/08-ui-ux-standards.md) | **前端 UI/UX 與原生樣式** | 100% 純原生 SCSS/CSS、去 AI 化中性設計語言、零橫向拖曳自適應。 |
+| [09-security.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/09-security.md) | **資安防護與資料脫敏** | Argon2id 參數規格、身分證 Modulo 10 演算法、SQL 注入防禦。 |
+| [10-deployment.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/10-deployment.md) | **雲端部署拓撲與維運規範** | Cloudflare Pages + Render + TiDB 拓撲、Docker 多階段建置、環境變數 OCP、Actuator 保活探針。 |
+| [11-local-testing.md](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/11-local-testing.md) | **本地測試與建置指南** | 前置相依環境、資料庫初始化、後端 39/39 測試全數驗證、前端啟動與冒煙測試 SOP。 |

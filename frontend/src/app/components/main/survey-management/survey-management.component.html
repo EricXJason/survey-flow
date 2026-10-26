@@ -633,30 +633,30 @@
               <div class="demo-section">
                 <span class="demo-section-label">年齡層分佈</span>
                 <div class="age-bars">
-                  <div class="age-bar-row">
+                  <div class="age-bar-row" [class.highlight-age]="getHighestAgeGroup(demo.ageDistribution) === 'under18'">
                     <span class="age-label">18 歲以下</span>
                     <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.under18, report.totalResponses)"></div></div>
-                    <span class="age-count">{{ demo.ageDistribution.under18 }}</span>
+                    <span class="age-count">{{ demo.ageDistribution.under18 }}@if (getHighestAgeGroup(demo.ageDistribution) === 'under18') { ⬆}</span>
                   </div>
-                  <div class="age-bar-row">
+                  <div class="age-bar-row" [class.highlight-age]="getHighestAgeGroup(demo.ageDistribution) === 'age18to24'">
                     <span class="age-label">18 – 24 歲</span>
                     <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.age18to24, report.totalResponses)"></div></div>
-                    <span class="age-count">{{ demo.ageDistribution.age18to24 }}</span>
+                    <span class="age-count">{{ demo.ageDistribution.age18to24 }}@if (getHighestAgeGroup(demo.ageDistribution) === 'age18to24') { ⬆}</span>
                   </div>
-                  <div class="age-bar-row highlight-age">
+                  <div class="age-bar-row" [class.highlight-age]="getHighestAgeGroup(demo.ageDistribution) === 'age25to34'">
                     <span class="age-label">25 – 34 歲</span>
                     <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.age25to34, report.totalResponses)"></div></div>
-                    <span class="age-count">{{ demo.ageDistribution.age25to34 }} ⬆</span>
+                    <span class="age-count">{{ demo.ageDistribution.age25to34 }}@if (getHighestAgeGroup(demo.ageDistribution) === 'age25to34') { ⬆}</span>
                   </div>
-                  <div class="age-bar-row">
+                  <div class="age-bar-row" [class.highlight-age]="getHighestAgeGroup(demo.ageDistribution) === 'age35to44'">
                     <span class="age-label">35 – 44 歲</span>
                     <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.age35to44, report.totalResponses)"></div></div>
-                    <span class="age-count">{{ demo.ageDistribution.age35to44 }}</span>
+                    <span class="age-count">{{ demo.ageDistribution.age35to44 }}@if (getHighestAgeGroup(demo.ageDistribution) === 'age35to44') { ⬆}</span>
                   </div>
-                  <div class="age-bar-row">
+                  <div class="age-bar-row" [class.highlight-age]="getHighestAgeGroup(demo.ageDistribution) === 'age45plus'">
                     <span class="age-label">45 歲以上</span>
                     <div class="age-track"><div class="age-fill" [style.width.%]="getPct(demo.ageDistribution.age45plus, report.totalResponses)"></div></div>
-                    <span class="age-count">{{ demo.ageDistribution.age45plus }}</span>
+                    <span class="age-count">{{ demo.ageDistribution.age45plus }}@if (getHighestAgeGroup(demo.ageDistribution) === 'age45plus') { ⬆}</span>
                   </div>
                 </div>
               </div>
@@ -726,7 +726,32 @@
               </div>
             }
 
-
+            <!-- 居住地區前五排名 -->
+            @if (report.demographics.topRegions?.length) {
+              <div class="analytics-panel-card panel-region">
+                <div class="panel-header">
+                  <h2 class="panel-title">居住地區分佈</h2>
+                  <span class="panel-tag">前五名</span>
+                </div>
+                <div class="region-list">
+                  @for (reg of report.demographics.topRegions; track reg.region; let rIdx = $index) {
+                    <div class="region-item">
+                      <span class="region-rank rank-{{ rIdx + 1 }}">{{ rIdx + 1 }}</span>
+                      <div class="region-info">
+                        <div class="region-name-row">
+                          <span class="region-name">{{ reg.region }}</span>
+                          <span class="region-count">{{ reg.count }} 人</span>
+                        </div>
+                        <div class="region-track">
+                          <div class="region-fill" [style.width.%]="reg.percentage"></div>
+                        </div>
+                      </div>
+                      <span class="region-pct">{{ reg.percentage }}%</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
 
             <!-- 問卷結構摘要 -->
             <div class="analytics-panel-card panel-structure">

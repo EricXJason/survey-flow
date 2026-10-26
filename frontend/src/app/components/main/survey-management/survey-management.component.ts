@@ -433,15 +433,40 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
    * @param surveyId 目標問卷 ID
    */
   public onPreviewSurvey(surveyId: string): void {
-    this._surveyGetter.getSurveyById(surveyId).subscribe((fullSurvey) => {
-      if (!fullSurvey) {
-        return;
-      }
-      this._surveyState.setForPreviewMode(fullSurvey);
-      this._router.navigate(['/survey-runner'], {
-        queryParams: { from: 'survey-management', surveyId },
-      });
+    this._surveyGetter.getSurveyById(surveyId, true).subscribe({
+      next: (fullSurvey) => {
+        if (!fullSurvey) {
+          return;
+        }
+        this._surveyState.setForPreviewMode(fullSurvey);
+        this._router.navigate(['/survey-runner'], {
+          queryParams: { from: 'survey-management', surveyId, preview: 'true' },
+        });
+      },
+      error: (err) => {
+        this._dialogService.showDialog({
+          title: '預覽載入失敗',
+          message: err?.error?.message || err?.message || '無法載入問卷題目進行預覽。',
+          mode: 'errorMode',
+          errorText: '確定',
+        }).subscribe();
+      },
     });
+  }
+
+  /**
+   * 計算目前人數最多的年齡層級，若所有分組人數均為 0 則回傳 null（杜絕 0 人顯示成長指標與高亮）
+   */
+  public getHighestAgeGroup(ageDist?: { under18: number; age18to24: number; age25to34: number; age35to44: number; age45plus: number }): string | null {
+    if (!ageDist) return null;
+    const max = Math.max(ageDist.under18, ageDist.age18to24, ageDist.age25to34, ageDist.age35to44, ageDist.age45plus);
+    if (max <= 0) return null;
+    if (ageDist.age25to34 === max) return 'age25to34';
+    if (ageDist.age18to24 === max) return 'age18to24';
+    if (ageDist.age35to44 === max) return 'age35to44';
+    if (ageDist.under18 === max) return 'under18';
+    if (ageDist.age45plus === max) return 'age45plus';
+    return null;
   }
 
   /**

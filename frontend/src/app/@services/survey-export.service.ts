@@ -83,6 +83,41 @@ export class SurveyExportService {
     rows.push(['淨推薦值 NPS', report.npsScore ?? '無']);
     rows.push([]);
 
+    // 2.5 受訪者基本輪廓 Demographics
+    if (report.demographics && variant !== 'spss') {
+      const demo = report.demographics;
+      rows.push(['【受訪者背景輪廓分佈】']);
+      rows.push(['生理性別分佈']);
+      rows.push(['男性', demo.genderDistribution.male, `${report.totalResponses > 0 ? Math.round((demo.genderDistribution.male / report.totalResponses) * 1000) / 10 : 0}%`]);
+      rows.push(['女性', demo.genderDistribution.female, `${report.totalResponses > 0 ? Math.round((demo.genderDistribution.female / report.totalResponses) * 1000) / 10 : 0}%`]);
+      rows.push(['其他', demo.genderDistribution.other, `${report.totalResponses > 0 ? Math.round((demo.genderDistribution.other / report.totalResponses) * 1000) / 10 : 0}%`]);
+      rows.push([]);
+
+      rows.push(['年齡層分佈']);
+      rows.push(['18 歲以下', demo.ageDistribution.under18, `${report.totalResponses > 0 ? Math.round((demo.ageDistribution.under18 / report.totalResponses) * 1000) / 10 : 0}%`]);
+      rows.push(['18 – 24 歲', demo.ageDistribution.age18to24, `${report.totalResponses > 0 ? Math.round((demo.ageDistribution.age18to24 / report.totalResponses) * 1000) / 10 : 0}%`]);
+      rows.push(['25 – 34 歲', demo.ageDistribution.age25to34, `${report.totalResponses > 0 ? Math.round((demo.ageDistribution.age25to34 / report.totalResponses) * 1000) / 10 : 0}%`]);
+      rows.push(['35 – 44 歲', demo.ageDistribution.age35to44, `${report.totalResponses > 0 ? Math.round((demo.ageDistribution.age35to44 / report.totalResponses) * 1000) / 10 : 0}%`]);
+      rows.push(['45 歲以上', demo.ageDistribution.age45plus, `${report.totalResponses > 0 ? Math.round((demo.ageDistribution.age45plus / report.totalResponses) * 1000) / 10 : 0}%`]);
+      rows.push([]);
+
+      if (demo.topJobIndustries && demo.topJobIndustries.length > 0) {
+        rows.push(['前五大任職產業分佈']);
+        demo.topJobIndustries.forEach((job, idx) => {
+          rows.push([`第 ${idx + 1} 名`, job.industry, `${job.count} 人`, `${job.percentage}%`]);
+        });
+        rows.push([]);
+      }
+
+      if (demo.topRegions && demo.topRegions.length > 0) {
+        rows.push(['前五大居住地區分佈']);
+        demo.topRegions.forEach((reg, idx) => {
+          rows.push([`第 ${idx + 1} 名`, reg.region, `${reg.count} 人`, `${reg.percentage}%`]);
+        });
+        rows.push([]);
+      }
+    }
+
     // 3. 各題統計明細
     rows.push(['【題目統計分析明細】']);
     if (variant === 'spss') {

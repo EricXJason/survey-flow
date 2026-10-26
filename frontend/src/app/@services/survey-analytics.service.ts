@@ -244,18 +244,22 @@ export class SurveyAnalyticsService {
               for (const [k, v] of Object.entries(aMap)) {
                 const count = Number(v) || 0;
                 const kLower = k.toLowerCase();
-                if (kLower.includes('under') || k.includes('18歲以下') || k.includes('未滿18') || k.includes('<18')) {
+                const numMatch = k.match(/\d+/);
+                const ageNum = numMatch ? parseInt(numMatch[0], 10) : null;
+                const isRange = k.includes('-') || k.includes('~') || k.includes('至');
+
+                if (kLower.includes('under') || k.includes('18歲以下') || k.includes('未滿18') || k.includes('<18') || (ageNum !== null && !isRange && ageNum < 18)) {
                   under18 += count;
-                } else if (k.includes('18-24') || k.includes('18~24') || k.includes('18至24')) {
+                } else if (k.includes('18-24') || k.includes('18~24') || k.includes('18至24') || (ageNum !== null && !isRange && ageNum >= 18 && ageNum <= 24)) {
                   age18to24 += count;
-                } else if (k.includes('25-34') || k.includes('25~34') || k.includes('25至34')) {
+                } else if (k.includes('25-34') || k.includes('25~34') || k.includes('25至34') || (ageNum !== null && !isRange && ageNum >= 25 && ageNum <= 34)) {
                   age25to34 += count;
-                } else if (k.includes('35-44') || k.includes('35~44') || k.includes('35至44')) {
+                } else if (k.includes('35-44') || k.includes('35~44') || k.includes('35至44') || (ageNum !== null && !isRange && ageNum >= 35 && ageNum <= 44)) {
                   age35to44 += count;
-                } else if (k.includes('45') || k.includes('55') || k.includes('65') || k.includes('以上')) {
+                } else if (k.includes('45') || k.includes('55') || k.includes('65') || k.includes('以上') || (ageNum !== null && !isRange && ageNum >= 45)) {
                   age45plus += count;
                 } else {
-                  // 無法歸類者併入 25-34 或主要青壯年層
+                  // 其他非空資料納入青壯年組
                   age25to34 += count;
                 }
               }
@@ -282,8 +286,9 @@ export class SurveyAnalyticsService {
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 5);
 
+              const hasAgeData = under18 > 0 || age18to24 > 0 || age25to34 > 0 || age35to44 > 0 || age45plus > 0;
               const hasDemographicData =
-                male > 0 || female > 0 || other > 0 ||
+                male > 0 || female > 0 || other > 0 || hasAgeData ||
                 topJobIndustries.length > 0 || topRegions.length > 0;
 
               if (hasDemographicData) {

@@ -22,6 +22,14 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class SurveyFlowApplication {
 
     /**
+     * 初始化系統全域時區為臺灣標準時間 (Asia/Taipei, UTC+8)
+     */
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Taipei"));
+    }
+
+    /**
      * 應用程式主執行進入點
      * @param args 外部命令行參數
      */

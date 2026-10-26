@@ -1754,7 +1754,7 @@
   gap: var(--sp-3);
 }
 
-.industry-rank {
+.industry-rank, .region-rank {
   width: 2.6rem;
   height: 2.6rem;
   border-radius: var(--r-sm);
@@ -1805,14 +1805,18 @@
   overflow: hidden;
 }
 
-.industry-fill {
+.industry-fill, .region-fill {
   height: 100%;
   background: #2563eb;
   border-radius: var(--r-full);
   transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.industry-pct {
+.region-fill {
+  background: #0d9488;
+}
+
+.industry-pct, .region-pct {
   font-size: 1.2rem;
   font-weight: 700;
   color: #0f172a;

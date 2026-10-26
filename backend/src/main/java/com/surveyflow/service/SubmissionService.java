@@ -53,12 +53,13 @@ public class SubmissionService {
             throw new IllegalArgumentException("此問卷目前尚未開放填答，或已由發起人手動關閉");
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Taipei"));
+        java.time.format.DateTimeFormatter taiwanFmt = java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
         if (survey.getStartDate() != null && now.isBefore(survey.getStartDate())) {
-            throw new IllegalArgumentException("問卷尚未到達開放填答時間");
+            throw new IllegalArgumentException("此問卷尚未到達開放填答時間，預計於 " + survey.getStartDate().format(taiwanFmt) + " 開放填寫");
         }
         if (survey.getEndDate() != null && now.isAfter(survey.getEndDate())) {
-            throw new IllegalArgumentException("目前非此問卷開放填答之有效時間範圍，填答已截止");
+            throw new IllegalArgumentException("此問卷已於 " + survey.getEndDate().format(taiwanFmt) + " 截止填答，已無法再進行填寫");
         }
 
         // 1. 建立填答主記錄

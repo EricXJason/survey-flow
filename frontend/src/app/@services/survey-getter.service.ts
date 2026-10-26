@@ -105,12 +105,15 @@ export class SurveyGetterService {
 
   /**
    * 依問卷編號取得單一問卷內容 (請求 /api/public/surveys/{id}，以資料庫真實資料為主)
+   * @param id 問卷識別碼
+   * @param isPreview 是否為預覽請求（預覽模式傳入 true 免受時限阻擋）
    */
-  public getSurveyById(id: string): Observable<SurveyPayload | null> {
+  public getSurveyById(id: string, isPreview: boolean = false): Observable<SurveyPayload | null> {
     const numericId = parseInt(id.replace(/\D/g, ''), 10);
+    const queryParam = isPreview ? '?preview=true' : '';
     const requestUrl = isNaN(numericId)
-      ? `/api/public/surveys/1`
-      : `/api/public/surveys/${numericId}`;
+      ? `/api/public/surveys/1${queryParam}`
+      : `/api/public/surveys/${numericId}${queryParam}`;
 
     return this.apiClient.get<any>(requestUrl).pipe(
       map((res) => {
@@ -232,9 +235,9 @@ export class SurveyGetterService {
             hasTimeLimit: !!(d.startDate && d.endDate),
             timeLimit: {
               startDate: d.startDate ? d.startDate.split('T')[0] : '',
-              startTime: '00:00',
+              startTime: d.startDate && d.startDate.includes('T') ? d.startDate.split('T')[1].slice(0, 5) : '00:00',
               endDate: d.endDate ? d.endDate.split('T')[0] : '',
-              endTime: '23:59',
+              endTime: d.endDate && d.endDate.includes('T') ? d.endDate.split('T')[1].slice(0, 5) : '23:59',
             },
             hasDescription: !!d.description,
             description: d.description,

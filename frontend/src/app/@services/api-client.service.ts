@@ -25,15 +25,30 @@ export interface ApiResponse<T> {
 }
 
 /**
- * 解析後端 API 基礎根路徑 (純原生無多餘檔案)
- * 本地開發 (localhost / 127.0.0.1) 自動連線 http://localhost:8080
- * 雲端生產部署 (Cloudflare Pages 等) 自動對接 Render 雲端後端服務
+ * 解析後端 API 基礎根路徑
+ * 1. 支援外部動態配置覆寫 (window.__API_URL__)
+ * 2. 本地開發與區網測試 (localhost, 127.0.0.1, 192.168.*, 10.*, .local) 自動對接本機或區域後端
+ * 3. 雲端生產部署預設對接 Render 正式服務 (https://survey-flow-9gt6.onrender.com)
  */
 function resolveApiBaseUrl(): string {
-  if (typeof window !== 'undefined' && window.location) {
-    const hostname = window.location.hostname;
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return 'http://localhost:8080';
+  if (typeof window !== 'undefined') {
+    const injected = (window as unknown as { __API_URL__?: string }).__API_URL__;
+    if (injected) {
+      return injected.replace(/\/+$/, '');
+    }
+
+    if (window.location) {
+      const { hostname, protocol } = window.location;
+      const isLocal =
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname.startsWith('192.168.') ||
+        hostname.startsWith('10.') ||
+        hostname.endsWith('.local');
+
+      if (isLocal) {
+        return `${protocol}//${hostname}:8080`;
+      }
     }
   }
   return 'https://survey-flow-9gt6.onrender.com';

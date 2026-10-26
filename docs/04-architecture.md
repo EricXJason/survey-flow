@@ -260,15 +260,17 @@ flowchart LR
 
 | 檔案路徑 | 具體用途與責任描述 |
 | :--- | :--- |
-| `docs/change-log.md` | 【永遠常駐】輕量繁體中文修訂記錄庫，最新記錄置頂，永續追蹤所有架構異動。 |
-| `docs/check-list.md` | 【永遠常駐】專案功能分類驗收點收表，嚴格記錄業務需求，永久留存點收成果。 |
-| `docs/system-design/01-overview.md` | 系統願景、商業價值目標與 C4 Model 上下文圖。 |
-| `docs/system-design/02-tech-stack.md` | 核心技術選型矩陣與絕對明確版本號理由（零模糊原則）。 |
-| `docs/system-design/03-architecture.md` | 【當前文件】分層架構拓撲與全專案所有資料夾、程式碼腳本與設定檔之實體用途字典。 |
-| `docs/system-design/04-specs-api.md` | RESTful API 通訊協定規格書、端點路徑、請求酬載與回應結構定義。 |
-| `docs/system-design/05-specs-database.md` | MySQL 8.0.36 ERD 模型、實體資料字典、索引設計與快取架構。 |
-| `docs/system-design/06-flowcharts.md` | 核心業務流程圖（問卷設計流、雙狀態發布流、填答校驗流、統計分析流）。 |
-| `docs/system-design/07-ui-ux-standards.md` | 頂級去 AI 化美學、7 大國際設計標竿對齊、表格零拖曳 RWD 與 WCAG 2.2 標準。 |
-| `docs/system-design/08-devops.md` | 容器建置規範、環境變數配置與系統監控指標。 |
-| `docs/system-design/09-security.md` | 縱深防禦體系、Argon2id/JWT 雙權杖刷新、OWASP Top 10 防禦與個資動態脫敏。 |
-| `docs/system-design/10-pitch-deck.md` | 商業路演與高階技術簡報 10 頁經典大綱，可直接轉譯為專業投影片。 |
+| `docs/change-log.md` | 【永遠常駐，本地專用】輕量繁體中文修訂記錄庫，最新記錄置頂，永續追蹤所有架構異動（.gitignore 排除）。 |
+| `docs/check-list.md` | 【永遠常駐，本地專用】專案功能分類驗收點收表，嚴格記錄業務需求，永久留存點收成果（.gitignore 排除）。 |
+| `docs/development-plan.md` | 【前期策略，本地專用】專案前期開發計劃書，記錄 Why/What 藍圖（.gitignore 排除）。 |
+| `docs/01-overview.md` | 系統願景、商業價值目標與六大模組全貌導航。 |
+| `docs/02-role-type.md` | 使用者身分型別與 18 項真實功能權限純符號矩陣。 |
+| `docs/03-tech-stack.md` | 核心技術選型矩陣與 ADR 架構決策（Java 21, Spring Boot 4.1.1, Angular 19）。 |
+| `docs/04-architecture.md` | 【當前文件】分層架構拓撲與全專案所有資料夾、程式碼腳本與設定檔之實體用途字典。 |
+| `docs/05-flowcharts.md` | 核心業務流程圖（問卷生命週期、條件跳題動態解析、雙 Token 刷新循序圖）。 |
+| `docs/06-specs-api.md` | RESTful API 通訊協定規格書、端點路徑、請求酬載與回應結構定義。 |
+| `docs/07-specs-database.md` | TiDB / MySQL 8.0 分散式關聯式資料庫 ERD 模型與資料字典 (100% 原生 SQL)。 |
+| `docs/08-ui-ux-standards.md` | 頂級去 AI 化美學、純原生 SCSS/CSS 規範、零橫向拖曳自適應與 WCAG 標準。 |
+| `docs/09-security.md` | 縱深防禦體系、Argon2id/JWT 雙權杖刷新、OWASP Top 10 防禦與個資動態脫敏。 |
+| `docs/10-deployment.md` | Cloudflare Pages + Render + TiDB 雲端部署拓撲、環境變數 OCP 與維運保活。 |
+| `docs/11-local-testing.md` | 本地測試與建置指南、前置相依環境、39/39 單元測試與冒煙測試 SOP。 |

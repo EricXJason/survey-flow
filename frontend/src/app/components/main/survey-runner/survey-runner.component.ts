@@ -184,24 +184,30 @@ export class SurveyRunnerComponent implements OnInit {
       const { startDate, startTime, endDate, endTime } = survey.timeLimit;
       const now = new Date();
 
-      if (startDate && startTime) {
-        const startDt = new Date(`${startDate}T${startTime}`);
+      if (startDate) {
+        const sTime = startTime || '00:00';
+        const startDt = new Date(`${startDate}T${sTime}`);
         if (!isNaN(startDt.getTime()) && now < startDt) {
+          const sDisplay = `${startDate.replace(/-/g, '/')} ${sTime}`;
+          const eDisplay = endDate ? `${endDate.replace(/-/g, '/')} ${endTime || '23:59'}` : '';
           this.isUnavailable.set(true);
           this.unavailableTitle.set('問卷尚未開始開放填答');
-          this.unavailableMessage.set(`本問卷預計於 ${startDate} ${startTime} 開放填寫，目前尚未到達作答時間，請於開放後再次前往填答。`);
-          this.unavailableTimeRange.set(`填答有效期間：${startDate} ${startTime} 至 ${endDate} ${endTime}`);
+          this.unavailableMessage.set(`本問卷預計於 ${sDisplay} 開放填寫，目前尚未到達作答時間，請於開放後再次前往填答。`);
+          this.unavailableTimeRange.set(eDisplay ? `填答有效期間：${sDisplay} 至 ${eDisplay}` : `填答開放時間：${sDisplay} 起`);
           return;
         }
       }
 
-      if (endDate && endTime) {
-        const endDt = new Date(`${endDate}T${endTime}`);
+      if (endDate) {
+        const eTime = endTime || '23:59';
+        const endDt = new Date(`${endDate}T${eTime}`);
         if (!isNaN(endDt.getTime()) && now > endDt) {
+          const sDisplay = startDate ? `${startDate.replace(/-/g, '/')} ${startTime || '00:00'}` : '';
+          const eDisplay = `${endDate.replace(/-/g, '/')} ${eTime}`;
           this.isUnavailable.set(true);
           this.unavailableTitle.set('問卷填答已截止');
-          this.unavailableMessage.set(`本問卷已於 ${endDate} ${endTime} 截止填答，已無法再進行填寫，非常感謝您的關注與支持！`);
-          this.unavailableTimeRange.set(`填答有效期間：${startDate} ${startTime} 至 ${endDate} ${endTime}`);
+          this.unavailableMessage.set(`本問卷已於 ${eDisplay} 截止填答，已無法再進行填寫，非常感謝您的關注與支持！`);
+          this.unavailableTimeRange.set(sDisplay ? `填答有效期間：${sDisplay} 至 ${eDisplay}` : `填答截止時間：至 ${eDisplay}`);
           return;
         }
       }
@@ -222,7 +228,7 @@ export class SurveyRunnerComponent implements OnInit {
     const isPreviewQuery = this._route.snapshot.queryParams['preview'] === 'true' || fromParam === 'survey-management';
 
     if (queryId) {
-      this._surveyGetter.getSurveyById(String(queryId)).subscribe({
+      this._surveyGetter.getSurveyById(String(queryId), isPreviewQuery).subscribe({
         next: (loadedSurvey) => {
           if (loadedSurvey) {
             if (isPreviewQuery) {

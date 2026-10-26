@@ -49,13 +49,16 @@ public class SurveyController {
     }
 
     /**
-     * 受訪者進入填答頁獲取公開問卷結構端點 (公開端點，自動累加瀏覽次數)
+     * 受訪者進入填答頁獲取公開問卷結構端點 (公開端點，自動累加瀏覽次數；預覽模式則不阻擋時限且不累加)
      * @param id 問卷 ID
+     * @param preview 是否為預覽請求
      * @return 完整題目與選項結構
      */
     @GetMapping({"/api/public/surveys/{id}", "/api/surveys/{id}/public"})
-    public ResponseEntity<ApiResponse<SurveyResponse>> getPublicSurvey(@PathVariable Long id) {
-        SurveyResponse response = surveyService.getPublicSurvey(id);
+    public ResponseEntity<ApiResponse<SurveyResponse>> getPublicSurvey(
+            @PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "false") boolean preview) {
+        SurveyResponse response = surveyService.getPublicSurvey(id, preview);
         return ResponseEntity.ok(ApiResponse.ok(response, "成功獲取問卷作答內容"));
     }
 
