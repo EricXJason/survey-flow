@@ -2,8 +2,30 @@
 
 > **規範標準**: 全純臺灣繁體中文維護，最新記錄永遠常駐置頂；每項修訂記錄強制標註對應之 **Git Commit 代碼（Hash）**，以便隨時精確回溯與切換歷史版本。
 
-## [2026-10-27 00:55] - 深度查整環境變數矩陣與架構圖排版：消滅極端長條扁平圖表、確立「三欄平衡流」黃金比例、確立 Brevo 為唯一雲端生產郵件服務商並標明多餘殘留變數
-> **Commit 代碼**: `d3379d6`
+## [2026-10-27 01:00] - 達成極致 SSOT：CORS 與前端網址自動連動統一、README 納入 16 大角色功能權限矩陣並確認資料庫無異動發布
+> **Commit 代碼**: `15fbd4a`
+
+- **改動原因**:
+  - 響應使用者核心反饋與指令：「這兩個怎麼沒有統一 (指 CORS_ALLOWED_ORIGINS 與 FRONTEND_BASE_URL)；然後目前資料庫有需要動嗎 都沒有的話 就push to master yy；然後read me 可以放 角色功能比較表啊」。
+- **具體內容**:
+  - **CORS 與 FRONTEND_BASE_URL 之極致 SSOT 統一**:
+    - **問題根因**：先前 `CORS_ALLOWED_ORIGINS` 與 `FRONTEND_BASE_URL` 均設定為相同的 `https://survey-flow.pages.dev`，造成雙處宣告、維護繁瑣且違背單一真實資料來源 (SSOT)。
+    - **重構實作**：
+      - 修改 [`SecurityConfig.java`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/java/com/surveyflow/security/SecurityConfig.java)，在構建 CORS 跨來源規則時**自動讀取並合併 `FRONTEND_BASE_URL`**。
+      - 更新 `backend/src/main/resources/application.properties`，使 `app.cors.allowed-origins` 預設留空自動繼承 `app.frontend.base-url`。
+      - **雲端環境（Render）效果**：生產環境**僅需配置 `FRONTEND_BASE_URL` 即可**，`CORS_ALLOWED_ORIGINS` 在 Render 控制台**可直接安全刪除**，生產核心變數極致收斂為 7 個！
+  - **根目錄 [`README.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/README.md) 增設角色功能比較表**:
+    - 依據 [`docs/system-design/02-role-type.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/02-role-type.md) 逆向生成「02. 使用者身分型別與功能權限矩陣 (RoleType & RBAC Matrix)」。
+    - 完整列出訪客 (`GUEST`)、一般會員 (`MEMBER`)、最高管理員 (`ADMIN`) 在 16 項實體功能上的純符號 `✅` / `❌` 權限對照及對應 API 控制端點。
+    - 依序遞增梳理全篇 01~09 章節編號，使整體文檔結構達到最高密度工程標準。
+  - **資料庫架構審查**:
+    - 經全面比對，全系統 9 大實體資料表（`users`, `verification_tokens`, `surveys`, `survey_basic_info_configs`, `survey_questions`, `survey_options`, `submissions`, `submission_basic_infos`, `submission_answers`）結構嚴謹完備、100% 原生 SQL 查詢無 ORM 黑箱，**本次無須變更資料庫**。
+- **影響範圍**:
+  - `backend/src/main/java/com/surveyflow/security/SecurityConfig.java`
+  - `backend/src/main/resources/application.properties`
+  - `README.md`
+  - `docs/system-design/10-deployment.md`
+  - `docs/change-log.md`
 
 - **改動原因**:
   - 響應使用者核心要求：「然後 目前 07. 環境變數外部化對照表 (OCP Externalized Configurations) 似乎和實際不對 而且我發現目前這邊部署上去的是否有多餘的 嚴格查整 都修正好後push to master yy 有問題要和我嚴格確認；例如 gmail不是改用 BREVO 了嗎；這種極難閱讀的排版設計一定要嚴格避免；要記得寫入規範」。

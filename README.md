@@ -30,9 +30,37 @@
 
 > 💡 **本地開發離線模式**: 在未配置雲端環境或離線開發時，預設本機前端存取點為 `http://localhost:4200`，後端 API 為 `http://localhost:8080`。
 
+## 02. 使用者身分型別與功能權限矩陣 (RoleType & RBAC Matrix)
+
+依據最小特權原則 (Principle of Least Privilege) 與責任隔離，系統嚴格劃分三種核心使用者身分：
+- **訪客 (`GUEST`)**: 免登入之匿名受訪者與大廳瀏覽者，僅具備填答與公開大廳檢索權限。
+- **一般會員 (`MEMBER`)**: 完成 Email 啟用碼驗證之問卷發起人，具備個人名下問卷之設計、預覽、時限控制、多維統計與匯出管轄權。
+- **最高管理員 (`ADMIN`)**: 平台運維管理者，具備全站會員名冊治理、即時凍結啟用與安全帳號刪除權。
+
+### 16 大真實業務功能權限比較矩陣 (100% 依據後端實體端點逆向生成)
+
+| 業務功能項目 | 訪客 (`GUEST`) | 一般會員 (`MEMBER`) | 系統管理員 (`ADMIN`) | 實體控制端點 / 業務防線規範 |
+| :--- | :---: | :---: | :---: | :--- |
+| **瀏覽大廳公開問卷清單** | ✅ | ✅ | ✅ | `GET /api/public/surveys/lobby` (分頁檢索與分類過濾) |
+| **填寫大廳公開問卷** | ✅ | ✅ | ✅ | `POST /api/public/submissions` (免登入匿名提交) |
+| **填寫私有連結問卷** | ✅ | ✅ | ✅ | `GET /api/public/surveys/{id}` 持專屬連結直達作答 |
+| **建立新問卷專案** | ❌ | ✅ | ✅ | `POST /api/user/surveys` 進入視覺化設計器發布 |
+| **預覽名下問卷專案** | ❌ | ✅ | ✅ | 預覽模式作答不計入正式資料庫統計 |
+| **複製問卷專屬作答連結** | ❌ | ✅ | ✅ | 複製唯一分享 URL 直達問卷填答頁面 |
+| **調整名下問卷開放狀態與時限** | ❌ | ✅ | ✅ | `PUT /api/user/surveys/{id}/settings` (雙狀態開關與時限) |
+| **即時關閉名下問卷填答通道** | ❌ | ✅ | ✅ | 即時停止填答，阻斷新受訪者存取 |
+| **調閱名下問卷數據分析報表** | ❌ | ✅ | ✅ | `GET /api/user/surveys/{id}/analytics` (非擁有者 403 阻斷) |
+| **4 大格式匯出名下問卷數據** | ❌ | ✅ | ✅ | 支援 CSV、SPSS 語法檔 (.sps)、JSON 與列印 PDF 匯出 |
+| **刪除名下問卷專案** | ❌ | ✅ | ✅ | `DELETE /api/user/surveys/{id}` 安全軟刪除 |
+| **維護個人基本資料** | ❌ | ✅ | ✅ | `PUT /api/user/profile` (身分證號唯讀安全保護) |
+| **修改個人登入密碼** | ❌ | ✅ | ✅ | `PUT /api/user/password` 驗證舊密碼並以 Argon2id 重新雜湊 |
+| **檢視全站會員名冊** | ❌ | ❌ | ✅ | `GET /api/admin/users` 僅限 ROLE_ADMIN 管理員存取 |
+| **調整會員帳號狀態 (啟用/凍結)** | ❌ | ❌ | ✅ | `PUT /api/admin/users/{id}/status` 即時凍結異常帳號 |
+| **刪除會員帳號資料** | ❌ | ❌ | ✅ | `DELETE /api/admin/users/{id}` (內建 admin 保護機制) |
+
 ---
 
-## 02. 系統全景架構拓撲 (System Architecture)
+## 03. 系統全景架構拓撲 (System Architecture)
 
 系統採用前後端完全分離之現代化雲端拓撲，全面落實 Controller-Service-Repository 三層防線與單一真實來源 (SSOT)：
 
@@ -84,7 +112,7 @@ flowchart LR
 
 ---
 
-## 03. 技術選型矩陣與架構決策 (Tech Stack & ADR)
+## 04. 技術選型矩陣與架構決策 (Tech Stack & ADR)
 
 | 維度分層 | 技術選型 | 版本規格 | 關鍵架構決策理由 (ADR 摘要) |
 | :--- | :--- | :--- | :--- |
@@ -101,7 +129,7 @@ flowchart LR
 
 ---
 
-## 04. 完整資料庫實體關聯模型 (Complete Database ERD)
+## 05. 完整資料庫實體關聯模型 (Complete Database ERD)
 
 本系統關聯模型嚴格遵循第三正規化 (3NF)，由 [`backend/src/main/resources/database/schema.sql`](file:///Users/hsuche-cheng/Documents/project/survey-flow/backend/src/main/resources/database/schema.sql) 唯一真實來源 (SSOT) 主導。以下展開全系統 9 大實體資料表之全部欄位、型別、鍵值約束與關聯：
 
@@ -268,7 +296,7 @@ erDiagram
 
 ---
 
-## 05. 核心業務 RESTful API 路由矩陣
+## 06. 核心業務 RESTful API 路由矩陣
 
 全系統嚴格遵守標準 4 大 HTTP 通訊動詞 (`GET`, `POST`, `PUT`, `DELETE`)，杜絕 `PATCH`：
 
@@ -297,7 +325,7 @@ erDiagram
 
 ---
 
-## 06. 系統實體檔案目錄拓撲樹 (Directory Structure)
+## 07. 系統實體檔案目錄拓撲樹 (Directory Structure)
 
 ```text
 survey-flow/
@@ -343,11 +371,13 @@ survey-flow/
 
 ---
 
-## 07. 環境變數外部化對照表 (OCP Externalized Configurations)
+## 08. 環境變數外部化對照表 (OCP Externalized Configurations)
 
 本系統恪守 OCP 開放封閉原則，所有系統參數與機敏金鑰 100% 透過環境變數外部化注入，嚴禁於代碼中寫死業務預設值：
 
-### 1. 雲端生產環境 (Render Web Service) 8 大核心環境變數 (100% 對齊生產現況)
+### 1. 雲端生產環境 (Render Web Service) 7 大核心環境變數 (極致 SSOT 唯一真實來源)
+
+經架構優化，系統已全面落實 **SSOT 單一真實來源**：後端自動將 `FRONTEND_BASE_URL` 納入 CORS 跨來源白名單，**徹底消滅重複宣告**！在 Render 控制台**僅需設定以下 7 個核心變數**（`CORS_ALLOWED_ORIGINS` 可直接省略或安全刪除）：
 
 | 環境變數 KEY | 範例 / 推薦設定值 | 生產環境用途與安全性說明 |
 | :--- | :--- | :--- |
@@ -355,26 +385,25 @@ survey-flow/
 | **`SPRING_DATASOURCE_USERNAME`** | `<TIDB_USER>.root` | TiDB Cloud 分散式資料庫連線帳號。 |
 | **`SPRING_DATASOURCE_PASSWORD`** | `********` | TiDB Cloud 分散式資料庫連線密碼。 |
 | **`JWT_SECRET`** | `SurveyFlowSecretKey...2026!` (>=256 bits) | HMAC-SHA256 簽署短效 Token 與雙權杖之防偽金鑰。 |
-| **`CORS_ALLOWED_ORIGINS`** | `https://survey-flow.pages.dev` | 允許跨域請求之前端 Cloudflare Pages 生產網址。 |
-| **`FRONTEND_BASE_URL`** | `https://survey-flow.pages.dev` | 前端 SPA 根網址 (用於組裝註冊驗證與忘記密碼信件中之直達連結)。 |
+| **`FRONTEND_BASE_URL`** | `https://survey-flow.pages.dev` | **前端唯一真實網址 (SSOT)**：一方面用於組裝信件中之開通與密碼重設直達連結，另一方面**後端自動直接將其作為 CORS 跨來源允許白名單**，達成單一資料來源治理！ |
 | **`BREVO_API_KEY`** | `xkeysib-********` | **主力郵件服務商**：Brevo HTTP REST API 金鑰 (走 HTTPS Port 443 穿透 Render 防火牆，每日免費 300 封，**全面取代傳統 Gmail SMTP**)。 |
 | **`MAIL_FROM`** | `service@surveyflow.tw` | 系統外發信件之寄件者顯示信箱 (需於 Brevo 驗證為合規寄件人)。 |
 
-### 2. 雲端環境查整結果：確認為多餘且可安全移除之無效變數
+### 2. 雲端環境查整結果：確認為多餘或可省略之變數 (Render 控制台可直接刪除)
 
-以下 3 個變數在專案代碼中 **0 引用**（系統最高管理員帳號由關聯式資料庫 `schema.sql` / `data.sql` 種子資料治理解析，而非啟動時讀取環境變數），於 Render 控制台屬於多餘殘留，**可安全直接刪除 (Delete)**：
-
-| 變數名稱 | 查整狀態 | 說明與建議處置 |
+| 變數名稱 | 查整狀態 | 說明與處置建議 |
 | :--- | :---: | :--- |
-| `APP_ADMIN_USERNAME` | ❌ **多餘殘留** | 專案代碼無引用。管理員由資料庫種子管轄 (`admin / Admin123!`)，可於 Render 刪除。 |
-| `APP_ADMIN_PASSWORD` | ❌ **多餘殘留** | 專案代碼無引用。密碼以 Argon2id 儲存於資料庫，可於 Render 刪除。 |
-| `APP_ADMIN_EMAIL` | ❌ **多餘殘留** | 專案代碼無引用。管理員 Email 儲存於 `users` 表，可於 Render 刪除。 |
+| `CORS_ALLOWED_ORIGINS` | 🟢 **已與 FRONTEND_BASE_URL 統一** | 代碼已自動讀取 `FRONTEND_BASE_URL` 作為 CORS 許可來源。若無額外多個次網域需求，**可於 Render 控制台直接安全刪除**。 |
+| `APP_ADMIN_USERNAME` | ❌ **多餘殘留** | 專案代碼 0 引用。管理員由資料庫種子管轄 (`admin / Admin123!`)，可於 Render 刪除。 |
+| `APP_ADMIN_PASSWORD` | ❌ **多餘殘留** | 專案代碼 0 引用。密碼以 Argon2id 儲存於資料庫，可於 Render 刪除。 |
+| `APP_ADMIN_EMAIL` | ❌ **多餘殘留** | 專案代碼 0 引用。管理員 Email 儲存於 `users` 表，可於 Render 刪除。 |
 
-### 3. 本地開發與可選備用降級參數 (Local & Optional Fallback)
+### 3. 本地開發與可選進階參數 (Local & Optional Fallback)
 
 | 環境變數名稱 | 預設降級值 (本地開發) | 說明 |
 | :--- | :--- | :--- |
 | `PORT` / `SERVER_PORT` | `8080` | 後端 Web 容器動態監聽之 HTTP 通訊埠號 (Render 部署時由平台自動動態注入)。 |
+| `CORS_ALLOWED_ORIGINS` | *(留空自動繼承)* | 僅在同時擁有多個獨立前端網域時，始得於此以逗號分隔追加。 |
 | `RESEND_API_KEY` | *(選填/備用)* | Resend HTTP API 金鑰 (備用 HTTP 443 外寄管道)。 |
 | `MAIL_PROVIDER` | `AUTO` | 郵件提供商調度模式 (`AUTO`: 自動優先偵測 Brevo -> Resend -> SMTP)。 |
 | `JWT_ACCESS_EXPIRATION_MS` | `900000` (15 分鐘) | 短效無狀態 Access Token 存活毫秒數。 |
@@ -384,7 +413,7 @@ survey-flow/
 
 ---
 
-## 08. 本機建置、測試與快速啟動指南 (Quick Start)
+## 09. 本機建置、測試與快速啟動指南 (Quick Start)
 
 依據 [`docs/system-design/11-local-testing.md`](file:///Users/hsuche-cheng/Documents/project/survey-flow/docs/system-design/11-local-testing.md) 規範，可在本機快速完成端對端啟動與測試：
 

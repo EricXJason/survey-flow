@@ -133,14 +133,29 @@ public class SecurityConfig {
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource(
-            @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:http://localhost:4200,http://127.0.0.1:4200}") String allowedOrigins,
+            @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins:}") String allowedOrigins,
+            @org.springframework.beans.factory.annotation.Value("${app.frontend.base-url:http://localhost:4200}") String frontendBaseUrl,
             @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}") String allowedMethods,
             @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-headers:Authorization,Content-Type,X-Requested-With,Accept}") String allowedHeaders,
             @org.springframework.beans.factory.annotation.Value("${app.cors.max-age-seconds:3600}") long maxAgeSeconds) {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        List<String> origins = Arrays.stream(allowedOrigins.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
-        configuration.setAllowedOriginPatterns(origins.isEmpty() ? List.of("*") : origins);
+        // 貫徹 SSOT 原則：自動整合 FRONTEND_BASE_URL 與 CORS_ALLOWED_ORIGINS，消除重複配置
+        java.util.Set<String> originSet = new java.util.LinkedHashSet<>();
+        if (frontendBaseUrl != null && !frontendBaseUrl.isBlank()) {
+            originSet.add(frontendBaseUrl.trim());
+        }
+        if (allowedOrigins != null && !allowedOrigins.isBlank()) {
+            Arrays.stream(allowedOrigins.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .forEach(originSet::add);
+        }
+        if (originSet.isEmpty()) {
+            originSet.add("http://localhost:4200");
+            originSet.add("http://127.0.0.1:4200");
+        }
+        configuration.setAllowedOriginPatterns(new java.util.ArrayList<>(originSet));
 
         List<String> methods = Arrays.stream(allowedMethods.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
         configuration.setAllowedMethods(methods);
