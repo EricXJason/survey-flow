@@ -24,7 +24,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -39,13 +41,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
+        List<String> errorMessages = new ArrayList<>();
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.put(error.getField(), error.getDefaultMessage());
+            if (error.getDefaultMessage() != null) {
+                errorMessages.add(error.getDefaultMessage());
+            }
         }
+        String combinedMessage = errorMessages.isEmpty()
+                ? "輸入參數格式驗證不符，請核對輸入內容"
+                : "輸入參數格式驗證不符: " + String.join(", ", errorMessages);
+
         ApiResponse<Map<String, String>> response = ApiResponse.<Map<String, String>>builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .success(false)
-                .message("輸入參數格式驗證不符，請核對輸入內容")
+                .message(combinedMessage)
                 .data(errors)
                 .build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);

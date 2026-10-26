@@ -52,10 +52,10 @@ public class SurveyCreateRequest {
     @Builder.Default
     private Boolean isOpen = true;
 
-    @NotNull(message = "問卷開始時間不得為空")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "[yyyy-MM-dd'T'HH:mm:ss][yyyy-MM-dd'T'HH:mm][yyyy/MM/dd HH:mm:ss][yyyy/MM/dd HH:mm][yyyy-MM-dd HH:mm:ss][yyyy-MM-dd HH:mm][yyyy-MM-dd]")
     private LocalDateTime startDate;
 
-    @NotNull(message = "問卷結束時間不得為空")
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "[yyyy-MM-dd'T'HH:mm:ss][yyyy-MM-dd'T'HH:mm][yyyy/MM/dd HH:mm:ss][yyyy/MM/dd HH:mm][yyyy-MM-dd HH:mm:ss][yyyy-MM-dd HH:mm][yyyy-MM-dd]")
     private LocalDateTime endDate;
 
     @Valid

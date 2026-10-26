@@ -115,6 +115,48 @@ class SurveyServiceTest {
     }
 
     /**
+     * 測試常態開放問卷建立 (無填答時限設定)
+     * 驗證 startDate 與 endDate 為 null 時，依然能順利建立問卷
+     */
+    @Test
+    @DisplayName("建立問卷測試: 無時限常態開放問卷 (startDate/endDate 為 null) 應成功建立")
+    void createSurvey_Success_WithoutTimeLimit() {
+        SurveyCreateRequest request = SurveyCreateRequest.builder()
+                .title("常態開放調研")
+                .startDate(null)
+                .endDate(null)
+                .build();
+
+        when(userRepository.findByUsernameNative("owner")).thenReturn(Optional.of(owner));
+        when(surveyRepository.save(any(Survey.class))).thenReturn(sampleSurvey);
+        when(submissionRepository.countBySurveyIdNative(anyLong())).thenReturn(0L);
+
+        SurveyResponse response = surveyService.createSurvey(request, "owner");
+
+        assertNotNull(response);
+        verify(surveyRepository, times(1)).save(any(Survey.class));
+    }
+
+    /**
+     * 測試起訖時間時序倒置防呆
+     * 驗證 startDate 晚於 endDate 時，應主動拋出 IllegalArgumentException
+     */
+    @Test
+    @DisplayName("建立問卷測試: 起始時間晚於截止時間應拋出 IllegalArgumentException")
+    void createSurvey_StartDateAfterEndDate_ThrowsIllegalArgumentException() {
+        SurveyCreateRequest request = SurveyCreateRequest.builder()
+                .title("異常時間問卷")
+                .startDate(LocalDateTime.now().plusDays(10))
+                .endDate(LocalDateTime.now().plusDays(2))
+                .build();
+
+        when(userRepository.findByUsernameNative("owner")).thenReturn(Optional.of(owner));
+
+        assertThrows(IllegalArgumentException.class, () -> surveyService.createSurvey(request, "owner"));
+        verify(surveyRepository, never()).save(any(Survey.class));
+    }
+
+    /**
      * 測試受訪者/訪客公開查詢問卷
      * 驗證進入填答頁面載入問卷時，系統會自動累加 viewCount 瀏覽計數並持久化
      */

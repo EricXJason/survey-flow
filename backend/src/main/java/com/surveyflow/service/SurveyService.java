@@ -58,6 +58,10 @@ public class SurveyService {
         User creator = userRepository.findByUsernameNative(currentUsername)
                 .orElseThrow(() -> new IllegalArgumentException("查無此建立者帳號"));
 
+        if (request.getStartDate() != null && request.getEndDate() != null && request.getStartDate().isAfter(request.getEndDate())) {
+            throw new IllegalArgumentException("可填寫起始時間不可晚於截止時間");
+        }
+
         Survey survey = Survey.builder()
                 .creator(creator)
                 .title(request.getTitle())

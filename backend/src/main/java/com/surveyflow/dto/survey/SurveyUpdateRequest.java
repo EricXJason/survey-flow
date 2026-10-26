@@ -34,7 +34,10 @@ public class SurveyUpdateRequest {
     private String category;
     private Boolean isPublicToLobby;
     private Boolean isOpen;
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "[yyyy-MM-dd'T'HH:mm:ss][yyyy-MM-dd'T'HH:mm][yyyy/MM/dd HH:mm:ss][yyyy/MM/dd HH:mm][yyyy-MM-dd HH:mm:ss][yyyy-MM-dd HH:mm][yyyy-MM-dd]")
     private LocalDateTime startDate;
+
+    @com.fasterxml.jackson.annotation.JsonFormat(pattern = "[yyyy-MM-dd'T'HH:mm:ss][yyyy-MM-dd'T'HH:mm][yyyy/MM/dd HH:mm:ss][yyyy/MM/dd HH:mm][yyyy-MM-dd HH:mm:ss][yyyy-MM-dd HH:mm][yyyy-MM-dd]")
     private LocalDateTime endDate;
     private BasicInfoConfigDto basicInfoConfig;
     private List<QuestionDto> questions;
