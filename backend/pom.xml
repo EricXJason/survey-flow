@@ -18,7 +18,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.surveyflow</groupId>
+    <groupId>org.jasonproduction</groupId>
     <artifactId>survey-flow-backend</artifactId>
     <version>1.0.0</version>
     <name>survey-flow-backend</name>

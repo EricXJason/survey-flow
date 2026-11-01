@@ -119,10 +119,41 @@
     pointer-events: none;
   }
 
+  .btn-toggle-password {
+    position: absolute;
+    right: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--c-neutral-400, #94a3b8);
+    cursor: pointer;
+    border-radius: var(--r-xs, 0.2rem);
+    transition: color var(--transition-fast, 0.15s ease);
+
+    &:hover {
+      color: var(--c-neutral-800, #1e293b);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--c-neutral-900, #0f172a);
+      outline-offset: 1px;
+    }
+
+    .eye-icon {
+      width: 1.8rem;
+      height: 1.8rem;
+    }
+  }
+
   input {
     width: 100%;
     height: 4.4rem;
-    padding: 0 1.2rem 0 3.8rem;
+    padding: 0 4.2rem 0 3.8rem;
     font-size: 1.45rem;
     color: var(--c-neutral-900, #0f172a);
     background: #ffffff;

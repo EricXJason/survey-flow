@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ApiClientService } from '../../../@services/api-client.service';
@@ -42,6 +42,21 @@ export class ResetPasswordComponent implements OnInit {
   private readonly _validationService = inject(ValidationService);
   /** 互動對話框服務 */
   private readonly _dialogService = inject(DialogService);
+
+  /** 是否顯示新密碼明文 */
+  readonly showNewPassword = signal<boolean>(false);
+  /** 是否顯示確認新密碼明文 */
+  readonly showConfirmPassword = signal<boolean>(false);
+
+  /** 切換新密碼顯示/隱藏狀態 */
+  toggleShowNewPassword(): void {
+    this.showNewPassword.update((val) => !val);
+  }
+
+  /** 切換確認新密碼顯示/隱藏狀態 */
+  toggleShowConfirmPassword(): void {
+    this.showConfirmPassword.update((val) => !val);
+  }
 
   /** 是否正在發送請求 */
   protected isSubmitting = false;

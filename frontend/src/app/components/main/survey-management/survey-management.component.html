@@ -709,96 +709,32 @@
           }
         </div>
 
-        <!-- ── 三欄資料：產業 + 地區 + 問卷題數摘要 ── -->
-        @if (report.demographics) {
-          <div class="analytics-charts-row analytics-charts-row--triple">
-
-            <!-- 職業/產業前五排名 -->
-            @if (report.demographics.topJobIndustries.length) {
-              <div class="analytics-panel-card panel-industry">
-                <div class="panel-header">
-                  <h2 class="panel-title">職業 / 產業分佈</h2>
-                  <span class="panel-tag">前五名</span>
-                </div>
-                <div class="industry-list">
-                  @for (job of report.demographics.topJobIndustries; track job.industry; let iIdx = $index) {
-                    <div class="industry-item">
-                      <span class="industry-rank rank-{{ iIdx + 1 }}">{{ iIdx + 1 }}</span>
-                      <div class="industry-info">
-                        <div class="industry-name-row">
-                          <span class="industry-name">{{ job.industry }}</span>
-                          <span class="industry-count">{{ job.count }} 人</span>
-                        </div>
-                        <div class="industry-track">
-                          <div class="industry-fill" [style.width.%]="job.percentage"></div>
-                        </div>
-                      </div>
-                      <span class="industry-pct">{{ job.percentage }}%</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-
-            <!-- 居住地區前五排名 -->
-            @if (report.demographics.topRegions?.length) {
-              <div class="analytics-panel-card panel-region">
-                <div class="panel-header">
-                  <h2 class="panel-title">居住地區分佈</h2>
-                  <span class="panel-tag">前五名</span>
-                </div>
-                <div class="region-list">
-                  @for (reg of report.demographics.topRegions; track reg.region; let rIdx = $index) {
-                    <div class="region-item">
-                      <span class="region-rank rank-{{ rIdx + 1 }}">{{ rIdx + 1 }}</span>
-                      <div class="region-info">
-                        <div class="region-name-row">
-                          <span class="region-name">{{ reg.region }}</span>
-                          <span class="region-count">{{ reg.count }} 人</span>
-                        </div>
-                        <div class="region-track">
-                          <div class="region-fill" [style.width.%]="reg.percentage"></div>
-                        </div>
-                      </div>
-                      <span class="region-pct">{{ reg.percentage }}%</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-
-            <!-- 問卷結構摘要 -->
-            <div class="analytics-panel-card panel-structure">
+        <!-- ── 產業分佈 ── -->
+        @if (report.demographics && report.demographics.topJobIndustries.length) {
+          <div class="analytics-charts-row">
+            <div class="analytics-panel-card panel-industry">
               <div class="panel-header">
-                <h2 class="panel-title">問卷題型結構</h2>
-                <span class="panel-tag">總覽</span>
+                <h2 class="panel-title">職業 / 產業分佈</h2>
+                <span class="panel-tag">前五名</span>
               </div>
-              <div class="structure-summary">
-                <div class="structure-num-row">
-                  <span class="structure-big-num">{{ report.questionsAnalytics.length }}</span>
-                  <span class="structure-num-label">道調研題目</span>
-                </div>
-                <div class="structure-type-grid">
-                  <div class="structure-type-item">
-                    <span class="stype-count">{{ getQuestionTypeCount(report.questionsAnalytics, 'radio') }}</span>
-                    <span class="stype-label">單選題</span>
+              <div class="industry-list">
+                @for (job of report.demographics.topJobIndustries; track job.industry; let iIdx = $index) {
+                  <div class="industry-item">
+                    <span class="industry-rank rank-{{ iIdx + 1 }}">{{ iIdx + 1 }}</span>
+                    <div class="industry-info">
+                      <div class="industry-name-row">
+                        <span class="industry-name">{{ job.industry }}</span>
+                        <span class="industry-count">{{ job.count }} 人</span>
+                      </div>
+                      <div class="industry-track">
+                        <div class="industry-fill" [style.width.%]="job.percentage"></div>
+                      </div>
+                    </div>
+                    <span class="industry-pct">{{ job.percentage }}%</span>
                   </div>
-                  <div class="structure-type-item">
-                    <span class="stype-count">{{ getQuestionTypeCount(report.questionsAnalytics, 'checkbox') }}</span>
-                    <span class="stype-label">多選題</span>
-                  </div>
-                  <div class="structure-type-item">
-                    <span class="stype-count">{{ getQuestionTypeCount(report.questionsAnalytics, 'scale') }}</span>
-                    <span class="stype-label">量表題</span>
-                  </div>
-                  <div class="structure-type-item">
-                    <span class="stype-count">{{ getQuestionTypeCount(report.questionsAnalytics, 'text') }}</span>
-                    <span class="stype-label">簡答題</span>
-                  </div>
-                </div>
+                }
               </div>
             </div>
-
           </div>
         }
 
@@ -887,7 +823,7 @@
                 @if (isBooleanQuestion(q) && q.optionsStats && q.optionsStats.length > 0) {
                   <div class="boolean-visual-wrap">
                     <div class="boolean-cards-row">
-                      @for (opt of q.optionsStats; track opt.text; let bIdx = $index) {
+                      @for (opt of q.optionsStats; track opt.optionId || $index; let bIdx = $index) {
                         <div class="boolean-stat-card" [class.primary-choice]="bIdx === 0" [class.secondary-choice]="bIdx === 1"
                              [class.is-top-option]="isTopOption(q.optionsStats, opt)">
                           <div class="bool-card-header">
@@ -958,7 +894,7 @@
                           <text x="28" y="133" font-size="9" fill="#94a3b8" text-anchor="end" font-family="monospace">0%</text>
 
                           <!-- 各選項直方柱體與數值 -->
-                          @for (col of getColumnChartData(q.optionsStats); track col.text) {
+                          @for (col of getColumnChartData(q.optionsStats); track col.key) {
                             <g class="chart-col-group">
                               <title>{{ col.text }}: {{ col.count }} 票 ({{ col.percentage }}%)</title>
                               <!-- 柱體背景淡色軌道 -->
@@ -985,7 +921,7 @@
 
                       <!-- 底部圖例對應標籤 (純編號表示，水平正中，避免長文字無法完整顯示) -->
                       <div class="column-legend-list">
-                        @for (opt of q.optionsStats; track opt.text; let idx = $index) {
+                        @for (opt of q.optionsStats; track opt.optionId || $index; let idx = $index) {
                           <div class="col-legend-item" [title]="'選項 #' + (idx + 1) + '：' + opt.text + ' (' + opt.count + ' 票，' + opt.percentage + '%)'">
                             <span class="legend-color-dot" [style.background]="chartColors[idx % chartColors.length]"></span>
                             <span class="legend-badge">#{{ idx + 1 }}</span>
@@ -1003,7 +939,7 @@
 
                     <!-- 右欄：選項排行與進度條列表 -->
                     <div class="options-ranking-list">
-                      @for (opt of q.optionsStats; track opt.text; let oIdx = $index) {
+                      @for (opt of q.optionsStats; track opt.optionId || $index; let oIdx = $index) {
                         <div class="ranking-option-item" [class.is-top-option]="isTopOption(q.optionsStats, opt)">
                           <div class="opt-meta-line">
                             <div class="opt-name-group">
@@ -1051,7 +987,7 @@
                           <!-- 甜甜圈底環 -->
                           <circle class="donut-ring-bg" cx="50" cy="50" r="40" fill="transparent" stroke="#f1f5f9" stroke-width="16"></circle>
                           <!-- 各選項動態弧段 -->
-                          @for (seg of getDonutSegments(q.optionsStats); track seg.text) {
+                          @for (seg of getDonutSegments(q.optionsStats); track seg.key) {
                             @if (seg.percentage > 0) {
                               <circle class="donut-segment" cx="50" cy="50" r="40" fill="transparent"
                                       [attr.stroke]="seg.color"
@@ -1070,7 +1006,7 @@
 
                       <!-- 甜甜圈圖例 (純編號表示，水平正中，避免長文字無法完整顯示) -->
                       <div class="donut-legend-list">
-                        @for (opt of q.optionsStats; track opt.text; let lIdx = $index) {
+                        @for (opt of q.optionsStats; track opt.optionId || $index; let lIdx = $index) {
                           <div class="donut-legend-item" [title]="'選項 #' + (lIdx + 1) + '：' + opt.text + ' (' + opt.count + ' 票，' + opt.percentage + '%)'">
                             <span class="legend-color-dot" [style.background]="chartColors[lIdx % chartColors.length]"></span>
                             <span class="legend-badge">#{{ lIdx + 1 }}</span>
@@ -1082,7 +1018,7 @@
 
                     <!-- 右欄：選項排行與進度條列表 -->
                     <div class="options-ranking-list">
-                      @for (opt of q.optionsStats; track opt.text; let oIdx = $index) {
+                      @for (opt of q.optionsStats; track opt.optionId || $index; let oIdx = $index) {
                         <div class="ranking-option-item" [class.is-top-option]="isTopOption(q.optionsStats, opt)">
                           <div class="opt-meta-line">
                             <div class="opt-name-group">
@@ -1317,7 +1253,7 @@
                   id="setting-start-date"
                   type="datetime-local"
                   class="field-input"
-                  min="1900-01-01T00:00"
+                  [min]="minDateTime()"
                   max="2099-12-31T23:59"
                   [value]="settingsStartDate()"
                   (input)="onStartDateChange($event)"
@@ -1330,7 +1266,7 @@
                   id="setting-end-date"
                   type="datetime-local"
                   class="field-input"
-                  min="1900-01-01T00:00"
+                  [min]="settingsStartDate() || minDateTime()"
                   max="2099-12-31T23:59"
                   [value]="settingsEndDate()"
                   (input)="onEndDateChange($event)"

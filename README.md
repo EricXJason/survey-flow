@@ -8,7 +8,7 @@
 [![TiDB Cloud](https://img.shields.io/badge/TiDB_Cloud-MySQL_8.0-336791?style=for-the-badge&logo=mysql&logoColor=white)](https://tidbcloud.com/)
 [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-Edge_CDN-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://pages.cloudflare.com/)
 [![Render](https://img.shields.io/badge/Render-Docker_Web_Service-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com/)
-[![Tests](https://img.shields.io/badge/Tests-39%2F39_PASS-22c55e?style=for-the-badge&logo=junit5&logoColor=white)](https://junit.org/)
+[![Tests](https://img.shields.io/badge/Tests-41%2F41_PASS-22c55e?style=for-the-badge&logo=junit5&logoColor=white)](https://junit.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 **專案作者**: 許哲誠 (HSU, CHE-CHENG)  
@@ -52,7 +52,7 @@
 | **調閱名下問卷數據分析報表** | ❌ | ✅ | ✅ | `GET /api/analytics/surveys/{id}` (非擁有者 403 阻斷) |
 | **4 大格式匯出名下問卷數據** | ❌ | ✅ | ✅ | 支援 CSV、SPSS 語法檔 (.sps)、JSON 與列印 PDF 匯出 |
 | **刪除名下問卷專案** | ❌ | ✅ | ✅ | `DELETE /api/user/surveys/{id}` 安全軟刪除 |
-| **維護個人基本資料** | ❌ | ✅ | ✅ | `PUT /api/user/profile` (身分證號唯讀安全保護) |
+| **維護個人基本資料** | ❌ | ✅ | ✅ | `PUT /api/user/profile` (實名資料與通訊欄位維護) |
 | **修改個人登入密碼** | ❌ | ✅ | ✅ | `PUT /api/user/password` 驗證舊密碼並以 Argon2id 重新雜湊 |
 | **檢視全站會員名冊** | ❌ | ❌ | ✅ | `GET /api/admin/users` 僅限 ROLE_ADMIN 管理員存取 |
 | **調整會員帳號狀態 (啟用/凍結)** | ❌ | ❌ | ✅ | `PUT /api/admin/users/{id}/status` 即時凍結異常帳號 |

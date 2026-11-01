@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -43,6 +43,16 @@ export class LogInComponent {
   private readonly _dialogService = inject(DialogService);
   /** 使用者身分事件廣播服務（登入成功處理） */
   private readonly _userEmitter = inject(UserEmitterService);
+
+  /** 是否顯示密碼明文 */
+  readonly showPassword = signal<boolean>(false);
+
+  /**
+   * 切換密碼顯示/隱藏狀態
+   */
+  toggleShowPassword(): void {
+    this.showPassword.update((val) => !val);
+  }
 
   /** 登入表單群組，包含帳號與密碼控制項 */
   protected readonly formBuilderGroup = this._formBuilder.group({

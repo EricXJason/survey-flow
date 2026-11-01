@@ -117,11 +117,19 @@ export class SurveyAnalyticsService {
             };
             const frontendType = typeMap[qs.type] || 'text';
 
-            const optionStats: OptionStatItem[] = Object.keys(qs.optionCounts || {}).map((optText) => ({
-              text: optText,
-              count: qs.optionCounts[optText] || 0,
-              percentage: qs.optionPercentages ? (qs.optionPercentages[optText] || 0) : 0,
-            }));
+            // 優先讀取後端結構化 optionsList（以 optionId 獨立分組，支援同名選項獨立統計），若無則降級讀取 optionCounts
+            const optionStats: OptionStatItem[] = (qs.optionsList && qs.optionsList.length > 0)
+              ? qs.optionsList.map((opt: any) => ({
+                  optionId: opt.optionId,
+                  text: opt.text,
+                  count: opt.count || 0,
+                  percentage: opt.percentage || 0,
+                }))
+              : Object.keys(qs.optionCounts || {}).map((optText) => ({
+                  text: optText,
+                  count: qs.optionCounts[optText] || 0,
+                  percentage: qs.optionPercentages ? (qs.optionPercentages[optText] || 0) : 0,
+                }));
 
             let scaleStats: ScaleStats | undefined;
             if (frontendType === 'scale') {
@@ -275,28 +283,16 @@ export class SurveyAnalyticsService {
                 .sort((a, b) => b.count - a.count)
                 .slice(0, 5);
 
-              // 前五大居住地區
-              const resMap = rawDemo.residenceDistribution || {};
-              const topRegions = Object.entries(resMap)
-                .map(([region, count]) => {
-                  const c = Number(count) || 0;
-                  const pct = surveyTotal > 0 ? Math.round((c / surveyTotal) * 1000) / 10 : 0;
-                  return { region, count: c, percentage: pct };
-                })
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 5);
-
               const hasAgeData = under18 > 0 || age18to24 > 0 || age25to34 > 0 || age35to44 > 0 || age45plus > 0;
               const hasDemographicData =
                 male > 0 || female > 0 || other > 0 || hasAgeData ||
-                topJobIndustries.length > 0 || topRegions.length > 0;
+                topJobIndustries.length > 0;
 
               if (hasDemographicData) {
                 demographics = {
                   genderDistribution: { male, female, other },
                   ageDistribution: { under18, age18to24, age25to34, age35to44, age45plus },
                   topJobIndustries,
-                  topRegions,
                 };
               }
             }

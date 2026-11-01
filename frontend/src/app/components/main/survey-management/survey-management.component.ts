@@ -131,6 +131,18 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
   /** 彈窗中複製連結成功視覺反饋信號 */
   public readonly isCopiedFromModal = signal<boolean>(false);
 
+  /** 今日目前日期時間（YYYY-MM-DDTHH:mm 格式，用於限制不能選過去時間） */
+  public readonly minDateTime = signal<string>(
+    new Intl.DateTimeFormat('sv-SE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(new Date()).replace(' ', 'T')
+  );
+
   /** 計算屬性：目前彈窗設定的結束時間是否已早於當前時間（已過期） */
   public readonly isSettingsExpired = computed<boolean>(() => {
     const endStr = this.settingsEndDate();
@@ -863,6 +875,7 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
    * @returns 包含坐標、尺寸與樣式之幾何物件陣列
    */
   public getColumnChartData(options?: OptionStatItem[]): Array<{
+    key: string;
     text: string;
     count: number;
     percentage: number;
@@ -895,6 +908,7 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
       const isTop = opt.count > 0 && opt.count === maxCount;
 
       return {
+        key: opt.optionId ? `opt-${opt.optionId}` : `idx-${idx}-${opt.text}`,
         text: opt.text,
         count: opt.count,
         percentage: pct,
@@ -916,6 +930,7 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
    * 基準周長 C = 2 * PI * 40 ≈ 251.327
    */
   public getDonutSegments(options?: OptionStatItem[]): Array<{
+    key: string;
     text: string;
     percentage: number;
     count: number;
@@ -934,6 +949,7 @@ export class SurveyManagementComponent implements OnInit, AfterViewInit {
       accumulatedPct += pct;
 
       return {
+        key: opt.optionId ? `opt-${opt.optionId}` : `idx-${idx}-${opt.text}`,
         text: opt.text,
         percentage: pct,
         count: opt.count,

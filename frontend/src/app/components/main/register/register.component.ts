@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -36,6 +36,21 @@ export class RegisterComponent implements OnDestroy {
   /** 全域標準職業選項清單 */
   public readonly careerOptions = CAREER_OPTIONS;
 
+  /** 是否顯示密碼明文 */
+  readonly showPassword = signal<boolean>(false);
+  /** 是否顯示確認密碼明文 */
+  readonly showConfirmPassword = signal<boolean>(false);
+
+  /** 切換密碼顯示/隱藏狀態 */
+  toggleShowPassword(): void {
+    this.showPassword.update((val) => !val);
+  }
+
+  /** 切換確認密碼顯示/隱藏狀態 */
+  toggleShowConfirmPassword(): void {
+    this.showConfirmPassword.update((val) => !val);
+  }
+
   /** 響應式表單建構服務 */
   private readonly _formBuilder = inject(FormBuilder);
   /** 表單格式驗證服務 */
@@ -49,8 +64,8 @@ export class RegisterComponent implements OnDestroy {
   /** 路由導航服務 */
   private readonly _router = inject(Router);
 
-  /** 生日最大允許日期（不能晚於今日） */
-  protected readonly maxBirthday = this._validationService.getLocalDate();
+  /** 生日最大允許日期（不能選今天與未來，最大只能選到昨天） */
+  protected readonly maxBirthday = this._validationService.getLocalDate(-1);
 
   /** 當前步驟狀態：是否正在進行信箱 6 碼驗證 */
   protected isVerifyingEmail = false;
@@ -232,6 +247,9 @@ export class RegisterComponent implements OnDestroy {
         this.isSubmitting = false;
         this.registeredEmail = payload.email.trim();
         this.isVerifyingEmail = true;
+        try {
+          sessionStorage.setItem('SURVEY_PENDING_REGISTRATION_PROFILE', JSON.stringify(payload));
+        } catch {}
         this.startResendCountdown();
 
         this._dialogService.showDialog({
@@ -273,6 +291,14 @@ export class RegisterComponent implements OnDestroy {
         this.isSubmittingCode = false;
         const data = res?.data;
 
+        let regData: AccountRegisterPayload | null = null;
+        try {
+          const raw = sessionStorage.getItem('SURVEY_PENDING_REGISTRATION_PROFILE');
+          if (raw) {
+            regData = JSON.parse(raw);
+          }
+        } catch {}
+
         if (data?.token || data?.accessToken) {
           sessionStorage.setItem('SURVEY_ACCESS_TOKEN', data.accessToken || data.token);
           if (data.refreshToken) {
@@ -282,13 +308,13 @@ export class RegisterComponent implements OnDestroy {
             id: String(data.userId || data.id || '1'),
             access: data.role === 'ROLE_ADMIN' ? 'admin' : 'member',
             userName: data.username,
-            name: data.fullName || data.name || data.username,
-            nationalId: '',
+            name: regData?.name || data.fullName || data.name || data.username,
+            nationalId: regData?.nationalId || data.identityCard || '',
             email: data.email,
-            phone: '',
-            gender: 'male',
-            birthday: '1990-01-01',
-            role: data.role === 'ROLE_ADMIN' ? 'admin' : 'member',
+            phone: regData?.phone || data.phone || '',
+            gender: regData?.gender || 'male',
+            birthday: regData?.birthday || '1990-01-01',
+            role: regData?.role || (data.role === 'ROLE_ADMIN' ? 'admin' : 'member'),
           });
         }
 

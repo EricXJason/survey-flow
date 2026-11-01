@@ -11,7 +11,7 @@
  * ============================================================================
  */
 
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
@@ -49,6 +49,21 @@ export class UserProfileComponent implements OnInit {
   /** 全域標準職業選項清單 */
   public readonly careerOptions = CAREER_OPTIONS;
 
+  /** 是否顯示新密碼明文 */
+  readonly showPassword = signal<boolean>(false);
+  /** 是否顯示確認新密碼明文 */
+  readonly showConfirmPassword = signal<boolean>(false);
+
+  /** 切換新密碼顯示/隱藏狀態 */
+  toggleShowPassword(): void {
+    this.showPassword.update((val) => !val);
+  }
+
+  /** 切換確認新密碼顯示/隱藏狀態 */
+  toggleShowConfirmPassword(): void {
+    this.showConfirmPassword.update((val) => !val);
+  }
+
   /** 路由導航服務 */
   private readonly _router = inject(Router);
   /** API 客戶端服務 */
@@ -64,8 +79,8 @@ export class UserProfileComponent implements OnInit {
   /** 系統全域對話框服務 */
   private readonly _dialogService = inject(DialogService);
 
-  /** 生日欄位最大可選日期（今日） */
-  protected readonly maxBirthday = this._validationService.getLocalDate();
+  /** 生日欄位最大可選日期（不能選今天與未來，最大為昨天） */
+  protected readonly maxBirthday = this._validationService.getLocalDate(-1);
   /** 是否展開新密碼修改面板之狀態旗標 */
   protected isPasswordChangeExpanded: boolean = false;
   /** 個人資料編輯表單群組執行個體 */
@@ -216,12 +231,12 @@ export class UserProfileComponent implements OnInit {
           const remote = res.data;
           const updatedProfile = {
             ...profile,
-            name: remote.name || profile.name,
+            name: remote.fullName || remote.name || profile.name,
             phone: remote.phone || profile.phone,
-            nationalId: remote.nationalId || profile.nationalId,
+            nationalId: remote.identityCard || remote.nationalId || profile.nationalId,
             gender: remote.gender || profile.gender,
             birthday: remote.birthday || profile.birthday,
-            role: remote.identity || profile.role,
+            role: remote.career || remote.identity || profile.role,
           };
           this._userState.setIdentity(updatedProfile);
           this.applyProfileToForm(updatedProfile);

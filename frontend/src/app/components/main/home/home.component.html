@@ -397,6 +397,7 @@
                       id="demoDateInput"
                       type="date"
                       class="runner-dt-input"
+                      [min]="todayDate"
                       [value]="demoDate()"
                       (change)="onDateChange($event)"
                     />

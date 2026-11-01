@@ -109,13 +109,6 @@ export class SurveyExportService {
         rows.push([]);
       }
 
-      if (demo.topRegions && demo.topRegions.length > 0) {
-        rows.push(['前五大居住地區分佈']);
-        demo.topRegions.forEach((reg, idx) => {
-          rows.push([`第 ${idx + 1} 名`, reg.region, `${reg.count} 人`, `${reg.percentage}%`]);
-        });
-        rows.push([]);
-      }
     }
 
     // 3. 各題統計明細

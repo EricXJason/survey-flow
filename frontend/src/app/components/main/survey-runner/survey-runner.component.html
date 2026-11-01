@@ -175,7 +175,7 @@
                 type="date"
                 class="field-input"
                 min="1900-01-01"
-                max="2099-12-31"
+                [max]="maxBirthday"
                 [class.has-error]="isFieldInvalid('birthday')"
                 (input)="onFieldInput('birthday', $event)"
                 (change)="onFieldInput('birthday', $event)"
@@ -616,14 +616,15 @@
 
                   @case ("multiRadio") {
                     <div class="choice-options-list">
-                      @for (opt of q.options; track $index) {
-                        <label class="choice-option-label" [class.selected]="isMultiRadioChecked(q.uid, opt)">
+                      @for (opt of q.options; track $index; let optIdx = $index) {
+                        <label class="choice-option-label" [class.selected]="isMultiRadioChecked(q.uid, opt, optIdx)">
                           <input
                             type="checkbox"
+                            [attr.name]="'multi_' + q.uid + '_' + optIdx"
                             [value]="opt"
-                            [checked]="isMultiRadioChecked(q.uid, opt)"
+                            [checked]="isMultiRadioChecked(q.uid, opt, optIdx)"
                             (click)="$event.stopPropagation()"
-                            (change)="onMultiRadioChange(q.uid, opt, $event)"
+                            (change)="onMultiRadioChange(q.uid, opt, optIdx, $event)"
                           />
                           <span class="choice-text">{{ opt }}</span>
                         </label>

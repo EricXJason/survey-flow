@@ -82,6 +82,8 @@ export class SurveyRunnerComponent implements OnInit {
   private readonly _cdr = inject(ChangeDetectorRef);
   /** 填答執行表單群組 */
   protected runnerFormGroup: FormGroup = this._formBuilder.group({});
+  /** 生日最大允許日期（嚴格限制不能選今天與未來，最大只能選到昨天） */
+  protected readonly maxBirthday = this._validationService.getLocalDate(-1);
   /** 問卷填答是否已成功提交送出之狀態旗標 */
   private _isSubmitted: boolean = false;
 
@@ -101,6 +103,9 @@ export class SurveyRunnerComponent implements OnInit {
 
   /** 單選題當前選取的選項索引映射表 (questionUid -> optionIndex)，精準杜絕同名選項解鎖與選取污染 */
   public readonly selectedRadioIndexMap = signal<Record<string, number>>({});
+
+  /** 複選題當前選取的選項索引清單映射表 (questionUid -> optionIndex[])，精準杜絕同名選項時「選一個選到全部」之污染 */
+  public readonly selectedMultiRadioIndexMap = signal<Record<string, number[]>>({});
 
   /**
    * 計算返回按鈕的友善提示文字
@@ -321,6 +326,8 @@ export class SurveyRunnerComponent implements OnInit {
    * @returns FormGroup 填答表單物件
    */
   private formBuilderGroupInit(): FormGroup {
+    this.selectedRadioIndexMap.set({});
+    this.selectedMultiRadioIndexMap.set({});
     const group = this._formBuilder.group({});
 
     const basicInfoFields = this.createBasicInfoFields();
@@ -626,14 +633,21 @@ export class SurveyRunnerComponent implements OnInit {
 
   /**
    * 判斷特定複選題選項目前是否已被勾選
+   * 優先依據選項索引 (optIdx) 進行精確判定，徹底杜絕同名選項時「選一個選到全部」的連鎖污染
    * @param questionUid 複選題 UID
    * @param optionValue 選項文字值
+   * @param optIdx 選項所在之陣列索引
    * @returns 若已勾選則為 true，否則為 false
    */
   protected isMultiRadioChecked(
     questionUid: string,
     optionValue: string,
+    optIdx: number,
   ): boolean {
+    const indices = this.selectedMultiRadioIndexMap()[questionUid];
+    if (indices !== undefined) {
+      return indices.includes(optIdx);
+    }
     const array = this.getMultiRadioArray(questionUid);
     if (!array) return false;
 
@@ -647,37 +661,60 @@ export class SurveyRunnerComponent implements OnInit {
 
   /**
    * 處理複選題 Checkbox 勾選/取消狀態異動
-   * 勾選時推入 control，取消時尋找索引並從 FormArray 中移除。
+   * 採用唯一索引 (optIdx) 維護選取狀態集合，並同步重構 FormArray，確保同名選項獨立運作
    * @param questionUid 複選題 UID
    * @param optionValue 選項值
+   * @param optIdx 選項所在之陣列索引
    * @param event 勾選框變更事件
    */
   protected onMultiRadioChange(
     questionUid: string,
     optionValue: string,
+    optIdx: number,
     event: Event,
   ): void {
     if (this.isPreview) return;
 
     const checkbox = event.target as HTMLInputElement;
-    const array = this.getMultiRadioArray(questionUid);
+    const currentIndices = this.selectedMultiRadioIndexMap()[questionUid] || [];
+    let newIndices: number[];
 
     if (checkbox.checked) {
-      array.push(this._formBuilder.control(optionValue));
+      if (!currentIndices.includes(optIdx)) {
+        newIndices = [...currentIndices, optIdx].sort((a, b) => a - b);
+      } else {
+        newIndices = currentIndices;
+      }
     } else {
-      let targetIndex = -1;
-      for (let i = 0; i < array.length; i++) {
-        if (array.at(i).value === optionValue) {
-          targetIndex = i;
-          break;
+      newIndices = currentIndices.filter((i) => i !== optIdx);
+    }
+
+    this.selectedMultiRadioIndexMap.update((map) => ({
+      ...map,
+      [questionUid]: newIndices,
+    }));
+
+    const array = this.getMultiRadioArray(questionUid);
+    if (array) {
+      array.clear();
+      const question = this.survey.questions.find((item) => item.uid === questionUid);
+      if (question && question.options) {
+        for (const idx of newIndices) {
+          if (idx >= 0 && idx < question.options.length) {
+            array.push(this._formBuilder.control(question.options[idx]));
+          }
+        }
+      } else {
+        for (const idx of newIndices) {
+          array.push(this._formBuilder.control(optionValue));
         }
       }
-      if (targetIndex !== -1) {
-        array.removeAt(targetIndex);
-      }
+      array.markAsDirty();
+      array.markAsTouched();
+      array.updateValueAndValidity();
     }
-    array.markAsTouched();
-    array.updateValueAndValidity();
+
+    this._cdr.markForCheck();
   }
 
   /**
@@ -754,6 +791,20 @@ export class SurveyRunnerComponent implements OnInit {
         const selectedOption = parentQuestion.optionsConfig[selectedIdx];
         if (selectedOption.enableUnlockQuestion && this.isTargetQuestionMatch(selectedOption.unlockTargetUid, question)) {
           return true;
+        }
+        continue;
+      }
+
+      // 若為複選題且有明確勾選索引清單，精準依據勾選項目的解鎖規則觸發
+      if (parentQuestion.type === 'multiRadio') {
+        const multiIndices = this.selectedMultiRadioIndexMap()[parentQuestion.uid] || [];
+        for (const idx of multiIndices) {
+          if (idx >= 0 && idx < parentQuestion.optionsConfig.length) {
+            const opt = parentQuestion.optionsConfig[idx];
+            if (opt.enableUnlockQuestion && this.isTargetQuestionMatch(opt.unlockTargetUid, question)) {
+              return true;
+            }
+          }
         }
         continue;
       }
@@ -1321,10 +1372,16 @@ export class SurveyRunnerComponent implements OnInit {
             break;
           }
           case 'multiRadio': {
-            // 複選題：比對多個勾選項目的文字獲取對應 optionId 清單
-            if (Array.isArray(val)) {
+            // 複選題：優先依據選項勾選索引陣列精準提取對應 optionId 清單，徹底杜絕同名選項 ID 混淆
+            const multiIndices = this.selectedMultiRadioIndexMap()[question.uid] || [];
+            const opts = question.optionsConfig || [];
+            if (multiIndices.length > 0 && opts.length > 0) {
+              selectedOptionIds = multiIndices
+                .map((idx) => opts[idx]?.id)
+                .filter((id): id is number => id !== undefined && id !== null);
+            } else if (Array.isArray(val)) {
               const cleanVals = val.map((v) => String(v).trim());
-              selectedOptionIds = (question.optionsConfig || [])
+              selectedOptionIds = opts
                 .filter((o) => cleanVals.includes((o.text || '').trim()) && o.id)
                 .map((o) => o.id!);
             }

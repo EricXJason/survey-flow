@@ -13,19 +13,10 @@
 
 import { CanActivateFn, CanDeactivateFn, Routes } from '@angular/router';
 import { Observable } from 'rxjs';
-import { HomeComponent } from './components/main/home/home.component';
-import { LobbyComponent } from './components/main/lobby/lobby.component';
-import { SurveyRunnerComponent } from './components/main/survey-runner/survey-runner.component';
-import { SurveyDesignComponent } from './components/main/survey-design/survey-design.component';
-import { SurveyManagementComponent } from './components/main/survey-management/survey-management.component';
-import { UserManagementComponent } from './components/main/user-management/user-management.component';
-import { LogInComponent } from './components/main/log-in/log-in.component';
-import { ForgetPasswordComponent } from './components/main/forget-password/forget-password.component';
-import { RegisterComponent } from './components/main/register/register.component';
-import { ResetPasswordComponent } from './components/main/reset-password/reset-password.component';
-import { VerifyEmailComponent } from './components/main/verify-email/verify-email.component';
-import { UserProfileComponent } from './components/main/user-profile/user-profile.component';
-import { NotFoundComponent } from './components/main/not-found/not-found.component';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { UserStateService } from './@services/user-state.service';
+import { DialogService } from './@services/dialog.service';
 
 /**
  * 具備離開前確認能力之組件介面 (CanComponentDeactivate)
@@ -33,11 +24,6 @@ import { NotFoundComponent } from './components/main/not-found/not-found.compone
 export interface CanComponentDeactivate {
   canDeactivate: () => Observable<boolean> | Promise<boolean> | boolean;
 }
-
-import { inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { UserStateService } from './@services/user-state.service';
-import { DialogService } from './@services/dialog.service';
 
 /**
  * 路由離開守衛 (CanDeactivate Guard)
@@ -74,40 +60,97 @@ export const authGuard: CanActivateFn = () => {
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent },
-  { path: 'lobby', component: LobbyComponent },
+  {
+    path: 'home',
+    loadComponent: () =>
+      import('./components/main/home/home.component').then((m) => m.HomeComponent),
+  },
+  {
+    path: 'lobby',
+    loadComponent: () =>
+      import('./components/main/lobby/lobby.component').then((m) => m.LobbyComponent),
+  },
   {
     path: 'survey-runner',
-    component: SurveyRunnerComponent,
+    loadComponent: () =>
+      import('./components/main/survey-runner/survey-runner.component').then(
+        (m) => m.SurveyRunnerComponent,
+      ),
     canDeactivate: [canDeactivateGuard],
   },
-  { path: 'log-in', component: LogInComponent },
-  { path: 'forget-password', component: ForgetPasswordComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'reset-password', component: ResetPasswordComponent },
-  { path: 'verify-email', component: VerifyEmailComponent },
+  {
+    path: 'log-in',
+    loadComponent: () =>
+      import('./components/main/log-in/log-in.component').then((m) => m.LogInComponent),
+  },
+  {
+    path: 'forget-password',
+    loadComponent: () =>
+      import('./components/main/forget-password/forget-password.component').then(
+        (m) => m.ForgetPasswordComponent,
+      ),
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./components/main/register/register.component').then((m) => m.RegisterComponent),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./components/main/reset-password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () =>
+      import('./components/main/verify-email/verify-email.component').then(
+        (m) => m.VerifyEmailComponent,
+      ),
+  },
   {
     path: 'survey-design',
-    component: SurveyDesignComponent,
+    loadComponent: () =>
+      import('./components/main/survey-design/survey-design.component').then(
+        (m) => m.SurveyDesignComponent,
+      ),
     canActivate: [authGuard],
     canDeactivate: [canDeactivateGuard],
   },
   {
     path: 'survey-management',
-    component: SurveyManagementComponent,
+    loadComponent: () =>
+      import('./components/main/survey-management/survey-management.component').then(
+        (m) => m.SurveyManagementComponent,
+      ),
     canActivate: [authGuard],
   },
   {
     path: 'user-management',
-    component: UserManagementComponent,
+    loadComponent: () =>
+      import('./components/main/user-management/user-management.component').then(
+        (m) => m.UserManagementComponent,
+      ),
     canActivate: [authGuard],
   },
   {
     path: 'user-profile',
-    component: UserProfileComponent,
+    loadComponent: () =>
+      import('./components/main/user-profile/user-profile.component').then(
+        (m) => m.UserProfileComponent,
+      ),
     canActivate: [authGuard],
     canDeactivate: [canDeactivateGuard],
   },
-  { path: 'not-found', component: NotFoundComponent },
-  { path: '**', component: NotFoundComponent },
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./components/main/not-found/not-found.component').then((m) => m.NotFoundComponent),
+  },
+  {
+    path: '**',
+    loadComponent: () =>
+      import('./components/main/not-found/not-found.component').then((m) => m.NotFoundComponent),
+  },
 ];

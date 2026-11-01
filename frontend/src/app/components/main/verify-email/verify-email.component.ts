@@ -107,17 +107,25 @@ export class VerifyEmailComponent implements OnInit, OnDestroy {
             sessionStorage.setItem('SURVEY_REFRESH_TOKEN', data.refreshToken);
           }
 
+          let regData: any = null;
+          try {
+            const raw = sessionStorage.getItem('SURVEY_PENDING_REGISTRATION_PROFILE');
+            if (raw) {
+              regData = JSON.parse(raw);
+            }
+          } catch {}
+
           const profile: UserProfileData = {
             id: String(data.userId),
             access: data.role === 'ROLE_ADMIN' ? 'admin' : 'member',
             userName: data.username,
-            name: data.fullName,
-            nationalId: '',
+            name: regData?.name || data.fullName,
+            nationalId: regData?.nationalId || data.identityCard || '',
             email: data.email,
-            phone: '',
-            gender: 'male',
-            birthday: '1990-01-01',
-            role: data.role === 'ROLE_ADMIN' ? 'admin' : 'member',
+            phone: regData?.phone || data.phone || '',
+            gender: regData?.gender || 'male',
+            birthday: regData?.birthday || '1990-01-01',
+            role: regData?.role || (data.role === 'ROLE_ADMIN' ? 'admin' : 'member'),
           };
           this._userState.setIdentity(profile);
         }

@@ -206,7 +206,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly demoText = signal<string>('SurveyFlow 介面乾淨清晰，條件跳題動態展開非常直覺，填答過程完全沒有多餘阻礙！');
 
   /** 預約日期值 */
-  readonly demoDate = signal<string>('2026-10-20');
+  readonly todayDate = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  readonly demoDate = signal<string>(this.todayDate);
 
   /** 預約時間值 */
   readonly demoTime = signal<string>('14:30');

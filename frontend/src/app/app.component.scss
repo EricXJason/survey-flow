@@ -25,3 +25,12 @@ footer {
   flex-shrink: 0;
   background: #ffffff;
 }
+
+@media print {
+  header,
+  footer,
+  app-scroll-to-top-button,
+  app-dialog {
+    display: none !important;
+  }
+}

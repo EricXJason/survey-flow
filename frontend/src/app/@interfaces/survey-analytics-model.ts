@@ -18,6 +18,8 @@
 
 /** 單選/多選選項統計項目 */
 export interface OptionStatItem {
+  /** 選項 ID（絕對唯一識別碼，支援同名選項獨立統計） */
+  optionId?: number;
   /** 選項文字標籤 */
   text: string;
   /** 選取票數 */

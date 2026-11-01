@@ -253,3 +253,19 @@ textarea { /* 多行文字輸入區域標籤 */
   outline-offset: 2px; /* 外框向外擴展偏移 2px，避免聚焦外框遮擋按鈕本身的圓角、邊框或內部文字 */
 }
 
+/* --------------------------------------------------------------------------
+   10. 列印與另存 PDF 輸出標準 (Print & PDF Export Baseline)
+   -------------------------------------------------------------------------- */
+@media print {
+  header,
+  footer,
+  app-header,
+  app-footer,
+  .site-footer,
+  app-scroll-to-top-button,
+  app-dialog {
+    display: none !important;
+  }
+}
+
+

@@ -474,6 +474,51 @@
   padding: 2rem 2rem 0.4rem 2rem;
   margin-bottom: 2rem;
   animation: boxExpand 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    input {
+      width: 100%;
+      padding-right: 4.2rem !important;
+    }
+
+    .btn-toggle-password {
+      position: absolute;
+      right: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 3.2rem;
+      height: 3.2rem;
+      padding: 0;
+      background: transparent;
+      border: none;
+      color: var(--c-neutral-400, #94a3b8);
+      cursor: pointer;
+      border-radius: var(--r-xs, 4px);
+      transition: color var(--transition-fast, 0.15s ease);
+
+      &:hover {
+        color: var(--c-neutral-800, #1e293b);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--c-neutral-900, #0f172a);
+        outline-offset: 1px;
+      }
+
+      .eye-icon {
+        width: 1.8rem;
+        height: 1.8rem;
+      }
+    }
+  }
 }
 
 @keyframes boxExpand {
