@@ -1,4 +1,4 @@
-# SurveyFlow | 現代實證調研與學術結構化數據採集系統
+# SurveyFlow | 線上問卷設計系統
 
 <div align="center">
 
@@ -465,7 +465,7 @@ pnpm start
 
 <div align="center">
 
-**SurveyFlow** | 現代實證調研與學術結構化數據採集系統  
+**SurveyFlow** | 線上問卷設計系統  
 版權所有 © 2026 [許哲誠 (HSU, CHE-CHENG)](https://github.com/EricXJason). All Rights Reserved.
 
 </div>
