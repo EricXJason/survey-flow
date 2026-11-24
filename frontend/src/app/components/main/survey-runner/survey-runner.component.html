@@ -1,0 +1,717 @@
+<!--
+  ============================================================================
+  檔案名稱: survey-runner.component.html
+  所屬模組: 問卷填答與運行器模組 (Survey Runner & Response Module)
+  責任描述: survey-runner.component.ts 之畫面範本 — 負責受訪者端問卷填答介面呈現與校驗，涵蓋背景身分資料驗證、單選跳題解鎖邏輯（isQuestionVisible）、多選題 FormArray 同步、量表選取、離開守衛防呆及作答送出。
+  聯動關係:
+    - 上游依賴: survey-runner.component.ts (狀態、事件處理與表單模型)
+    - 下游消費: 瀏覽器 DOM 呈現
+  ============================================================================
+-->
+<div class="runner-shell">
+  <!-- 頂部快速返回導航列 (支援返回問卷管理、問卷大廳或上一頁，於獨立填答或管理預覽路由顯示) -->
+  @if (shouldShowBackButton) {
+    <div class="runner-top-nav-wrap">
+      <button type="button" class="btn-runner-back" (click)="onBack()" [attr.aria-label]="backButtonLabel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="16" height="16" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>{{ backButtonLabel }}</span>
+      </button>
+    </div>
+  }
+
+  <div class="runner-paper">
+  @if (isLoadingSurvey()) {
+    <div class="runner-loading" role="status" aria-live="polite">正在載入問卷，請稍候...</div>
+  } @else if (isUnavailable()) {
+    <div class="runner-unavailable-block">
+      <div class="unavailable-icon-badge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="38" height="38">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+
+      <div class="unavailable-status-pill">
+        <span>{{ unavailableTitle() }}</span>
+      </div>
+
+      <h1 class="unavailable-title">{{ survey.title || '問卷調研專案' }}</h1>
+
+      <div class="unavailable-message-box">
+        <p class="unavailable-desc">{{ unavailableMessage() }}</p>
+      </div>
+
+      @if (unavailableTimeRange()) {
+        <div class="unavailable-timerange-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>{{ unavailableTimeRange() }}</span>
+        </div>
+      }
+
+      <div class="unavailable-actions">
+        <button type="button" class="btn btn-primary btn-lg" (click)="onBack()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>{{ backButtonLabel }}</span>
+        </button>
+        <a routerLink="/lobby" class="btn btn-secondary btn-lg">
+          <span>前往問卷大廳</span>
+        </a>
+      </div>
+    </div>
+  } @else {
+  @if (isPreview) {
+    <div class="runner-preview-alert">
+      <span class="preview-badge">問卷預覽審查</span>
+      <span class="preview-text">目前為預覽審查視角，已全數展示卷內所有題目與條件跳題解鎖關聯；您可點選選項驗證跳題即時解鎖互動，預覽模式無法提交資料。</span>
+    </div>
+  }
+
+  <!-- 問卷頁頭資訊區塊 -->
+  <header class="runner-header">
+    <div class="header-category-badge">{{ survey.category }}</div>
+    <h1 class="runner-title">{{ survey.title }}</h1>
+
+    @if (survey.hasTimeLimit && survey.timeLimit) {
+      <div class="time-limit-banner">
+        <span class="banner-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </span>
+        <span>填答有效區間：{{ survey.timeLimit.startDate }} {{ survey.timeLimit.startTime }} 至 {{ survey.timeLimit.endDate }} {{ survey.timeLimit.endTime }}</span>
+      </div>
+    }
+
+    @if (survey.hasDescription && survey.description) {
+      <div class="runner-desc-card">
+        <p class="runner-description">{{ survey.description }}</p>
+      </div>
+    }
+
+    @if (survey.hasDescriptionImage && survey.descriptionImageBase64) {
+      <div class="runner-media-wrapper">
+        <img [src]="survey.descriptionImageBase64" alt="問卷說明圖片" class="runner-desc-image" />
+      </div>
+    }
+  </header>
+
+  <div class="runner-divider"></div>
+
+  <!-- 問卷填答互動表單 -->
+  <form [formGroup]="runnerFormGroup" (submit)="checkRunnerData()" class="runner-form">
+
+    <!-- 第一區塊：填答者基本資料（依問卷設定決定是否收集） -->
+    @if (survey.basicInfoRequirements.collectBasicInfo) {
+      <section class="runner-section">
+        <div class="section-title-wrap">
+          <h2 class="section-title">填答者基本資料</h2>
+          <span class="section-subtitle">請填寫以下基本資訊，資料僅供本次問卷統計分析使用</span>
+        </div>
+
+        <div class="demographic-inputs-grid">
+          @if (survey.basicInfoRequirements.requireName) {
+            <div class="field-item">
+              <label class="field-label">姓名 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('name')"
+                (input)="onFieldInput('name', $event)"
+                (blur)="onFieldBlur('name')"
+                formControlName="name"
+                maxlength="10"
+                placeholder="請輸入中文姓名"
+              />
+              @if (isFieldInvalid('name')) {
+                <span class="field-error">請輸入 2 至 6 字中文姓名</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireGender) {
+            <div class="field-item">
+              <label class="field-label">性別 <span class="req-star">*</span></label>
+              <select
+                formControlName="gender"
+                class="field-select"
+                [class.has-error]="isFieldInvalid('gender')"
+                (change)="onFieldInput('gender', $event)"
+                (blur)="onFieldBlur('gender')"
+              >
+                <option value="" disabled selected>請選擇性別</option>
+                <option value="male">男性</option>
+                <option value="female">女性</option>
+                <option value="other">其他／不便透露</option>
+              </select>
+              @if (isFieldInvalid('gender')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireAge) {
+            <div class="field-item">
+              <label class="field-label">年齡（歲） <span class="req-star">*</span></label>
+              <input
+                type="number"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('age')"
+                (input)="onFieldInput('age', $event)"
+                (blur)="onFieldBlur('age')"
+                formControlName="age"
+                min="1"
+                max="120"
+                maxlength="3"
+                placeholder="請填寫您的年齡（例如：22）"
+              />
+              @if (isFieldInvalid('age')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireBirthday) {
+            <div class="field-item">
+              <label class="field-label">生日 <span class="req-star">*</span></label>
+              <input
+                type="date"
+                class="field-input"
+                min="1900-01-01"
+                [max]="maxBirthday"
+                [class.has-error]="isFieldInvalid('birthday')"
+                (input)="onFieldInput('birthday', $event)"
+                (change)="onFieldInput('birthday', $event)"
+                (blur)="onFieldBlur('birthday')"
+                formControlName="birthday"
+              />
+              @if (isFieldInvalid('birthday')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireHeight) {
+            <div class="field-item">
+              <label class="field-label">身高（cm） <span class="req-star">*</span></label>
+              <input
+                type="number"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('height')"
+                (input)="onFieldInput('height', $event)"
+                (blur)="onFieldBlur('height')"
+                formControlName="height"
+                placeholder="例如：175"
+              />
+              @if (isFieldInvalid('height')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireWeight) {
+            <div class="field-item">
+              <label class="field-label">體重（kg） <span class="req-star">*</span></label>
+              <input
+                type="number"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('weight')"
+                (input)="onFieldInput('weight', $event)"
+                (blur)="onFieldBlur('weight')"
+                formControlName="weight"
+                placeholder="例如：65"
+              />
+              @if (isFieldInvalid('weight')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireMobilePhone) {
+            <div class="field-item">
+              <label class="field-label">手機電話（09開頭） <span class="req-star">*</span></label>
+              <input
+                type="tel"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('mobilePhone')"
+                (input)="onFieldInput('mobilePhone', $event)"
+                (blur)="onFieldBlur('mobilePhone')"
+                formControlName="mobilePhone"
+                maxlength="10"
+                placeholder="例如：0912345678"
+              />
+              @if (isFieldInvalid('mobilePhone')) {
+                <span class="field-error">格式須為 09 開頭 10 碼電話</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireHomePhone) {
+            <div class="field-item">
+              <label class="field-label">住家電話 <span class="req-star">*</span></label>
+              <input
+                type="tel"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('homePhone')"
+                (input)="onFieldInput('homePhone', $event)"
+                (blur)="onFieldBlur('homePhone')"
+                formControlName="homePhone"
+                placeholder="例如：02-12345678"
+              />
+              @if (isFieldInvalid('homePhone')) {
+                <span class="field-error">格式須為室內電話格式</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireEmail) {
+            <div class="field-item">
+              <label class="field-label">電子信箱 <span class="req-star">*</span></label>
+              <input
+                type="email"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('email')"
+                (input)="onFieldInput('email', $event)"
+                (blur)="onFieldBlur('email')"
+                formControlName="email"
+                maxlength="100"
+                placeholder="例如：user@university.edu.tw"
+              />
+              @if (isFieldInvalid('email')) {
+                <span class="field-error">請輸入正確的電子信箱格式</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireRegisteredAddress) {
+            <div class="field-item field-item-wide">
+              <label class="field-label">戶籍地址 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('registeredAddress')"
+                (input)="onFieldInput('registeredAddress', $event)"
+                (blur)="onFieldBlur('registeredAddress')"
+                formControlName="registeredAddress"
+                placeholder="請輸入完整戶籍地址"
+              />
+              @if (isFieldInvalid('registeredAddress')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireResidentialAddress) {
+            <div class="field-item field-item-wide">
+              <label class="field-label">現居地址 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('residentialAddress')"
+                (input)="onFieldInput('residentialAddress', $event)"
+                (blur)="onFieldBlur('residentialAddress')"
+                formControlName="residentialAddress"
+                maxlength="100"
+                placeholder="請輸入現居居住地址"
+              />
+              @if (isFieldInvalid('residentialAddress')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireDepartment) {
+            <div class="field-item">
+              <label class="field-label">所屬單位 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('department')"
+                (input)="onFieldInput('department', $event)"
+                (blur)="onFieldBlur('department')"
+                formControlName="department"
+                placeholder="例如：人文社會學院"
+              />
+              @if (isFieldInvalid('department')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireAcademicMajor) {
+            <div class="field-item">
+              <label class="field-label">就讀科系 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('academicMajor')"
+                (input)="onFieldInput('academicMajor', $event)"
+                (blur)="onFieldBlur('academicMajor')"
+                formControlName="academicMajor"
+                placeholder="例如：資訊管理系 / 企管系"
+              />
+              @if (isFieldInvalid('academicMajor')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireClassName) {
+            <div class="field-item">
+              <label class="field-label">班級名稱 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('className')"
+                (input)="onFieldInput('className', $event)"
+                (blur)="onFieldBlur('className')"
+                formControlName="className"
+                placeholder="例如：碩一甲班"
+              />
+              @if (isFieldInvalid('className')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireStudentId) {
+            <div class="field-item">
+              <label class="field-label">學號 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('studentId')"
+                (input)="onFieldInput('studentId', $event)"
+                (blur)="onFieldBlur('studentId')"
+                formControlName="studentId"
+                placeholder="例如：R12345678"
+              />
+              @if (isFieldInvalid('studentId')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireEmployeeId) {
+            <div class="field-item">
+              <label class="field-label">員工編號 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('employeeId')"
+                (input)="onFieldInput('employeeId', $event)"
+                (blur)="onFieldBlur('employeeId')"
+                formControlName="employeeId"
+                placeholder="例如：EMP-0921"
+              />
+              @if (isFieldInvalid('employeeId')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireNationalId) {
+            <div class="field-item">
+              <label class="field-label">身分證字號 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('nationalId')"
+                (input)="onFieldInput('nationalId', $event)"
+                (blur)="onFieldBlur('nationalId')"
+                formControlName="nationalId"
+                maxlength="10"
+                placeholder="例如：A123456789"
+              />
+              @if (isFieldInvalid('nationalId')) {
+                <span class="field-error">身分證字號格式檢核未通過</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireJobIndustry) {
+            <div class="field-item">
+              <label class="field-label">產業領域 <span class="req-star">*</span></label>
+              <select
+                formControlName="jobIndustry"
+                class="field-select"
+                [class.has-error]="isFieldInvalid('jobIndustry')"
+                (blur)="onFieldBlur('jobIndustry')"
+                (change)="onIndustryChange($event); onFieldInput('jobIndustry', $event)"
+              >
+                <option value="" disabled selected>請選擇產業領域</option>
+                <option value="資訊科技／半導體軟體">資訊科技／半導體軟體</option>
+                <option value="金融財務／銀行保險">金融財務／銀行保險</option>
+                <option value="醫療保健／生物科技">醫療保健／生物科技</option>
+                <option value="製造工業／機械工程">製造工業／機械工程</option>
+                <option value="教育研究／學術機構">教育研究／學術機構</option>
+                <option value="批發零售／電子商務">批發零售／電子商務</option>
+                <option value="大眾傳播／行銷公關設計">大眾傳播／行銷公關設計</option>
+                <option value="建築營造／房地產">建築營造／房地產</option>
+                <option value="餐飲旅宿／觀光娛樂">餐飲旅宿／觀光娛樂</option>
+                <option value="公務行政／公營事業機構">公務行政／公營事業機構</option>
+                <option value="專業諮詢／法律會計顧問">專業諮詢／法律會計顧問</option>
+                <option value="交通運輸／倉儲物流">交通運輸／倉儲物流</option>
+                <option value="農林漁牧／能源環保">農林漁牧／能源環保</option>
+                <option value="其他">其他</option>
+              </select>
+              @if (isOtherIndustrySelected()) {
+                <input
+                  type="text"
+                  class="field-input field-input-other"
+                  [value]="customOtherIndustry()"
+                  (input)="onCustomIndustryInput($event); onFieldInput('jobIndustry', $event)"
+                  placeholder="請在此輸入您的自訂產業領域名稱"
+                  maxlength="50"
+                />
+              }
+              @if (isFieldInvalid('jobIndustry')) {
+                <span class="field-error">請選擇或填寫產業領域</span>
+              }
+            </div>
+          }
+
+          @if (survey.basicInfoRequirements.requireJobTitle) {
+            <div class="field-item">
+              <label class="field-label">職稱 <span class="req-star">*</span></label>
+              <input
+                type="text"
+                class="field-input"
+                [class.has-error]="isFieldInvalid('jobTitle')"
+                (input)="onFieldInput('jobTitle', $event)"
+                (blur)="onFieldBlur('jobTitle')"
+                formControlName="jobTitle"
+                placeholder="例如：資深研發工程師"
+              />
+              @if (isFieldInvalid('jobTitle')) {
+                <span class="field-error">此欄位為必填項目</span>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+
+      <div class="runner-divider"></div>
+    }
+
+    <!-- 第二區塊：問卷題目清單 -->
+    <section class="runner-section">
+      <div class="section-title-wrap">
+        <h2 class="section-title">問卷題目</h2>
+        <span class="section-subtitle">請閱讀各題內容，依您的實際情況或想法選取最符合之選項</span>
+      </div>
+
+      <div class="runner-questions-list">
+        @for (q of survey.questions; track q.uid) {
+          @if (isQuestionVisible(q)) {
+            <article
+              class="runner-question-card"
+              [class.is-preview-locked]="isPreview && q.isLockedByOther && !isQuestionUnlocked(q)"
+              [class.is-preview-unlocked]="isPreview && q.isLockedByOther && isQuestionUnlocked(q)"
+            >
+              @if (isPreview && q.isLockedByOther) {
+                <div class="conditional-preview-banner" [class.unlocked]="isQuestionUnlocked(q)">
+                  <div class="banner-icon" aria-hidden="true">
+                    @if (isQuestionUnlocked(q)) {
+                      <span>🔓</span>
+                    } @else {
+                      <span>🔒</span>
+                    }
+                  </div>
+                  <div class="banner-content">
+                    <span class="banner-tag">{{ isQuestionUnlocked(q) ? '條件跳題（已解鎖）' : '條件跳題（預設隱藏）' }}</span>
+                    <span class="banner-desc">
+                      由 <strong>{{ getUnlockSourcesSummary(q) || q.lockedBySummary || '前置題目指定選項' }}</strong> 開啟解鎖
+                    </span>
+                  </div>
+                </div>
+              }
+
+              <div class="q-header-row">
+                <div class="q-num-chip">{{ ($index + 1).toString().padStart(2, '0') }}</div>
+                <div class="q-title-wrap">
+                  <h3 class="q-desc-text">{{ q.description }}</h3>
+                  @if (q.isRequired) {
+                    <span class="q-req-indicator">*（必填）</span>
+                  }
+                </div>
+              </div>
+
+              @if (q.hasImage && q.imageBase64) {
+                <div class="q-image-container">
+                  <img [src]="q.imageBase64" alt="題目視覺圖表" class="q-attached-image" />
+                </div>
+              }
+
+              <!-- 依題型呈現選項或輸入欄位 -->
+              <div class="q-input-area">
+                @switch (q.type) {
+                  @case ("t/f") {
+                    <div class="tf-options-row" role="radiogroup" [attr.aria-label]="q.description">
+                      <label
+                        class="option-pill-label opt-yes"
+                        [class.selected]="runnerFormGroup.get(q.uid)?.value === 'true' || runnerFormGroup.get(q.uid)?.value === (q.options?.[0] || 'true')"
+                        (click)="selectTfOption(q.uid, 'true')"
+                      >
+                        <input
+                          type="radio"
+                          [attr.name]="'tf_radio_' + q.uid"
+                          [value]="'true'"
+                          [checked]="runnerFormGroup.get(q.uid)?.value === 'true' || runnerFormGroup.get(q.uid)?.value === (q.options?.[0] || 'true')"
+                          (click)="$event.stopPropagation()"
+                          (change)="selectTfOption(q.uid, 'true')"
+                        />
+                        <span>{{ q.options?.[0] || '是' }}</span>
+                      </label>
+                      <label
+                        class="option-pill-label opt-no"
+                        [class.selected]="runnerFormGroup.get(q.uid)?.value === 'false' || runnerFormGroup.get(q.uid)?.value === (q.options?.[1] || 'false')"
+                        (click)="selectTfOption(q.uid, 'false')"
+                      >
+                        <input
+                          type="radio"
+                          [attr.name]="'tf_radio_' + q.uid"
+                          [value]="'false'"
+                          [checked]="runnerFormGroup.get(q.uid)?.value === 'false' || runnerFormGroup.get(q.uid)?.value === (q.options?.[1] || 'false')"
+                          (click)="$event.stopPropagation()"
+                          (change)="selectTfOption(q.uid, 'false')"
+                        />
+                        <span>{{ q.options?.[1] || '否' }}</span>
+                      </label>
+                    </div>
+                  }
+
+                  @case ("text") {
+                    <textarea
+                      class="field-textarea"
+                      [class.has-error]="isFieldInvalid(q.uid)"
+                      (input)="onFieldInput(q.uid, $event)"
+                      (blur)="onFieldBlur(q.uid)"
+                      [formControlName]="q.uid"
+                      rows="3"
+                      placeholder="請在此輸入您的回答內容..."
+                    ></textarea>
+                  }
+
+                  @case ("radio") {
+                    <div class="choice-options-list" role="radiogroup" [attr.aria-label]="q.description">
+                      @for (opt of q.options; track $index; let optIdx = $index) {
+                        <label
+                          class="choice-option-label"
+                          [class.selected]="isRadioOptionSelected(q.uid, opt, optIdx)"
+                          (click)="selectRadioOption(q.uid, opt, optIdx)"
+                        >
+                          <input
+                            type="radio"
+                            [attr.name]="'radio_' + q.uid"
+                            [value]="opt"
+                            [checked]="isRadioOptionSelected(q.uid, opt, optIdx)"
+                            (click)="$event.stopPropagation()"
+                            (change)="selectRadioOption(q.uid, opt, optIdx)"
+                          />
+                          <span class="choice-text">{{ opt }}</span>
+                        </label>
+                      }
+                    </div>
+                  }
+
+                  @case ("multiRadio") {
+                    <div class="choice-options-list">
+                      @for (opt of q.options; track $index; let optIdx = $index) {
+                        <label class="choice-option-label" [class.selected]="isMultiRadioChecked(q.uid, opt, optIdx)">
+                          <input
+                            type="checkbox"
+                            [attr.name]="'multi_' + q.uid + '_' + optIdx"
+                            [value]="opt"
+                            [checked]="isMultiRadioChecked(q.uid, opt, optIdx)"
+                            (click)="$event.stopPropagation()"
+                            (change)="onMultiRadioChange(q.uid, opt, optIdx, $event)"
+                          />
+                          <span class="choice-text">{{ opt }}</span>
+                        </label>
+                      }
+                    </div>
+                  }
+
+                  @case ("scale") {
+                    <div class="scale-options-wrap" role="radiogroup" [attr.aria-label]="q.description">
+                      @for (scaleOpt of getScaleOptions(q); track $index) {
+                        <label
+                          class="scale-option-pill"
+                          [class.selected]="runnerFormGroup.get(q.uid)?.value === scaleOpt"
+                          (click)="selectScaleOption(q.uid, scaleOpt)"
+                        >
+                          <input
+                            type="radio"
+                            [attr.name]="'scale_' + q.uid"
+                            [value]="scaleOpt"
+                            [checked]="runnerFormGroup.get(q.uid)?.value === scaleOpt"
+                            (click)="$event.stopPropagation()"
+                            (change)="selectScaleOption(q.uid, scaleOpt)"
+                          />
+                          <span class="scale-text">{{ scaleOpt }}</span>
+                        </label>
+                      }
+                    </div>
+                  }
+
+                  @case ("time") {
+                    <input
+                      type="time"
+                      class="field-input field-input-time"
+                      [class.has-error]="isFieldInvalid(q.uid)"
+                      (blur)="onFieldBlur(q.uid)"
+                      [formControlName]="q.uid"
+                      [attr.min]="q.hasTimeLimit && q.minTime ? q.minTime : null"
+                      [attr.max]="q.hasTimeLimit && q.maxTime ? q.maxTime : null"
+                      (change)="onDateTimeChange(q.uid, $event)"
+                      (input)="onDateTimeChange(q.uid, $event)"
+                    />
+                  }
+
+                  @case ("date") {
+                    <input
+                      type="date"
+                      class="field-input field-input-date"
+                      [class.has-error]="isFieldInvalid(q.uid)"
+                      (blur)="onFieldBlur(q.uid)"
+                      [formControlName]="q.uid"
+                      [attr.min]="q.hasDateLimit && q.minDate ? q.minDate : '1900-01-01'"
+                      [attr.max]="q.hasDateLimit && q.maxDate ? q.maxDate : '2099-12-31'"
+                      (change)="onDateTimeChange(q.uid, $event)"
+                      (input)="onDateTimeChange(q.uid, $event)"
+                    />
+                  }
+                }
+              </div>
+
+              @if (isFieldInvalid(q.uid)) {
+                <div class="field-error mt-2">此題為必填項目，請完成選填或輸入</div>
+              }
+            </article>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- 表單送出操作區 -->
+    <div class="runner-footer-action">
+      <button type="submit" class="btn btn-primary btn-lg runner-submit-btn" [disabled]="isPreview">
+        {{ isPreview ? "預覽模式無法提交問卷" : "確認並提交問卷結果" }}
+      </button>
+    </div>
+
+  </form>
+  }
+  </div>
+</div>

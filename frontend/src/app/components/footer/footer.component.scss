@@ -1,0 +1,172 @@
+/**
+ * ============================================================================
+ * 檔案名稱: footer.component.scss
+ * 所屬模組: Presentation Layer / Global Footer Styles
+ * 責任描述: 學術研究中性頁尾樣式 (Academic Colophon Styles)
+ *           簡約紙本線條、等寬規格指示與實體環境絕對精確版本號展示
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens)
+ *   - 下游消費: footer.component.html
+ * ============================================================================
+ */
+
+:host {
+  display: block;
+}
+
+.site-footer {
+  background: #ffffff;
+  color: var(--c-neutral-600);
+  border-top: 1px solid var(--c-border);
+  position: relative;
+}
+
+.footer-main {
+  padding-block: clamp(2.4rem, 3.2vw, 3.6rem);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(2.8rem, 4vw, 4.8rem);
+
+  /* 平板中型視窗 (641px ~ 1024px)：品牌置頂，導航雙欄對稱 */
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.8rem 3.6rem;
+
+    .footer-col-brand {
+      grid-column: 1 / -1;
+      max-width: 58rem;
+    }
+  }
+
+  /* 手機窄螢幕 (<= 640px) */
+  @media (max-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem 1.6rem;
+
+    .footer-col-brand {
+      grid-column: 1 / -1;
+      margin-bottom: 0.4rem;
+    }
+
+    .footer-col-features {
+      grid-column: 1;
+    }
+
+    .footer-col-member {
+      grid-column: 2;
+    }
+  }
+}
+
+/* =====================================================
+   1. 品牌宗旨資訊欄
+   ===================================================== */
+.footer-col-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+
+  .footer-brand-link {
+    text-decoration: none;
+  }
+
+  .footer-brand-title {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+
+    .f-brand-name {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--c-neutral-900);
+
+      .f-brand-serif {
+        color: var(--c-brand-600);
+      }
+    }
+
+    .f-brand-sub {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--c-neutral-500);
+      letter-spacing: 0.1em;
+      margin-top: 0.2rem;
+    }
+  }
+
+  .brand-desc {
+    font-size: 1.35rem;
+    line-height: 1.65;
+    color: var(--c-neutral-600);
+    max-width: 38ch;
+    margin: 0;
+  }
+}
+
+/* =====================================================
+   2. 導航欄位
+   ===================================================== */
+.footer-col {
+  .footer-nav-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--c-neutral-900);
+    letter-spacing: 0.04em;
+    margin: 0 0 1.4rem 0;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--c-border);
+  }
+
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+
+    li a {
+      font-size: 1.35rem;
+      color: var(--c-neutral-600);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+
+      &:hover {
+        color: var(--c-brand-600);
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+/* =====================================================
+   3. 頁尾底標與執行環境規格列
+   ===================================================== */
+.footer-bottom {
+  border-top: 1px solid var(--c-border);
+  padding-block: 1.8rem;
+  background: var(--c-neutral-50);
+}
+
+.footer-bottom-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+
+.footer-copyright {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--c-neutral-500);
+  letter-spacing: 0.03em;
+  margin: 0;
+  text-align: center;
+}
+

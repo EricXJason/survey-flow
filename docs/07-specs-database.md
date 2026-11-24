@@ -1,0 +1,500 @@
+# 07. 實體資料模型與資料庫架構 (Database ERD & Storage Models)
+
+> **持久化架構**: TiDB Cloud (Serverless) / MySQL 8.0 分散式關聯式資料庫 + Spring Data JPA  
+> **規格標準**: 嚴格貫徹 3NF 正規化無冗餘原則、定長物理欄位優化、TINYINT(1) 物理布林映射，100% 嚴格對齊後端 12 張資料表 (`users`, `verification_tokens`, `revoked_tokens`, `audit_logs`, `audit_chain_head`, `surveys`, `survey_basic_info_configs`, `survey_questions`, `survey_options`, `submissions`, `submission_basic_infos`, `submission_answers`)
+
+---
+
+## 1. 系統實體關聯圖 (Database ERD - Tech HUD Neon Style)
+
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'darkMode': true, 'background': '#030712', 'primaryColor': '#0b0f19', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#00f0ff', 'lineColor': '#00f0ff', 'textColor': '#f8fafc', 'attributeBackgroundColorOdd': '#060a14', 'attributeBackgroundColorEven': '#0b0f19' }, 'themeCSS': '.er.relationshipLabelBox { fill: none !important; stroke: none !important; display: none !important; } .er.relationshipLabel { fill: #ffffff !important; } rect, .node rect, rect.actor { rx: 0px !important; ry: 0px !important; }' }}%%
+erDiagram
+    USERS ||--o{ SURVEYS : "1對多發起問卷"
+    USERS |o--o{ VERIFICATION_TOKENS : "1對多OTP權杖(選填關聯)"
+    SURVEYS ||--|| SURVEY_BASIC_INFO_CONFIGS : "1對1收集配置"
+    SURVEYS ||--o{ SURVEY_QUESTIONS : "1對多問卷題目"
+    SURVEY_QUESTIONS ||--o{ SURVEY_OPTIONS : "1對多題目選項"
+    SURVEYS ||--o{ SUBMISSIONS : "1對多填答主紀錄"
+    SUBMISSIONS ||--|| SUBMISSION_BASIC_INFOS : "1對1受訪者輪廓"
+    SUBMISSIONS ||--o{ SUBMISSION_ANSWERS : "1對多答案明細"
+    SURVEY_QUESTIONS ||--o{ SUBMISSION_ANSWERS : "題目作答關聯"
+    SURVEY_OPTIONS |o--o{ SUBMISSION_ANSWERS : "選項選取關聯(選擇題可選)"
+
+    USERS {
+        bigint id PK "會員唯一流水號"
+        varchar username UK "帳號名稱(50)"
+        varchar email UK "電子郵件(100)"
+        varchar password_hash "Argon2id密碼雜湊(255)"
+        varchar full_name "真實姓名(50)"
+        char phone UK "定長聯絡手機(10)"
+        char identity_card UK "定長身分證統一編號(10)"
+        varchar role "預設ROLE_USER 權限(20)"
+        varchar status "帳號狀態 UserStatus(20)"
+        datetime tokens_revoked_before "整批作廢時間點 (可為NULL)"
+        datetime created_at "建立時間"
+        datetime updated_at "最後異動時間"
+        datetime deleted_at "軟刪除時間"
+    }
+
+    AUDIT_LOGS {
+        bigint id PK "稽核紀錄流水號(鏈順序)"
+        datetime occurred_at "發生時間 DATETIME(3)"
+        varchar actor "操作者帳號(50 可為NULL)"
+        varchar action "事件類型 AuditAction(40)"
+        varchar target_type "對象類型 USER/SURVEY(30)"
+        varchar target_id "對象ID(64)"
+        varchar detail "補充說明(500)"
+        varchar client_ip "來源IP(45)"
+        varchar trace_id "請求追蹤碼(64)"
+        char prev_hash "前一筆雜湊 CHAR(64)"
+        char hash UK "HMAC-SHA256 CHAR(64)"
+    }
+
+    AUDIT_CHAIN_HEAD {
+        tinyint id PK "固定為1"
+        bigint last_log_id "最後一筆稽核ID"
+        char last_hash "最後一筆雜湊 CHAR(64)"
+        datetime updated_at "更新時間 DATETIME(3)"
+    }
+
+    REVOKED_TOKENS {
+        char jti PK "JWT唯一識別碼 CHAR(36) ascii_bin"
+        datetime expires_at "Token原到期時間"
+        datetime revoked_at "作廢時間"
+    }
+
+    VERIFICATION_TOKENS {
+        bigint id PK "驗證碼流水號"
+        bigint user_id FK "關聯會員流水號(可為NULL)"
+        varchar email "驗證信箱(100)"
+        varchar code "6至10位時效驗證碼(10)"
+        varchar token_type "驗證碼用途(REGISTRATION/FORGOT_PASSWORD)"
+        datetime expires_at "過期時效"
+        tinyint is_used "預設0 TINYINT(1) 是否已核銷"
+        datetime created_at "生成時間"
+    }
+
+    SURVEYS {
+        bigint id PK "問卷專案流水號"
+        bigint user_id FK "發起人會員編號"
+        varchar title "問卷標題(150)"
+        text description "問卷前言說明"
+        varchar category "預設綜合調查 12大主題分類(50)"
+        tinyint is_public_to_lobby "預設1 TINYINT(1) 是否公開大廳"
+        tinyint is_open "預設1 TINYINT(1) 是否開放填答"
+        longtext cover_image_url "封面宣傳圖URL或Base64"
+        datetime start_date "開放填答起始日期"
+        datetime end_date "填答截止日期"
+        char share_token UK "分享代碼 CHAR(22) ascii_bin"
+        int view_count "預設0 瀏覽次數 (原子 UPDATE 遞增)"
+        bigint version "預設0 樂觀鎖版本號 (JPA @Version)"
+        datetime created_at "建立時間"
+        datetime updated_at "最後更新時間"
+        datetime deleted_at "軟刪除時間"
+    }
+
+    SURVEY_BASIC_INFO_CONFIGS {
+        bigint id PK "配置設定流水號"
+        bigint survey_id FK "所屬問卷編號(1對1唯一)"
+        tinyint collect_basic_info "預設1 TINYINT(1) 啟用輪廓收集"
+        tinyint require_name "預設1 TINYINT(1) 收集姓名"
+        tinyint require_gender "預設1 TINYINT(1) 收集生理性別"
+        tinyint require_age "預設1 TINYINT(1) 收集年齡層"
+        tinyint require_birthday "預設0 TINYINT(1) 收集生日"
+        tinyint require_national_id "預設0 TINYINT(1) 收集身分證號"
+        tinyint require_phone "預設0 TINYINT(1) 收集行動電話"
+        tinyint require_home_phone "預設0 TINYINT(1) 收集住家市話"
+        tinyint require_email "預設0 TINYINT(1) 收集電子信箱"
+        tinyint require_industry "預設0 TINYINT(1) 收集所屬產業"
+        tinyint require_job_title "預設0 TINYINT(1) 收集職位職稱"
+        tinyint require_department "預設0 TINYINT(1) 收集服務部門"
+        tinyint require_employee_id "預設0 TINYINT(1) 收集員工工號"
+        tinyint require_academic_major "預設0 TINYINT(1) 收集就讀科系"
+        tinyint require_class_name "預設0 TINYINT(1) 收集就讀班級"
+        tinyint require_student_id "預設0 TINYINT(1) 收集學生學號"
+        tinyint require_height "預設0 TINYINT(1) 收集受訪者身高"
+        tinyint require_weight "預設0 TINYINT(1) 收集受訪者體重"
+        tinyint require_residence "預設0 TINYINT(1) 收集居住縣市"
+        tinyint require_registered_address "預設0 TINYINT(1) 收集戶籍地址"
+    }
+
+    SURVEY_QUESTIONS {
+        bigint id PK "題目唯一流水號"
+        bigint survey_id FK "所屬問卷編號"
+        varchar question_code "題目標識代碼(Q1/UUID)"
+        varchar type "題型(SINGLE/MULTI/BOOLEAN/RATING/TEXT/TIME/DATE)"
+        varchar question_text "題目主體敘述(500)"
+        longtext image_url "題目附加附圖"
+        tinyint is_required "預設1 TINYINT(1) 是否必填"
+        int sort_order "預設1 題目排列順序"
+        int min_rating "預設1 評分量表最小值(0或1)"
+        int max_rating "預設5 評分量表最大值(5或10)"
+        datetime created_at "建立時間"
+        datetime updated_at "最後更新時間"
+    }
+
+    SURVEY_OPTIONS {
+        bigint id PK "選項唯一流水號"
+        bigint question_id FK "所屬題目編號"
+        varchar option_text "選項文字內容(255)"
+        int sort_order "預設1 選項排列順序"
+        varchar trigger_question_uid "條件跳題解鎖目標題目UID(50)"
+    }
+
+    SUBMISSIONS {
+        bigint id PK "填答主紀錄流水號"
+        bigint survey_id FK "作答之問卷編號"
+        varchar ip_address "受訪者IP位址(45)"
+        int duration_seconds "作答耗時秒數"
+        datetime submitted_at "提交作答時間戳"
+    }
+
+    SUBMISSION_BASIC_INFOS {
+        bigint id PK "基本輪廓流水號"
+        bigint submission_id FK "關聯填答主紀錄(1對1唯一)"
+        varchar name "填報真實姓名(50)"
+        tinyint gender "預設0 生理性別(0:未指定,1:男,2:女,3:其他)"
+        varchar age_group "年齡級距(30)"
+        varchar birthday "出生年月日(20)"
+        char national_id "定長身分證統一編號(10)"
+        char phone "定長聯絡手機(10)"
+        varchar home_phone "住家市話(20)"
+        varchar email "聯絡電子信箱(100)"
+        varchar industry "所屬產業(50)"
+        varchar job_title "擔任職稱(50)"
+        varchar department "任職部門(50)"
+        varchar employee_id "公司員工代號(50)"
+        varchar academic_major "修讀系所(50)"
+        varchar class_name "班別班級(50)"
+        varchar student_id "在校學號(50)"
+        double height "身高數據cm"
+        double weight "體重數據kg"
+        varchar residence "居住縣市(50)"
+        varchar registered_address "戶籍地址(200)"
+    }
+
+    SUBMISSION_ANSWERS {
+        bigint id PK "作答明細流水號"
+        bigint submission_id FK "所屬填答主紀錄"
+        bigint question_id FK "作答之題目編號"
+        bigint option_id FK "選取之選項編號(可選0..1)"
+        text text_answer "簡答題文字或日期時間字串"
+        int rating_value "量表評分分值(1至10)"
+    }
+```
+
+---
+
+## 2. 嚴格 3NF 正規化與物理儲存最佳化評估
+
+1. **定長字串優化 (CHAR vs VARCHAR)**:
+   - **身分證字號 (`identity_card`, `national_id`)**: 臺灣身分證統一定長為 10 碼（1 碼大寫英文字母 + 9 碼數字）。採用 `CHAR(10)` 比 `VARCHAR(20)` 省去長度前綴字節開銷，在 B-Tree 索引建置與等值比較時均具備連續記憶體區塊定址優勢，並能自資料庫物理層杜絕長度溢出。
+   - **手機號碼 (`phone`)**: 臺灣行動電話為 10 碼純數字格式（如 `0912345678`），採用 `CHAR(10)` 並在會員表設定 `UNIQUE` 唯一性約束，保障帳號通訊與安全憑證之唯一性。
+   - **分享代碼 (`surveys.share_token`)**: 16 bytes `SecureRandom` 經 Base64URL 編碼固定為 22 字元，採用 `CHAR(22)`。字元集指定 `ascii` 與 `ascii_bin` 定序，比對區分大小寫；若沿用表格預設的 `utf8mb4_unicode_ci`，大小寫不同的代碼會被視為相同，可猜測的組合變多。由 `Survey` 實體的 `@PrePersist` 於新增時產生，建立後不再變更，並以 `UNIQUE` 索引支援依代碼查詢。
+2. **緊湊數值型別 (TINYINT)**:
+   - **性別 (`gender`)**: 由 `VARCHAR(10)` 最佳化為 `TINYINT UNSIGNED DEFAULT 0`（1 Byte），遵循 ISO/IEC 5218 國際標準（0=未指定, 1=男性, 2=女性, 3=其他/多元），節省字串開銷並消弭拼寫歧義。
+   - **物理布林值 (`TINYINT(1)`)**: MySQL 與 TiDB 引擎無專屬 1-bit boolean 實體，`BOOLEAN` 實質為 `TINYINT(1)`。所有開關旗標明確宣告為 `TINYINT(1)` 並明訂 `DEFAULT 0` 或 `DEFAULT 1`，杜絕空值模糊。
+3. **消除冗餘相依 (Strict 3NF Guarantee)**:
+   - `submission_answers` 僅保留 `submission_id`, `question_id`, `option_id`, `text_answer`, `rating_value`，不贅存 `survey_id` 或 `user_id`，所有非主鍵屬性直接相依於主鍵，消除傳遞相依。
+   - `verification_tokens` 正式引入 `user_id BIGINT DEFAULT NULL` 外鍵並保留 `email` 索引，讓註冊前（無 user_id）與註冊後密碼重設（有 user_id）皆具備嚴格實體參照完整性。
+
+---
+
+## 3. TiDB / MySQL 8.0 實體資料表完整建表 DDL (具備繁中註解與預設值)
+
+```sql
+-- ============================================================================
+-- 專案名稱: SurveyFlow 實體關聯資料庫綱要 (DDL)
+-- 相容版本: TiDB Cloud (Serverless) / MySQL 8.0+
+-- 規格原則: 3NF 正規化、定長 CHAR(10) 優化、TINYINT 狀態碼與物理布林
+-- ============================================================================
+
+-- 1. 會員核心資料表 (users)
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '會員唯一流水號',
+    username VARCHAR(50) NOT NULL UNIQUE COMMENT '登入帳號名稱',
+    email VARCHAR(100) NOT NULL UNIQUE COMMENT '會員電子郵件',
+    password_hash VARCHAR(255) NOT NULL COMMENT 'Argon2id 密碼雜湊值',
+    full_name VARCHAR(50) NOT NULL COMMENT '真實姓名',
+    phone CHAR(10) DEFAULT NULL UNIQUE COMMENT '定長聯絡手機 (10碼純數字)',
+    identity_card CHAR(10) DEFAULT NULL UNIQUE COMMENT '定長身分證統一編號 (10碼)',
+    role VARCHAR(20) NOT NULL DEFAULT 'ROLE_USER' COMMENT '系統權限角色 (ROLE_ADMIN, ROLE_USER, ROLE_GUEST)',
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' COMMENT '帳號狀態 (UserStatus): PENDING_VERIFICATION, ACTIVE, SUSPENDED, DELETED',
+    tokens_revoked_before DATETIME DEFAULT NULL COMMENT '整批作廢時間點：簽發時間 (iat) 早於此時間之 Access / Refresh Token 一律拒絕；Refresh Token 重放或重設密碼時寫入，NULL 代表從未整批作廢',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最後異動時間',
+    deleted_at DATETIME DEFAULT NULL COMMENT '軟刪除時間戳'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系統會員核心資料表';
+
+-- 2. 帳號時效性驗證碼表記錄 (verification_tokens)
+CREATE TABLE IF NOT EXISTS verification_tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '驗證碼流水號',
+    user_id BIGINT DEFAULT NULL COMMENT '關聯會員流水號 (若為未註冊前驗證則為 NULL)',
+    email VARCHAR(100) NOT NULL COMMENT '驗證目標電子郵件',
+    code VARCHAR(10) NOT NULL COMMENT '6至10位時效驗證碼',
+    token_type VARCHAR(30) NOT NULL COMMENT '驗證碼用途 (VerificationTokenType): REGISTRATION, FORGOT_PASSWORD',
+    expires_at DATETIME NOT NULL COMMENT '過期時限戳記',
+    is_used TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已核銷使用 (0:未使用, 1:已使用)',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '生成時間',
+    INDEX idx_vt_email_type (email, token_type),
+    CONSTRAINT fk_vt_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='時效性 OTP 驗證碼記錄表';
+
+-- 3. 問卷專案主檔表 (surveys)
+CREATE TABLE IF NOT EXISTS surveys (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '問卷唯一流水號',
+    user_id BIGINT NOT NULL COMMENT '發起人會員 ID (關聯 users.id)',
+    title VARCHAR(150) NOT NULL COMMENT '問卷標題',
+    description TEXT DEFAULT NULL COMMENT '問卷前言介紹與作答說明',
+    category VARCHAR(50) NOT NULL DEFAULT '綜合調查' COMMENT '問卷 12 大領域分類',
+    is_public_to_lobby TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否公開呈現於大廳廣場 (0:私有, 1:公開)',
+    is_open TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否處於開放填答狀態 (0:關閉, 1:開放)',
+    cover_image_url LONGTEXT DEFAULT NULL COMMENT '封面宣傳圖片 (Base64 或 CDN 連結)',
+    start_date DATETIME DEFAULT NULL COMMENT '開放填答起始日期',
+    end_date DATETIME DEFAULT NULL COMMENT '開放填答截止日期',
+    share_token CHAR(22) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '分享代碼：128 bits 隨機值之 Base64URL，專屬填答連結以此取代流水號 id，未公開於大廳之問卷只能憑此存取',
+    view_count INT NOT NULL DEFAULT 0 COMMENT '問卷瀏覽次數計數器 (以原子 UPDATE 遞增，不經過樂觀鎖)',
+    version BIGINT NOT NULL DEFAULT 0 COMMENT '樂觀鎖版本號 (JPA @Version)：每次修改問卷內容或設定 +1，版本不符即拒絕寫入',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+    deleted_at DATETIME DEFAULT NULL COMMENT '軟刪除時間',
+    UNIQUE KEY uk_surveys_share_token (share_token),
+    CONSTRAINT fk_surveys_creator FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='問卷專案主檔資料表';
+
+-- 4. 問卷受訪者個人輪廓收集欄位配置表 (survey_basic_info_configs)
+CREATE TABLE IF NOT EXISTS survey_basic_info_configs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '配置記錄編號',
+    survey_id BIGINT NOT NULL UNIQUE COMMENT '所屬問卷 ID (一對一強制唯一)',
+    collect_basic_info TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否啟用受訪者資料收集 (0:關閉, 1:啟用)',
+    require_name TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否收集受訪者姓名',
+    require_gender TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否收集生理性別',
+    require_age TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否收集年齡層',
+    require_birthday TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集生日',
+    require_national_id TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集身分證字號',
+    require_phone TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集行動電話',
+    require_home_phone TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集市話',
+    require_email TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集電子信箱',
+    require_industry TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集所屬產業',
+    require_job_title TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集職位稱謂',
+    require_department TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集服務部門',
+    require_employee_id TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集員工編號',
+    require_academic_major TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集就讀科系',
+    require_class_name TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集班級編號',
+    require_student_id TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集學生學號',
+    require_height TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集身高',
+    require_weight TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集體重',
+    require_residence TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集居住縣市',
+    require_registered_address TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否收集戶籍地址',
+    CONSTRAINT fk_basic_info_survey FOREIGN KEY (survey_id) REFERENCES surveys(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='問卷受訪者個人輪廓收集欄位配置表';
+
+-- 5. 問卷題目清單資料表 (survey_questions)
+CREATE TABLE IF NOT EXISTS survey_questions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '題目流水號',
+    survey_id BIGINT NOT NULL COMMENT '所屬問卷 ID',
+    question_code VARCHAR(50) DEFAULT NULL COMMENT '前端題號識別代碼 (如 Q1, Q2)',
+    type VARCHAR(20) NOT NULL COMMENT '題目類型 (SINGLE, MULTI, BOOLEAN, RATING, TEXT, TIME, DATE)',
+    question_text VARCHAR(500) NOT NULL COMMENT '題目主體敘述文字',
+    image_url LONGTEXT DEFAULT NULL COMMENT '題目附加圖片',
+    is_required TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否為必填題目 (0:非必填, 1:必填)',
+    sort_order INT NOT NULL DEFAULT 1 COMMENT '題目呈現順序',
+    min_rating INT DEFAULT 1 COMMENT '評分題最小值 (預設 1 或 0)',
+    max_rating INT DEFAULT 5 COMMENT '評分題最大值 (預設 5 或 10)',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '建立時間',
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新時間',
+    CONSTRAINT fk_questions_survey FOREIGN KEY (survey_id) REFERENCES surveys(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='問卷題目清單資料表';
+
+-- 6. 單選/多選/是非題目選項資料表 (survey_options)
+CREATE TABLE IF NOT EXISTS survey_options (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '選項唯一流水號',
+    question_id BIGINT NOT NULL COMMENT '所屬題目 ID',
+    option_text VARCHAR(255) NOT NULL COMMENT '選項文字標籤',
+    sort_order INT NOT NULL DEFAULT 1 COMMENT '選項排列順序',
+    trigger_question_uid VARCHAR(50) DEFAULT NULL COMMENT '條件跳題解鎖之目標題目 UID',
+    CONSTRAINT fk_options_question FOREIGN KEY (question_id) REFERENCES survey_questions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='題目選項資料表';
+
+-- 7. 問卷填答主檔紀錄表 (submissions)
+CREATE TABLE IF NOT EXISTS submissions (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '填答事件流水號',
+    survey_id BIGINT NOT NULL COMMENT '作答之問卷 ID',
+    ip_address VARCHAR(45) DEFAULT NULL COMMENT '受訪者 IPv4 / IPv6 位址',
+    duration_seconds INT DEFAULT NULL COMMENT '填答作答總耗時 (秒)',
+    submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '提交作答時間戳',
+    CONSTRAINT fk_submissions_survey FOREIGN KEY (survey_id) REFERENCES surveys(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='問卷填答主檔紀錄表';
+
+-- 8. 受訪者個資輪廓真實填報明細表 (submission_basic_infos)
+CREATE TABLE IF NOT EXISTS submission_basic_infos (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '受訪者基本資料流水號',
+    submission_id BIGINT NOT NULL UNIQUE COMMENT '關聯之填答紀錄 ID (一對一唯一定位)',
+    name VARCHAR(50) DEFAULT NULL COMMENT '填報姓名',
+    gender TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '生理性別 (0:未指定, 1:男性, 2:女性, 3:其他)',
+    age_group VARCHAR(30) DEFAULT NULL COMMENT '年齡區間',
+    birthday VARCHAR(20) DEFAULT NULL COMMENT '出生年月日',
+    national_id CHAR(10) DEFAULT NULL COMMENT '定長身分證統一編號 (10碼)',
+    phone CHAR(10) DEFAULT NULL COMMENT '定長聯絡電話 (10碼純數字)',
+    home_phone VARCHAR(20) DEFAULT NULL COMMENT '住家市話',
+    email VARCHAR(100) DEFAULT NULL COMMENT '電子信箱',
+    industry VARCHAR(50) DEFAULT NULL COMMENT '就業產業',
+    job_title VARCHAR(50) DEFAULT NULL COMMENT '擔任職位',
+    department VARCHAR(50) DEFAULT NULL COMMENT '所屬部門',
+    employee_id VARCHAR(50) DEFAULT NULL COMMENT '公司工號',
+    academic_major VARCHAR(50) DEFAULT NULL COMMENT '修讀系所',
+    class_name VARCHAR(50) DEFAULT NULL COMMENT '所屬班級',
+    student_id VARCHAR(50) DEFAULT NULL COMMENT '在校學號',
+    height DOUBLE DEFAULT NULL COMMENT '身高數據 cm',
+    weight DOUBLE DEFAULT NULL COMMENT '體重數據 kg',
+    residence VARCHAR(50) DEFAULT NULL COMMENT '居住城市',
+    registered_address VARCHAR(200) DEFAULT NULL COMMENT '戶籍完整地址',
+    CONSTRAINT fk_sub_info_submission FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='受訪者個資輪廓真實填報明細表';
+
+-- 9. 受訪者各題詳細作答答案表 (submission_answers)
+CREATE TABLE IF NOT EXISTS submission_answers (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '單題作答流水號',
+    submission_id BIGINT NOT NULL COMMENT '所屬填答紀錄 ID',
+    question_id BIGINT NOT NULL COMMENT '作答之題目 ID',
+    option_id BIGINT DEFAULT NULL COMMENT '選取之選項 ID (單選、多選、是非題填入，文字與量表為 NULL)',
+    text_answer TEXT DEFAULT NULL COMMENT '簡答題文字內容或日期/時間字串',
+    rating_value INT DEFAULT NULL COMMENT '評分題數值 (1 至 10)',
+    CONSTRAINT fk_answers_submission FOREIGN KEY (submission_id) REFERENCES submissions(id) ON DELETE CASCADE,
+    CONSTRAINT fk_answers_question FOREIGN KEY (question_id) REFERENCES survey_questions(id) ON DELETE CASCADE,
+    CONSTRAINT fk_answers_option FOREIGN KEY (option_id) REFERENCES survey_options(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='受訪者各題詳細作答答案表';
+
+-- 10. 已作廢 JWT 黑名單表 (revoked_tokens)
+CREATE TABLE IF NOT EXISTS revoked_tokens (
+    jti CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY COMMENT 'JWT 唯一識別碼 (UUID，jti 宣告)',
+    expires_at DATETIME NOT NULL COMMENT '該 Token 原本之到期時間；過期後 Token 本身已無效，此列即可刪除',
+    revoked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '作廢時間',
+    INDEX idx_revoked_tokens_expires (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='已作廢 JWT 黑名單 (登出、Refresh Token 輪替)';
+
+-- 11. 稽核日誌表 (audit_logs)：只新增不修改，HMAC 雜湊鏈防竄改 (見 09-security.md §6)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '稽核紀錄流水號 (鏈的順序)',
+    occurred_at DATETIME(3) NOT NULL COMMENT '事件發生時間 (精確到毫秒)',
+    actor VARCHAR(50) DEFAULT NULL COMMENT '操作者帳號；登入失敗時為嘗試登入之帳號；匿名操作為 NULL',
+    action VARCHAR(40) NOT NULL COMMENT '事件類型 (AuditAction)',
+    target_type VARCHAR(30) DEFAULT NULL COMMENT '操作對象類型：USER、SURVEY',
+    target_id VARCHAR(64) DEFAULT NULL COMMENT '操作對象識別碼',
+    detail VARCHAR(500) DEFAULT NULL COMMENT '事件補充說明 (不含機敏值)',
+    client_ip VARCHAR(45) DEFAULT NULL COMMENT '請求來源 IP',
+    trace_id VARCHAR(64) DEFAULT NULL COMMENT '請求追蹤碼',
+    prev_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '前一筆紀錄之 hash；第一筆為 64 個 0',
+    hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '本筆 HMAC-SHA256 十六進位值',
+    UNIQUE KEY uk_audit_logs_hash (hash),
+    INDEX idx_audit_logs_occurred (occurred_at),
+    INDEX idx_audit_logs_actor_action (actor, action)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='不可竄改之稽核日誌 (HMAC 雜湊鏈)';
+
+-- 12. 稽核雜湊鏈頂端 (audit_chain_head)：固定單列，寫入稽核時 FOR UPDATE 鎖定
+CREATE TABLE IF NOT EXISTS audit_chain_head (
+    id TINYINT NOT NULL PRIMARY KEY COMMENT '固定為 1',
+    last_log_id BIGINT NOT NULL DEFAULT 0 COMMENT '最後一筆稽核紀錄 ID；尚無紀錄時為 0',
+    last_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT '最後一筆稽核紀錄之 hash；尚無紀錄時為 64 個 0',
+    updated_at DATETIME(3) NOT NULL COMMENT '最後更新時間'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='稽核雜湊鏈頂端 (單列)';
+-- 建表時即寫入起點列 (結構的一部分，不放在種子資料 seed/)
+INSERT INTO audit_chain_head (id, last_log_id, last_hash, updated_at) VALUES (1, 0, REPEAT('0', 64), NOW(3));
+```
+
+---
+
+## 4. 全系統資料庫檔案唯一存放路徑規範 (SSOT)
+
+> **規則**:  
+> 全系統所有關聯式資料庫結構 DDL 與種子資料 DML，**唯一真實存放位置永遠在：**  
+> `backend/src/main/resources/database/`  
+> - `schema.sql`: 12 張資料表結構定義檔；⚠️ 開頭為 `DROP DATABASE IF EXISTS survey_flow` 後重建，只用於本機、全新環境或確定要整個重建示範環境時。  
+> - `seed/01` ~ `seed/05`: 示範種子資料 (會員、問卷、填答)，依編號順序執行；完整重置為 `schema.sql` → `seed/01` ~ `05` (各檔說明見 `11-local-testing.md` §2)。  
+> 
+> **現在是、未來也是！** 嚴格禁止在專案根目錄、docs/ 或任何其他位置建立、散落重複或暫存之 SQL 檔案，確保版本控制單一真實來源 (SSOT) 與代碼庫純淨整潔。
+
+---
+
+## 5. ORM DDL 模式限制與嚴格禁止 Hibernate 自動建表 (Zero DDL Auto)
+
+> **規則**:  
+> 後端 ORM 之 `spring.jpa.hibernate.ddl-auto` **強制永遠只能設定為 `none`**！  
+> 嚴格禁止設定為 `update`, `create`, `create-drop` 等任何模式。  
+> 資料庫實體結構必須 100% 由 `backend/src/main/resources/database/schema.sql` 唯一主導 (SSOT)，杜絕未經審核的 DDL 執行、實體更名遺留孤立廢棄欄位、遺失中文註解與定長約束、架構漂移 (Schema Drift) 以及生產資料庫啟動期鎖表風險。
+
+---
+
+## 6. 原生 SQL 查詢唯一準則 (Strict Native Query Only)
+
+> **規則**:  
+> **嚴禁使用 Spring Data JPA 衍生推導查詢方法（如 `findByUsername`, `findById`, `count()` 等隱式魔法）**。  
+> 全系統所有資料檢索、分頁過濾與統計方法，**100% 永遠且僅能使用原生 SQL (`@Query(value = "...", nativeQuery = true)`)**！  
+> - **核心價值**: 100% 掌控 SQL 語句、索引覆蓋 (Index Coverage) 與執行計畫，避免 ORM 自動產生低效 SQL 與隱式 N+1 查詢，並與 `schema.sql` (SSOT) 保持一致。  
+> - **安全防護**: 所有動態條件強制採用命名參數化綁定（如 `:userId`, `:keyword`），嚴格禁止字串拼接以杜絕 SQL Injection 漏洞。
+
+---
+
+## 7. 嚴格禁止多對多實體關聯 (Zero @ManyToMany Invariant)
+
+> **規則**:  
+> **全系統所有 Entity 實體類別，嚴格禁止宣告 JPA `@ManyToMany` 註解**！  
+> 任何多對多業務場景（如問卷-標籤、使用者-角色、協作成員等），強制必須顯式拆解為獨立的實體中介表 (Associative Entity Table)。  
+> - **拆解架構**: 實體關係必須雙向拆解為 `EntityA (1) <-> (N) IntermediateEntity (N) <-> (1) EntityB`，透過 `@OneToMany` 與 `@ManyToOne` 精準掌控關聯生命週期。  
+> - **核心理由**: JPA `@ManyToMany` 的隱式中介表無法擴充業務欄位（如建立時間 `created_at`、狀態 `status`、排序 `sort_order`、外鍵索引等），以及 Hibernate 在更新關聯時清空整張中介表重插的嚴重效能黑洞與鎖表風險。  
+> - **本專案實體落實**: 目前 9 大資料表均為純粹的 1:N 階層模型；多選題作答直接在 `submission_answers` 寫入多筆單題答案，乾淨利索，達到真正的最優效能與最少實體檔案原則。
+
+---
+
+## 8. 併發控制與資料一致性 (Concurrency Control)
+
+同一筆資料被多個請求同時修改時，依情境選用不同機制 (選型理由見 `03-tech-stack.md` ADR-09)，皆以 `ConcurrencyIT` 整合測試在真實 MySQL 上驗證。
+
+| 情境 | 資料表 / 欄位 | 機制 | 實作位置 | 衝突時結果 |
+| :--- | :--- | :--- | :--- | :--- |
+| 修改問卷內容、開放設定 | `surveys.version` | 樂觀鎖：JPA `@Version` 於 `UPDATE … WHERE id = ? AND version = ?` 自動比對並 +1；另以請求帶入之 `version` 先行比對 | `Survey.ensureVersionMatches()`、`SurveyService` 以 `saveAndFlush` 立即寫入 | 409「此問卷已被其他人修改」 |
+| 核銷信箱開通碼、重設密碼驗證碼 | `verification_tokens` | 悲觀鎖：`SELECT … ORDER BY id DESC LIMIT 1 FOR UPDATE`，同一筆驗證碼在交易結束前其他請求只能等待 | `VerificationTokenRepository.findValidTokenForUpdate()` | 後到者讀到「已使用」，回 400 |
+| 寫入稽核紀錄 (多個請求同時寫入) | `audit_chain_head` (單列) | 悲觀鎖：`SELECT … WHERE id = 1 FOR UPDATE` 取得最後一筆 hash 後才計算新 hash，並在同一交易推進鏈頂端 | `AuditChainHeadRepository.findHeadForUpdate()` | 後到者等待前者提交，鏈不會分岔 |
+| Refresh Token 輪替 (同一顆 Token 同時被拿來換發) | `revoked_tokens.jti` (PRIMARY KEY) | 原子寫入：`INSERT IGNORE`，寫入 1 筆者輪替成功，0 筆代表已被用過 → 視為重放 | `RevokedTokenRepository.insertIfAbsent()` | 401，並作廢該使用者全部 Token |
+| 瀏覽數 +1 | `surveys.view_count` | 原子更新：`UPDATE surveys SET view_count = view_count + 1, updated_at = updated_at WHERE …` | `SurveyRepository.incrementViewCountNative()` | 不會衝突；不改 `updated_at` 與 `version`，因此不會讓擁有者的編輯被誤判為衝突 |
+| 同時註冊相同帳號 / 信箱 / 電話 / 身分證 | `users` 之 4 個 UNIQUE KEY | 唯一索引為最後防線 (應用程式「先查再寫」之間有空窗) | `schema.sql` | 409「資料已存在」 |
+
+```mermaid
+%%{init: {
+  'theme': 'dark',
+  'themeVariables': {
+    'darkMode': true,
+    'background': '#030712',
+    'primaryColor': '#0b0f19',
+    'primaryTextColor': '#f8fafc',
+    'primaryBorderColor': '#00f0ff',
+    'lineColor': '#00f0ff',
+    'textColor': '#f8fafc',
+    'actorBkg': '#0b0f19',
+    'actorBorder': '#00f0ff',
+    'actorTextColor': '#f8fafc',
+    'signalColor': '#00f0ff',
+    'signalTextColor': '#f8fafc',
+    'noteBkgColor': '#060a14',
+    'noteTextColor': '#38bdf8',
+    'noteBorderColor': '#1e293b'
+  },
+  'themeCSS': 'rect, .node rect, rect.actor { rx: 2px !important; ry: 2px !important; }'
+}}%%
+sequenceDiagram
+    participant A as 分頁 A
+    participant B as 分頁 B
+    participant S as SurveyService
+    participant D as MySQL surveys
+    A->>S: 讀取問卷 (version = 2)
+    B->>S: 讀取問卷 (version = 2)
+    A->>S: PUT settings (version = 2)
+    S->>D: UPDATE … SET version = 3 WHERE id = 3 AND version = 2
+    D-->>S: 1 筆更新
+    S-->>A: 200 (version = 3)
+    B->>S: PUT settings (version = 2)
+    S-->>B: 409 版本不符 (資料庫已是 3)
+    Note over B: 重新整理取得 version = 3 後再修改
+```
+

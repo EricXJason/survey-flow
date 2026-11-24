@@ -1,0 +1,245 @@
+// 稽核日誌面板樣式：篩選工具列、驗證結果提示、稽核紀錄表格 (窄螢幕可水平捲動)
+
+.audit-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+.audit-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  padding: 1.6rem 2rem;
+  background: var(--c-surface);
+  border: 1px solid var(--c-neutral-200);
+  border-radius: var(--r-xl);
+}
+
+.audit-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  flex: 1 1 48rem;
+  min-width: 0;
+}
+
+.audit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.audit-field-label {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--c-neutral-700);
+}
+
+.audit-input {
+  width: 100%;
+  min-height: 4.4rem;
+  padding: 0 1.2rem;
+  font-size: 1.4rem;
+  color: var(--c-neutral-900);
+  background: var(--c-surface);
+  border: 1px solid var(--c-neutral-300);
+  border-radius: var(--r-md);
+
+  &:focus-visible {
+    outline: 2px solid var(--c-primary-600);
+    outline-offset: 1px;
+  }
+}
+
+.audit-filter-actions {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+
+  .btn {
+    min-height: 4.4rem;
+    white-space: nowrap;
+  }
+}
+
+.btn-verify {
+  min-height: 4.4rem;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  .btn-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+}
+
+// 驗證結果：顏色之外同時以符號與文字表達結果
+.verify-result {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.2rem;
+  padding: 1.4rem 1.8rem;
+  border: 1px solid var(--c-neutral-200);
+  border-radius: var(--r-lg);
+  background: var(--c-surface);
+
+  &.is-valid {
+    border-color: var(--c-success);
+    background: color-mix(in srgb, var(--c-success) 6%, var(--c-surface));
+
+    .verify-mark {
+      background: var(--c-success);
+    }
+  }
+
+  &.is-broken {
+    border-color: var(--c-error);
+    background: color-mix(in srgb, var(--c-error) 6%, var(--c-surface));
+
+    .verify-mark {
+      background: var(--c-error);
+    }
+  }
+}
+
+.verify-mark {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: var(--r-full);
+  color: var(--c-surface);
+  font-weight: 700;
+}
+
+.verify-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  font-size: 1.4rem;
+  color: var(--c-neutral-800);
+  overflow-wrap: anywhere;
+}
+
+.audit-table-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-neutral-200);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.audit-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.audit-table {
+  width: 100%;
+  min-width: 96rem;
+  font-size: 1.35rem;
+
+  th.mat-mdc-header-cell {
+    background: var(--c-neutral-50);
+    color: var(--c-neutral-700);
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1.5px solid var(--c-neutral-200);
+    white-space: nowrap;
+  }
+
+  td.mat-mdc-cell {
+    padding: 1.2rem 1.4rem;
+    color: var(--c-neutral-800);
+    border-bottom: 1px solid var(--c-neutral-100);
+    vertical-align: top;
+  }
+}
+
+.cell-time,
+.cell-target {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-actor {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-detail {
+  max-width: 32rem;
+  overflow-wrap: anywhere;
+}
+
+.action-pill {
+  display: inline-block;
+  padding: 0.3rem 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--c-neutral-700);
+  background: var(--c-neutral-100);
+  border-radius: var(--r-full);
+  white-space: nowrap;
+}
+
+.cell-source {
+  white-space: nowrap;
+
+  .source-ip,
+  .source-trace {
+    display: block;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .source-trace {
+    font-size: 1.2rem;
+    color: var(--c-neutral-500);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+}
+
+.audit-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 5rem 2rem;
+  text-align: center;
+  color: var(--c-neutral-600);
+
+  h3 {
+    font-size: 1.7rem;
+    color: var(--c-neutral-800);
+  }
+}
+
+.audit-state-error h3 {
+  color: var(--c-error);
+}
+
+@media (max-width: 600px) {
+  .audit-toolbar {
+    padding: 1.4rem;
+  }
+
+  .btn-verify {
+    width: 100%;
+    justify-content: center;
+  }
+}

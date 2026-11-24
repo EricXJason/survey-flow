@@ -1,0 +1,16 @@
+/**
+ * ============================================================================
+ * 檔案名稱: main.component.scss
+ * 所屬模組: 主內容路由容器模組 (Main Content Shell Module)
+ * 責任描述: main.component.ts 之元件樣式 — 作為應用程式核心內容的 RouterOutlet 承載組件，負責呈現所有主功能頁面。
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens / CSS 自訂變數)
+ *   - 下游消費: main.component.html
+ * ============================================================================
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}

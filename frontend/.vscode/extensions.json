@@ -1,0 +1,4 @@
+{
+  // VS Code 推薦擴充套件清單：Angular Language Service (範本語法提示與型別檢查)
+  "recommendations": ["angular.ng-template"]
+}

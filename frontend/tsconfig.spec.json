@@ -1,0 +1,20 @@
+/*
+ * ============================================================================
+ * 檔案名稱: tsconfig.spec.json
+ * 責任描述: 單元測試用 TypeScript 組態：繼承 tsconfig.json，載入 Jasmine 型別並涵蓋 *.spec.ts
+ * 參考文件: TypeScript 組態 https://www.typescriptlang.org/tsconfig ；Angular 編譯選項 https://angular.dev/reference/configs/angular-compiler-options
+ * ============================================================================
+ */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "types": [
+      "jasmine"
+    ]
+  },
+  "include": [
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

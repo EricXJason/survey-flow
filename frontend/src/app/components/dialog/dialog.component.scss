@@ -1,0 +1,276 @@
+/**
+ * ============================================================================
+ * 檔案名稱: dialog.component.scss
+ * 所屬模組: Presentation Layer / Modal Dialog Styles
+ * 責任描述: 全域互動對話框簡約黑白中性樣式 (Minimalist Neutral Dialog)
+ *           統一全站黑白中性、直角細緻線條與高對比無障礙規格，
+ *           支援 Notice、Check、Error 三種情境與鍵盤 ESC 關閉。
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens)
+ *   - 下游消費: dialog.component.html
+ * ============================================================================
+ */
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: clamp(1.6rem, 4vw, 3.2rem);
+  animation: overlayFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dialog-card {
+  position: relative;
+  width: 100%;
+  max-width: 46rem;
+  background-color: #ffffff;
+  border: 1px solid var(--c-border, #e2e8f0);
+  border-radius: var(--r-sm, 0.4rem);
+  padding: clamp(2.4rem, 4vw, 3.2rem);
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+  animation: cardZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 右上角關閉按鈕 */
+.btn-close {
+  position: absolute;
+  top: 1.6rem;
+  right: 1.6rem;
+  width: 3.2rem;
+  height: 3.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--r-xs, 0.2rem);
+  background: transparent;
+  color: var(--c-neutral-500, #64748b);
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+
+  &:hover {
+    background-color: var(--c-neutral-100, #f1f5f9);
+    border-color: var(--c-border, #e2e8f0);
+    color: var(--c-neutral-900, #0f172a);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-neutral-900, #0f172a);
+    outline-offset: 2px;
+  }
+}
+
+/* 標頭區域 */
+.dialog-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.6rem;
+  margin-bottom: 1.6rem;
+  padding-right: 2.8rem;
+}
+
+.dialog-icon-badge {
+  width: 4rem;
+  height: 4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-xs, 0.2rem);
+  flex-shrink: 0;
+  border: 1px solid var(--c-border, #e2e8f0);
+  background: var(--c-neutral-50, #f8fafc);
+  color: var(--c-neutral-800, #1e293b);
+
+  .icon-svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* 模式一：確認模式 (中性墨黑) */
+  .icon-check {
+    color: #0f172a;
+  }
+
+  /* 模式二：成功與通知 (細節典雅綠點綴) */
+  .icon-notice {
+    color: #15803d;
+  }
+
+  /* 模式三：錯誤與警告 (細節緋紅點綴) */
+  .icon-error {
+    color: #b91c1c;
+  }
+}
+
+.dialog-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex-grow: 1;
+}
+
+.dialog-title {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--c-neutral-900, #0f172a);
+  margin: 0;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+}
+
+/* 內文說明區域 */
+.dialog-message-container {
+  margin-bottom: 2.4rem;
+}
+
+.dialog-message {
+  font-size: 1.45rem;
+  color: var(--c-neutral-600, #475569);
+  line-height: 1.7;
+  margin: 0;
+  word-break: break-word;
+  white-space: normal;
+
+  .dialog-msg-single {
+    line-height: 1.7;
+  }
+
+  .dialog-msg-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-top: 0.4rem;
+    width: 100%;
+  }
+
+  .dialog-msg-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    padding: 0.65rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--r-xs, 0.4rem);
+    line-height: 1.55;
+    font-size: 1.4rem;
+    color: var(--c-neutral-800, #1e293b);
+
+    .msg-bullet {
+      color: #dc2626;
+      font-weight: 800;
+      font-size: 1.6rem;
+      line-height: 1.2;
+      flex-shrink: 0;
+    }
+
+    .msg-content {
+      flex: 1;
+      font-weight: 500;
+    }
+  }
+}
+
+/* 按鈕操作區域 */
+.dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.2rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--c-border, #e2e8f0);
+
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+    gap: 0.8rem;
+
+    .dialog-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+.dialog-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 600;
+  padding: 0.85rem 1.8rem;
+  border-radius: var(--r-xs, 0.2rem);
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+  line-height: 1.4;
+
+  &:focus-visible {
+    outline: 2px solid var(--c-neutral-900, #0f172a);
+    outline-offset: 2px;
+  }
+
+  /* 次要按鈕：取消操作 */
+  &.btn-cancel {
+    background-color: #ffffff;
+    border: 1px solid var(--c-border, #e2e8f0);
+    color: var(--c-neutral-700, #334155);
+
+    &:hover {
+      background-color: var(--c-neutral-50, #f8fafc);
+      border-color: var(--c-neutral-400, #94a3b8);
+      color: var(--c-neutral-900, #0f172a);
+    }
+  }
+
+  /* 主要按鈕：確認、通知、錯誤 (一律為黑白高對比深墨樣式) */
+  &.btn-check,
+  &.btn-notice,
+  &.btn-error {
+    background-color: #0f172a;
+    border: 1px solid #0f172a;
+    color: #ffffff;
+
+    &:hover {
+      background-color: #1e293b;
+      border-color: #1e293b;
+    }
+
+    &:active {
+      background-color: #020617;
+    }
+  }
+
+  /* 錯誤按鈕若為危險操作，可維持黑底或微紅邊框 */
+  &.btn-error {
+    background-color: #0f172a;
+    border-color: #0f172a;
+  }
+}
+
+/* 動畫設定 */
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cardZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

@@ -1,0 +1,79 @@
+/**
+ * ============================================================================
+ * 檔案名稱: scroll-to-top-button.component.scss
+ * 所屬模組: 頁面導航置頂微組件模組 (Scroll Interaction Module)
+ * 責任描述: scroll-to-top-button.component.ts 之元件樣式 — 負責固定於視窗右下角的置頂按鈕渲染與點擊互動，調用 UtilityService 實現視窗平滑捲動回頂。
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens / CSS 自訂變數)
+ *   - 下游消費: scroll-to-top-button.component.html
+ * ============================================================================
+ */
+
+:host {
+  display: contents;
+}
+
+/* 回到頂端浮動按鈕：頂部自動隱藏，非頂部絲滑淡入浮現 */
+.scroll-to-top-btn {
+  position: fixed;
+  right: 2.4rem;
+  bottom: 2.4rem;
+  z-index: 990;
+  width: 4.4rem;
+  height: 4.4rem;
+  border-radius: var(--r-full);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1.5px solid var(--c-border);
+  color: var(--c-neutral-700);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+  outline: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(14px);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    background: var(--c-brand-600);
+    border-color: var(--c-brand-600);
+    color: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+
+    svg {
+      transform: translateY(-2px);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--c-brand-500);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    right: 1.4rem;
+    bottom: 1.6rem;
+    width: 4rem;
+    height: 4rem;
+  }
+}

@@ -1,0 +1,47 @@
+/**
+ * ============================================================================
+ * 檔案名稱: app.component.scss
+ * 所屬模組: 應用程式根視圖模組 (Root Shell Module)
+ * 責任描述: app.component.ts 之元件樣式 — 負責組織全站整體骨架版面配置，整合頁首、主要內容插槽、頁尾、全局對話框與置頂浮動按鈕。
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens / CSS 自訂變數)
+ *   - 下游消費: app.component.html
+ * ============================================================================
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+}
+
+main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+footer {
+  flex-shrink: 0;
+  background: #ffffff;
+}
+
+@media print {
+  header,
+  footer,
+  app-scroll-to-top-button,
+  app-dialog {
+    display: none !important;
+  }
+}

@@ -1,0 +1,181 @@
+# ==============================================================================
+# 檔案名稱: ci.yml
+# 所屬模組: CI 自動化管線 - GitHub Actions 持續整合
+# 責任描述: 每次 Push / Pull Request 執行前後端品質檢驗：
+#   - 後端：單元測試 + Testcontainers 整合測試 (JaCoCo 覆蓋率門檻) 與 JAR 封裝
+#   - 前端：三份 tsconfig 嚴格型別檢查、Karma 單元測試 (覆蓋率門檻) 與生產建置
+#   - E2E：Playwright 以真實瀏覽器 + MySQL / Mailpit 容器 + 真實後端與前端跑完整流程
+# 聯動關係:
+#   - 上游觸發: master, development, dev, feature 分支之 Push 與 PR 事件
+#   - 下游: 測試結果顯示於 GitHub (README 徽章)；部署不在本管線
+# 邊界:
+#   - [Why]: 部署由平臺自動執行 (Render 與 Cloudflare Pages 偵測到 master 推送即建置上線)，
+#     本管線只負責測試，因此不需要也不存放任何部署金鑰
+#   - 正式資料庫結構升級 (ALTER TABLE 或整個重建) 不在管線內執行，需於推送 master 前人工執行，見 docs/10-deployment.md §7.4
+# ==============================================================================
+
+name: SurveyFlow CI
+
+# 觸發事件規劃：監聽關鍵主幹與沙盒分支之推播與合併請求
+on:
+  push:
+    branches:
+      - master
+      - development
+      - dev
+      - feature
+  pull_request:
+    branches:
+      - master
+      - development
+      - dev
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # 後端持續整合任務: JDK 21 環境建置、Maven 單元測試覆蓋、JAR 打包驗證
+  # ----------------------------------------------------------------------------
+  backend-ci:
+    name: Backend Test & Build
+    # [Why]: 固定 Ubuntu 24.04，避免 ubuntu-latest 升版後 Playwright 尚未支援新系統而無法安裝瀏覽器
+    runs-on: ubuntu-24.04
+
+    steps:
+      # 步驟 1: 檢出專案原始碼倉庫
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 步驟 2: 設定 Eclipse Temurin JDK 21 執行環境並啟用 Maven 依賴快取
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      # 步驟 3: 執行單元測試 (Surefire，含 JaCoCo 覆蓋率門檻) 與整合測試 (Failsafe，*IT.java)
+      #   整合測試以 Testcontainers 啟動 MySQL 8 容器並載入 schema.sql + seed/01~05；GitHub Actions 之 ubuntu-latest 內建 Docker
+      - name: Run Backend Unit & Integration Tests
+        run: |
+          cd backend
+          chmod +x ./mvnw
+          ./mvnw clean verify
+
+      # 步驟 4: 驗證後端 Spring Boot 可執行 JAR 封裝結構完整性
+      - name: Verify Backend Packaging (JAR)
+        run: |
+          cd backend
+          ./mvnw package -DskipTests
+
+  # ----------------------------------------------------------------------------
+  # 前端持續整合任務: pnpm 11 + Node.js 22.x 環境建置、鎖檔安裝、嚴格型別檢查、單元測試、Angular 生產構建驗證
+  # ----------------------------------------------------------------------------
+  frontend-ci:
+    name: Frontend Test & Build
+    # [Why]: 固定 Ubuntu 24.04，避免 ubuntu-latest 升版後 Playwright 尚未支援新系統而無法安裝瀏覽器
+    runs-on: ubuntu-24.04
+
+    steps:
+      # 步驟 1: 檢出專案原始碼倉庫
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 步驟 2: 安裝 pnpm 11 套件管理器 (與本機開發一致；pnpm 11 需 Node.js >= 22.13)
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      # 步驟 3: 設定 Node.js 22.x LTS 執行環境並啟用 pnpm 依賴快取機制
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      # 步驟 4: 依 pnpm-lock.yaml 鎖定版本安裝前端依賴 (鎖檔不一致時直接失敗，杜絕版本漂移)
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          pnpm install --frozen-lockfile
+
+      # 步驟 5: 嚴格型別檢查 (含未使用的變數與參數)，正式程式與測試程式各檢查一次
+      - name: Type Check (strict, no unused)
+        run: |
+          cd frontend
+          pnpm exec tsc -p tsconfig.app.json --noEmit --noUnusedLocals --noUnusedParameters
+          pnpm exec tsc -p tsconfig.spec.json --noEmit --noUnusedLocals --noUnusedParameters
+          pnpm exec tsc -p tsconfig.e2e.json --noEmit --noUnusedLocals --noUnusedParameters
+
+      # 步驟 6: 執行 Jasmine 單元測試 (ChromeHeadless)，覆蓋率低於 karma.conf.js 門檻時失敗
+      - name: Run Frontend Unit Tests with Coverage
+        run: |
+          cd frontend
+          pnpm exec ng test --watch=false --browsers=ChromeHeadless --code-coverage
+
+      # 步驟 7: 執行 Angular Production Bundle 構建（驗證 Cloudflare Pages 部署靜態產物）
+      - name: Build Frontend for Production (Cloudflare Pages Target)
+        run: |
+          cd frontend
+          pnpm run build
+
+  # ----------------------------------------------------------------------------
+  # 瀏覽器端到端測試: Playwright 自動啟動 MySQL + Mailpit 容器、後端 (18080) 與前端 (4300)，以 Chromium 操作完整流程
+  #   前後端 CI 都通過後才執行，避免單元測試已失敗仍耗時跑 E2E
+  # ----------------------------------------------------------------------------
+  e2e:
+    name: Browser End-to-End Tests
+    # [Why]: 固定 Ubuntu 24.04，避免 ubuntu-latest 升版後 Playwright 尚未支援新系統而無法安裝瀏覽器
+    runs-on: ubuntu-24.04
+    needs: [backend-ci, frontend-ci]
+
+    steps:
+      # 步驟 1: 檢出專案原始碼倉庫
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 步驟 2: 後端打包需要 JDK 21
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      # 步驟 3: 前端需要 pnpm 11 + Node.js 22
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      # 步驟 4: 安裝前端依賴與 Playwright 之 Chromium (含系統相依套件)
+      - name: Install Dependencies and Chromium
+        run: |
+          cd frontend
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+
+      # 步驟 5: 執行 E2E (webServer 自動啟動並於結束後清除容器)
+      - name: Run Playwright E2E Tests
+        run: |
+          chmod +x backend/mvnw frontend/e2e/scripts/start-e2e-backend.sh
+          cd frontend
+          pnpm e2e
+
+      # 步驟 6: 失敗時上傳 HTML 報告、截圖與追蹤檔，供下載重播
+      - name: Upload Playwright Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7

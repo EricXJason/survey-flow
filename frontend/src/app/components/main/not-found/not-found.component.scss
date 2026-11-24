@@ -1,0 +1,161 @@
+/**
+ * ============================================================================
+ * 檔案名稱: not-found.component.scss
+ * 所屬模組: Presentation Layer / Not Found View Styles
+ * 責任描述: 404 找不到頁面簡約黑白中性樣式 (Minimalist Neutral 404 Styles)
+ *           統一全站黑白中性、直角細緻線條與高對比操作按鈕。
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens)
+ *   - 下游消費: not-found.component.html
+ * ============================================================================
+ */
+
+:host {
+  display: block;
+  width: 100%;
+  min-height: calc(100vh - var(--header-h));
+  background-color: var(--c-bg, #fbfbfa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(var(--sp-6), 6vw, var(--sp-16)) var(--container-px);
+  box-sizing: border-box;
+}
+
+.page-not-found {
+  width: 100%;
+}
+
+.not-found-container {
+  display: flex;
+  justify-content: center;
+}
+
+.not-found-card {
+  width: 100%;
+  max-width: 58rem;
+  background-color: #ffffff;
+  border: 1px solid var(--c-border, #e2e8f0);
+  border-radius: var(--r-sm, 0.4rem);
+  padding: clamp(3.2rem, 5vw, 4.8rem);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.06);
+}
+
+.not-found-badge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+.not-found-icon-box {
+  width: 5.6rem;
+  height: 5.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-neutral-100, #f1f5f9);
+  border: 1px solid var(--c-border, #e2e8f0);
+  border-radius: var(--r-xs, 0.2rem);
+  color: var(--c-neutral-800, #1e293b);
+
+  .not-found-svg {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+}
+
+.code-badge {
+  display: inline-block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-neutral-700, #334155);
+  background: var(--c-neutral-100, #f1f5f9);
+  border: 1px solid var(--c-border, #e2e8f0);
+  padding: 0.3rem 1rem;
+  border-radius: var(--r-xs, 0.2rem);
+  letter-spacing: 0.04em;
+}
+
+.not-found-title {
+  font-size: clamp(2.4rem, 3.2vw, 3.2rem);
+  font-weight: 800;
+  color: var(--c-neutral-900, #0f172a);
+  margin: 0 0 1.2rem 0;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.not-found-desc {
+  font-size: clamp(1.45rem, 1.8vw, 1.6rem);
+  color: var(--c-neutral-600, #475569);
+  line-height: 1.7;
+  max-width: 46rem;
+  margin: 0 0 3.2rem 0;
+}
+
+.not-found-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  font-size: 1.45rem;
+  font-weight: 600;
+  padding: 1.1rem 2.2rem;
+  border-radius: var(--r-xs, 0.2rem);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+  min-width: 15rem;
+
+  .btn-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  &.btn-primary {
+    background: #0f172a;
+    border: 1px solid #0f172a;
+    color: #ffffff;
+
+    &:hover {
+      background: #1e293b;
+      border-color: #1e293b;
+    }
+
+    &:active {
+      background: #020617;
+    }
+  }
+
+  &.btn-outline {
+    background: #ffffff;
+    border: 1px solid var(--c-border, #e2e8f0);
+    color: var(--c-neutral-700, #334155);
+
+    &:hover {
+      background: var(--c-neutral-50, #f8fafc);
+      border-color: var(--c-neutral-400, #94a3b8);
+      color: var(--c-neutral-900, #0f172a);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid #0f172a;
+    outline-offset: 2px;
+  }
+}

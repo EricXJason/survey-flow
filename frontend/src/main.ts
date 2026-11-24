@@ -1,0 +1,21 @@
+/**
+ * ============================================================================
+ * 檔案名稱: main.ts
+ * 所屬模組: 應用程式啟動入口模組 (Application Entry Module)
+ * 責任描述: 負責 Angular 單頁應用程式 (SPA) 的根啟動流程，透過 Angular 原生 bootstrapApplication 函式載入 AppComponent 與全域配置。本專案嚴格禁用 Bootstrap UI 框架，100% 採用純原生 SCSS。
+ * 架構分層: Application Root / Entry Layer
+ * 聯動關係:
+ *   - 上游依賴: ./app/app.config (全域應用設定檔), ./app/app.component (根組件)
+ *   - 下游消費: 瀏覽器執行環境 (Browser Runtime)
+ * 邊界處理: 捕獲啟動失敗例外並輸出錯誤日誌至主控臺
+ * ============================================================================
+ */
+
+import { bootstrapApplication } from '@angular/platform-browser';
+import { appConfig } from './app/app.config';
+import { AppComponent } from './app/app.component';
+
+// [Why]: 啟動失敗時應用尚未建立任何 UI 與服務，僅能以 console.error 回報致命錯誤 (非除錯日誌)
+bootstrapApplication(AppComponent, appConfig)
+  .catch((err) => console.error(err));
+

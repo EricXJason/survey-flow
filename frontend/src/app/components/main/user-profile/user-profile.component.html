@@ -1,0 +1,345 @@
+<!--
+  ============================================================================
+  檔案名稱: user-profile.component.html
+  所屬模組: 會員個人資料管理模組 (User Profile Module)
+  責任描述: user-profile.component.ts 之畫面範本 — 負責登入會員檢視與修改個人基本資料、折疊式新密碼修改面板控制、離開前防呆守衛 (canDeactivate) 及更新派發。
+  聯動關係:
+    - 上游依賴: user-profile.component.ts (狀態、事件處理與表單模型)
+    - 下游消費: 瀏覽器 DOM 呈現
+  ============================================================================
+-->
+<div class="page-auth">
+  <div class="form-card profile-card">
+    <header class="auth-header">
+      <span class="auth-badge">帳號中心</span>
+      <h1 class="auth-title">個人資料維護</h1>
+      <p class="auth-subtitle">檢視並更新您的帳號基本資料與安全設定</p>
+    </header>
+
+    <form [formGroup]="formBuilderGroup" (ngSubmit)="checkProfileData()" novalidate>
+      <!-- 1. 系統帳號固定資訊區塊 -->
+      <div class="form-section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">系統帳號資訊</h2>
+          <span class="section-badge-muted">已驗證不可修改</span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="label-row">
+            <label for="prof-username" class="field-label">會員帳號</label>
+          </div>
+          <div class="input-with-lock">
+            <input
+              id="prof-username"
+              type="text"
+              formControlName="username"
+              placeholder="系統帳號"
+              readonly
+              class="field-readonly"
+              aria-readonly="true"
+            />
+            <span class="lock-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="prof-email" class="field-label">綁定電子信箱</label>
+          </div>
+          <div class="input-with-lock">
+            <input
+              id="prof-email"
+              type="email"
+              formControlName="email"
+              placeholder="綁定信箱"
+              readonly
+              class="field-readonly"
+              aria-readonly="true"
+            />
+            <span class="lock-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 安全與密碼區塊 -->
+      <div class="form-section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">安全與密碼</h2>
+        </div>
+      </div>
+
+      <div class="password-toggle-bar">
+        <button
+          type="button"
+          class="btn-toggle-pwd"
+          [class.active]="isPasswordChangeExpanded"
+          (click)="togglePasswordChange()"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" class="key-icon" aria-hidden="true">
+            <path d="M21 2l-2 2m-1.5 1.5L16 7l-1.5-1.5L13 7l-1.5-1.5L10 7M7 10a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"></path>
+          </svg>
+          <span>{{ isPasswordChangeExpanded ? "取消變更密碼" : "變更登入密碼" }}</span>
+        </button>
+        <span class="toggle-hint">
+          {{ isPasswordChangeExpanded ? "填寫目前密碼與新密碼後點擊下方「儲存個人資料修改」生效" : "若無需變更密碼請保留原狀即可" }}
+        </span>
+      </div>
+
+      @if (isPasswordChangeExpanded) {
+        <div class="password-expand-box">
+          <div class="form-row">
+            <div class="form-group">
+              <div class="label-row">
+                <label for="prof-current-password" class="field-label">目前密碼 <span class="required-star">*</span></label>
+              </div>
+              <div class="password-input-wrapper">
+                <input
+                  id="prof-current-password"
+                  [type]="showCurrentPassword() ? 'text' : 'password'"
+                  formControlName="currentPassword"
+                  maxlength="16"
+                  placeholder="請輸入目前使用中的密碼"
+                  autocomplete="current-password"
+                  [attr.aria-invalid]="formBuilderGroup.get('currentPassword')?.invalid && formBuilderGroup.get('currentPassword')?.touched"
+                  aria-describedby="prof-current-pwd-err"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-password"
+                  (click)="toggleShowCurrentPassword()"
+                  [attr.aria-label]="showCurrentPassword() ? '隱藏密碼' : '顯示密碼'"
+                  [title]="showCurrentPassword() ? '隱藏密碼' : '顯示密碼'"
+                >
+                  @if (showCurrentPassword()) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon" aria-hidden="true">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon" aria-hidden="true">
+                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                      <line x1="2" y1="2" x2="22" y2="22"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (
+                formBuilderGroup.get("currentPassword")?.invalid &&
+                formBuilderGroup.get("currentPassword")?.touched
+              ) {
+                <span id="prof-current-pwd-err" class="field-error" role="alert">
+                  請輸入目前密碼以驗證身分
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <div class="label-row">
+                <label for="prof-new-password" class="field-label">設定新密碼 <span class="required-star">*</span></label>
+              </div>
+              <div class="password-input-wrapper">
+                <input
+                  id="prof-new-password"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  formControlName="password"
+                  maxlength="16"
+                  placeholder="8 至 16 碼新密碼"
+                  autocomplete="new-password"
+                  (copy)="$event.preventDefault()"
+                  (cut)="$event.preventDefault()"
+                  [attr.aria-invalid]="formBuilderGroup.get('password')?.invalid && formBuilderGroup.get('password')?.touched"
+                  aria-describedby="prof-pwd-err"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-password"
+                  (click)="toggleShowPassword()"
+                  [attr.aria-label]="showPassword() ? '隱藏密碼' : '顯示密碼'"
+                  [title]="showPassword() ? '隱藏密碼' : '顯示密碼'"
+                >
+                  @if (showPassword()) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon" aria-hidden="true">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon" aria-hidden="true">
+                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                      <line x1="2" y1="2" x2="22" y2="22"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (
+                formBuilderGroup.get("password")?.invalid &&
+                formBuilderGroup.get("password")?.touched
+              ) {
+                <span id="prof-pwd-err" class="field-error" role="alert">
+                  密碼須為 8 至 16 碼，且須包含大小寫字母、數字及特殊符號
+                </span>
+              }
+            </div>
+
+            <div class="form-group">
+              <div class="label-row">
+                <label for="prof-confirm-password" class="field-label">確認新密碼 <span class="required-star">*</span></label>
+              </div>
+              <div class="password-input-wrapper">
+                <input
+                  id="prof-confirm-password"
+                  [type]="showConfirmPassword() ? 'text' : 'password'"
+                  formControlName="confirmPassword"
+                  maxlength="16"
+                  placeholder="再次輸入新密碼核對"
+                  autocomplete="new-password"
+                  (paste)="$event.preventDefault()"
+                  (copy)="$event.preventDefault()"
+                  (cut)="$event.preventDefault()"
+                  [attr.aria-invalid]="(formBuilderGroup.get('confirmPassword')?.invalid || formBuilderGroup.hasError('passwordMismatch')) && formBuilderGroup.get('confirmPassword')?.touched"
+                  aria-describedby="prof-confirm-err"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-password"
+                  (click)="toggleShowConfirmPassword()"
+                  [attr.aria-label]="showConfirmPassword() ? '隱藏密碼' : '顯示密碼'"
+                  [title]="showConfirmPassword() ? '隱藏密碼' : '顯示密碼'"
+                >
+                  @if (showConfirmPassword()) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon" aria-hidden="true">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-icon" aria-hidden="true">
+                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                      <line x1="2" y1="2" x2="22" y2="22"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (
+                (formBuilderGroup.get("confirmPassword")?.invalid ||
+                  formBuilderGroup.hasError("passwordMismatch")) &&
+                formBuilderGroup.get("confirmPassword")?.touched
+              ) {
+                <span id="prof-confirm-err" class="field-error" role="alert">
+                  確認密碼未填寫或與新密碼不一致
+                </span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- 3. 基本個人資料區塊 -->
+      <div class="form-section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">基本個人資料</h2>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="label-row">
+            <label for="prof-name" class="field-label">真實姓名 <span class="required-star">*</span></label>
+          </div>
+          <input
+            id="prof-name"
+            type="text"
+            formControlName="name"
+            maxlength="6"
+            placeholder="請輸入 2 至 6 字中文姓名"
+            autocomplete="name"
+            [attr.aria-invalid]="formBuilderGroup.get('name')?.invalid && formBuilderGroup.get('name')?.touched"
+            aria-describedby="prof-name-err"
+          />
+          @if (
+            formBuilderGroup.get("name")?.invalid &&
+            formBuilderGroup.get("name")?.touched
+          ) {
+            <span id="prof-name-err" class="field-error" role="alert">
+              請輸入 2 至 6 字純中文真實姓名
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="prof-national-id" class="field-label">身分證字號 <span class="required-star">*</span></label>
+          </div>
+          <input
+            id="prof-national-id"
+            type="text"
+            formControlName="nationalId"
+            maxlength="10"
+            placeholder="首字英文大寫＋9 碼數字"
+            autocomplete="off"
+            [attr.aria-invalid]="formBuilderGroup.get('nationalId')?.invalid && formBuilderGroup.get('nationalId')?.touched"
+            aria-describedby="prof-national-id-err"
+          />
+          @if (
+            formBuilderGroup.get("nationalId")?.invalid &&
+            formBuilderGroup.get("nationalId")?.touched
+          ) {
+            <span id="prof-national-id-err" class="field-error" role="alert">
+              請輸入格式合規之身分證字號
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <div class="label-row">
+            <label for="prof-phone" class="field-label">手機號碼 <span class="required-star">*</span></label>
+          </div>
+          <input
+            id="prof-phone"
+            type="tel"
+            formControlName="phone"
+            maxlength="10"
+            placeholder="例如：0912345678"
+            autocomplete="tel"
+            [attr.aria-invalid]="formBuilderGroup.get('phone')?.invalid && formBuilderGroup.get('phone')?.touched"
+            aria-describedby="prof-phone-err"
+          />
+          @if (
+            formBuilderGroup.get("phone")?.invalid &&
+            formBuilderGroup.get("phone")?.touched
+          ) {
+            <span id="prof-phone-err" class="field-error" role="alert">
+              請輸入正確的 10 碼臺灣手機號碼（09 開頭）
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button type="submit" class="btn btn-primary btn-block">
+          儲存個人資料修改
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

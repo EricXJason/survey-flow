@@ -1,0 +1,14 @@
+# ==============================================================================
+# 檔案名稱: pnpm-workspace.yaml
+# 責任描述: pnpm 工作區設定；allowBuilds 白名單明確允許下列套件執行安裝期建置腳本 (postinstall)，
+#           其餘套件之安裝腳本一律封鎖，降低供應鏈攻擊風險
+# 白名單說明:
+#   - @parcel/watcher: Angular CLI 檔案監看原生模組
+#   - esbuild: Angular 建置器之原生打包引擎
+#   - lmdb / msgpackr-extract: Angular 建置快取之原生序列化模組
+# ==============================================================================
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true

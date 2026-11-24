@@ -1,0 +1,657 @@
+/**
+ * ============================================================================
+ * 檔案名稱: header.component.scss
+ * 所屬模組: Presentation Layer / Navigation Styles
+ * 責任描述: 學術中性 Masthead 樣式 (Academic Editorial Masthead)
+ *           精緻 1px 建築線條、等寬索引編號標籤、典雅牛津深藍 CTA 與無障礙抽屜
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens)
+ *   - 下游消費: header.component.html
+ * ============================================================================
+ */
+
+:host {
+  display: block;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.site-header-bar {
+  background: rgba(251, 251, 250, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--c-border);
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+}
+
+.header-inner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  height: var(--header-h, 6rem);
+  gap: var(--sp-6);
+  box-sizing: border-box;
+
+  @media (max-width: 960px) {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+/* =====================================================
+   1. 學術標記與品牌標誌
+   ===================================================== */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity var(--transition-fast);
+
+  &:hover {
+    opacity: 0.88;
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-brand-600);
+    outline-offset: 3px;
+    border-radius: var(--r-sm);
+  }
+}
+
+.brand-symbol {
+  width: 3.4rem;
+  height: 3.4rem;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-svg {
+  width: 3.4rem;
+  height: 3.4rem;
+  display: block;
+}
+
+.brand-text-wrap {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.brand-name {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--c-neutral-900);
+  letter-spacing: 0.04em;
+  font-family: var(--f-sans);
+
+  .brand-name-serif {
+    font-weight: 700;
+    color: var(--c-brand-600);
+    letter-spacing: 0.02em;
+  }
+}
+
+.brand-sub-tag {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--c-neutral-500);
+  font-family: var(--f-mono);
+  margin-top: 0.15rem;
+}
+
+/* =====================================================
+   2. 學術章節式導航連結 (Editorial Navigation)
+   ===================================================== */
+.header-nav {
+  justify-self: center;
+}
+
+.nav-list {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.4rem;
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--c-neutral-600);
+  text-decoration: none;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    color: var(--c-neutral-900);
+    background: var(--c-neutral-100);
+    text-decoration: none;
+
+  }
+
+  &.active {
+    color: var(--c-neutral-900);
+    background: #ffffff;
+    border-color: var(--c-border);
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04);
+    font-weight: 600;
+
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-brand-600);
+    outline-offset: 2px;
+  }
+}
+
+/* =====================================================
+   3. 右側操作與身分標記
+   ===================================================== */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  justify-self: end;
+}
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.4rem 1rem 0.4rem 0.5rem;
+  border: 1px solid var(--c-border);
+  background: #ffffff;
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  color: var(--c-neutral-800);
+  transition: all var(--transition-fast);
+
+  &:hover {
+    border-color: var(--c-brand-500);
+    text-decoration: none;
+  }
+
+  &.user-chip-admin {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+  }
+}
+
+.user-avatar {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 2px;
+  background: var(--c-brand-600);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1.25rem;
+  font-family: var(--f-mono);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.avatar-admin {
+    background: #0f172a;
+  }
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.user-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--c-neutral-900);
+}
+
+.user-role-badge {
+  font-size: 1.05rem;
+  color: var(--c-neutral-500);
+  font-family: var(--f-mono);
+
+  &.admin-badge {
+    color: var(--c-brand-600);
+    font-weight: 600;
+  }
+}
+
+/* 學術按鈕 */
+.btn-academic-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.4rem;
+  background: #0f172a;
+  color: #ffffff !important;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: var(--r-sm);
+  border: 1px solid #0f172a;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+
+  .cta-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  &:hover {
+    background: #1e293b;
+    border-color: #1e293b;
+    text-decoration: none;
+  }
+}
+
+.btn-academic-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1.4rem;
+  background: var(--c-brand-600);
+  color: #ffffff !important;
+  font-size: 1.35rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-brand-600);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+
+  .login-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  &:hover {
+    background: var(--c-brand-700);
+    text-decoration: none;
+  }
+}
+
+.nav-register-link {
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--c-neutral-600);
+  text-decoration: none;
+  padding: 0.65rem 1rem;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--c-neutral-900);
+    text-decoration: underline;
+  }
+}
+
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.2rem;
+  background: #ffffff;
+  color: var(--c-neutral-800);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  font-size: 1.35rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  .logout-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    stroke: currentColor;
+  }
+
+  &:hover {
+    color: #ffffff;
+    border-color: #0f172a;
+    background: #0f172a;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.16);
+  }
+}
+
+/* =====================================================
+   4. 行動版選單與抽屜 (Academic Mobile Drawer)
+   ===================================================== */
+.desktop-only {
+  @media (max-width: 960px) {
+    display: none !important;
+  }
+}
+
+.mobile-only {
+  display: none;
+  @media (max-width: 960px) {
+    display: flex;
+  }
+}
+
+.mobile-toggle {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 4.2rem;
+  height: 4.2rem;
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+
+  .bar {
+    width: 1.8rem;
+    height: 2px;
+    background: var(--c-neutral-800);
+    transition: all 0.2s ease;
+  }
+
+  &.active {
+    .top-bar {
+      transform: translateY(6px) rotate(45deg);
+    }
+    .mid-bar {
+      opacity: 0;
+    }
+    .bot-bar {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+  }
+}
+
+.mobile-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mobile-drawer {
+  width: 100%;
+  max-width: 32rem;
+  height: 100%;
+  background: #ffffff;
+  border-left: 1px solid var(--c-border);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+  box-shadow: -8px 0 32px rgba(15, 23, 42, 0.12);
+  overflow-y: auto;
+  box-sizing: border-box;
+  animation: slideDrawer 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDrawer {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.mobile-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--c-border, #e2e8f0);
+}
+
+.mobile-drawer-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--c-neutral-900, #0f172a);
+  font-family: var(--f-mono);
+}
+
+.mobile-drawer-close {
+  background: transparent;
+  border: none;
+  width: 3.2rem;
+  height: 3.2rem;
+  border-radius: var(--r-sm, 6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-neutral-500);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  &:hover {
+    background: var(--c-neutral-100, #f1f5f9);
+    color: var(--c-neutral-900, #0f172a);
+  }
+}
+
+/* 會員資訊簡約卡片 */
+.mobile-user-card {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 1.4rem;
+  background: var(--c-neutral-50, #f8fafc);
+  border: 1px solid var(--c-border, #e2e8f0);
+  border-radius: var(--r-md, 8px);
+}
+
+.mobile-avatar {
+  width: 3.8rem;
+  height: 3.8rem;
+  border-radius: var(--r-sm, 6px);
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  flex-shrink: 0;
+}
+
+.mobile-user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.mobile-name {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--c-neutral-900, #0f172a);
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-role-chip {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--c-neutral-600, #475569);
+  background: var(--c-neutral-200, #e2e8f0);
+  padding: 0.15rem 0.7rem;
+  border-radius: var(--r-full, 9999px);
+  width: fit-content;
+  line-height: 1.3;
+
+  &.admin-role {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+  }
+}
+
+/* 行動導航列表 */
+.mobile-nav {
+  flex: 1;
+}
+
+.mobile-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.1rem 1.4rem;
+  font-size: 1.45rem;
+  font-weight: 550;
+  color: var(--c-neutral-700, #334155);
+  text-decoration: none;
+  border-radius: var(--r-sm, 6px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .m-nav-icon {
+    width: 1.8rem;
+    height: 1.8rem;
+    max-width: 1.8rem;
+    max-height: 1.8rem;
+    flex-shrink: 0;
+    color: var(--c-neutral-400, #94a3b8);
+    transition: color 0.2s ease;
+  }
+
+  &:hover {
+    background: var(--c-neutral-100, #f1f5f9);
+    color: var(--c-neutral-900, #0f172a);
+    text-decoration: none;
+
+    .m-nav-icon {
+      color: #0f172a;
+    }
+  }
+
+  &.active {
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+
+    .m-nav-icon {
+      color: #ffffff;
+    }
+  }
+}
+
+/* 底部獨立操作區 */
+.mobile-drawer-footer {
+  margin-top: auto;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--c-border, #e2e8f0);
+}
+
+/* 登出按鈕：專屬微紅警示設計，鎖定圖標尺寸 */
+.mobile-btn-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  width: 100%;
+  padding: 1.1rem 1.4rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: var(--r-sm, 6px);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+
+  .m-icon {
+    width: 1.8rem !important;
+    height: 1.8rem !important;
+    max-width: 1.8rem !important;
+    max-height: 1.8rem !important;
+    flex-shrink: 0;
+    color: #dc2626;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+
+    .m-icon {
+      color: #b91c1c;
+      transform: translateX(2px);
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.mobile-auth-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.btn-block {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
+.btn-academic-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1.4rem;
+  background: #ffffff;
+  color: var(--c-neutral-800) !important;
+  font-size: 1.35rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-border);
+  text-decoration: none;
+
+  &:hover {
+    background: var(--c-neutral-50);
+    text-decoration: none;
+  }
+}

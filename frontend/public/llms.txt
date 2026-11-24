@@ -1,0 +1,20 @@
+# SurveyFlow
+
+> SurveyFlow 是一套專為個人研究者、學術系所與企業組織打造之專業全端動態線上問卷調研與多維數據分析平台。系統支援 7 大型態動態題目編排、條件跳題動態解鎖、問卷預覽全卷檢視、原生 DOM 雙向防誤判、即時統計圖表聚合、4 大專業格式匯出與三層身分授權治理。
+
+## 平台主要入口與功能頁面 (Core Pages & Entry Points)
+
+- [系統首頁 / 功能總覽](https://survey-flow.pages.dev/home): SurveyFlow 系統核心亮點、6 大題型互動體驗、適用調查情境與常見問答。
+- [問卷大廳](https://survey-flow.pages.dev/lobby): 公開問卷列表，支援 9 大主題領域分類搜尋、快速篩選與受訪者直接免登入填答。
+- [問卷設計與編排](https://survey-flow.pages.dev/survey-design): 視覺化問卷設計編輯器，支援是非題、單選題、多選題、簡答題、評分量表等 7 大型態，提供題目拖曳排序與條件邏輯跳題配置。
+- [問卷專案管理](https://survey-flow.pages.dev/survey-management): 會員專屬問卷管理後台，支援時效設定、大廳公開與私有連結狀態切換、作答直達連結分享與問卷封存。
+- [會員登入中心](https://survey-flow.pages.dev/log-in): 會員帳號密碼登入驗證、JWT 零信任雙 Token 簽發與工作階段維持。
+- [會員註冊開通](https://survey-flow.pages.dev/register): 全新會員帳號建立、身分驗證與信箱 6 碼驗證碼開通。
+- [忘記密碼申請](https://survey-flow.pages.dev/forget-password): 提供註冊信箱以取得 6 碼重設 OTP 驗證碼。
+
+## 核心技術堆疊與維運架構 (Technology Stack)
+
+- 前端：Angular 19 獨立組件架構、純原生 SCSS/CSS 響應式系統，部署於 Cloudflare Pages Edge CDN 全球邊緣節點。
+- 後端：Java 21 / Spring Boot 3.4 RESTful Web API，Docker 容器化部署於 Render Web Service。
+- 資料庫：TiDB Cloud Serverless 分散式關聯式資料庫 (MySQL 8.0 協定相容)，嚴格落實外鍵完整性約束與交易隔離。
+- 外部探針保活：UptimeRobot 24/7 全天候監控端點 `https://survey-flow-9gt6.onrender.com/actuator/health`。

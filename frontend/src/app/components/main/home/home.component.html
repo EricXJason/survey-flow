@@ -1,0 +1,641 @@
+<!--
+  ============================================================================
+  檔案名稱: home.component.html
+  所屬模組: Presentation Layer / Home View
+  責任描述: 首頁簡約黑白中性視圖 (Minimalist Neutral Home Portal)
+            維持黑白純淨風格，去除虛構裝飾代號與生硬學術黑話，
+            以「問卷」與「會員」標準名詞呈現真實功能
+  聯動關係:
+    - 上游依賴: hero.component (主視覺), variables.scss (Design Tokens)
+    - 下游消費: 透過 Angular Router 渲染為首頁 ('/')
+  ============================================================================
+-->
+<app-hero></app-hero>
+
+<!-- 核心亮點：6 大題型真實問卷填答體驗 (Live Interactive Survey Previewer) -->
+<section class="section home-demo-section" aria-labelledby="demo-heading">
+  <div class="container">
+    <div class="section-title-group">
+      <span class="section-tag-chip">真實問卷填答體驗</span>
+      <h2 id="demo-heading" class="section-heading">
+        探索 6 大核心題型與智慧跳題邏輯
+      </h2>
+      <p class="section-lead">
+        從題型清單切換題型，即可親自體驗作答效果。直觀感受二元意願、條件跳題動態展開、多重複選與評分量表的真實互動。
+      </p>
+    </div>
+
+    <div
+      class="demo-showcase-layout"
+      (mouseenter)="pauseWheel()"
+      (mouseleave)="resumeWheel()"
+    >
+      <!-- 左側：題型導覽切換選單 (Question Tabs Menu) -->
+      <nav class="demo-tabs-sidebar" aria-label="核心題型切換清單">
+        <div class="sidebar-header">
+          <span class="sidebar-title">支援題型清單</span>
+          <span class="sidebar-count">共 6 種題型</span>
+        </div>
+        <div class="demo-tabs-list" role="tablist">
+          @for (tab of questionTabs; track tab.id; let idx = $index) {
+            <button
+              type="button"
+              role="tab"
+              class="demo-tab-btn"
+              [class.active]="activeTabIndex() === idx"
+              [attr.aria-selected]="activeTabIndex() === idx"
+              (click)="selectTab(idx)"
+            >
+              <div class="tab-badge-col">
+                <span class="tab-number">{{ tab.number }}</span>
+              </div>
+              <div class="tab-text-col">
+                <div class="tab-top-row">
+                  <span class="tab-label">{{ tab.title }}</span>
+                  <span class="tab-chip">{{ tab.tag }}</span>
+                </div>
+                <p class="tab-benefit">{{ tab.benefit }}</p>
+              </div>
+            </button>
+          }
+        </div>
+      </nav>
+
+      <!-- 右側：大尺寸真實問卷填答卡片 (Live Interactive Questionnaire Card) -->
+      <div class="demo-runner-panel" role="region" aria-label="問卷即時填答互動模擬器">
+        <div class="live-survey-card">
+          <!-- 頂部模擬進度列與操作工具列 -->
+          <div class="live-card-header">
+            <div class="live-meta-left">
+              <span class="live-badge">
+                <span class="live-dot" aria-hidden="true"></span>
+                即時試填互動
+              </span>
+              <span class="live-progress-text">題型 {{ activeTab().number }} / 06 · {{ activeTab().tag }}</span>
+            </div>
+            <div class="live-meta-right">
+              <button
+                type="button"
+                class="btn-reset-demo"
+                (click)="resetCurrentDemo()"
+                title="清除目前作答答案重填"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="tool-icon">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                  <path d="M3 3v5h5"/>
+                </svg>
+                <span>重設答案</span>
+              </button>
+              <div class="live-nav-arrows">
+                <button type="button" class="btn-arrow-mini" (click)="prevTab()" aria-label="上一題型">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button type="button" class="btn-arrow-mini" (click)="nextTab()" aria-label="下一題型">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 題型介紹說明條 -->
+          <div class="live-intro-strip">
+            <h3 class="live-q-title">{{ activeTab().title }}</h3>
+            <p class="live-q-desc">{{ activeTab().description }}</p>
+          </div>
+
+          <!-- 核心作答題幹與實體選項 (可直接點擊測試作答) -->
+          <div class="live-question-stage">
+
+            <!-- 1. 是非二元題 -->
+            @if (activeTab().type === 'binary') {
+              <div class="runner-q-card">
+                <div class="q-header">
+                  <span class="q-num-tag">01</span>
+                  <div class="q-title-wrap">
+                    <p class="q-title">您是否已詳閱並同意本研究之個人資料保護政策與受訪者知情同意書？</p>
+                    <span class="q-req-badge">* (必填)</span>
+                  </div>
+                </div>
+                <div class="q-binary-options">
+                  <button
+                    type="button"
+                    class="btn-binary-opt"
+                    [class.selected]="demoBinary() === 'yes'"
+                    (click)="setBinaryAnswer('yes')"
+                  >
+                    <span class="opt-icon">{{ demoBinary() === 'yes' ? '●' : '○' }}</span>
+                    <span class="opt-text">[ 是 ] 我已詳閱並同意授權</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-binary-opt"
+                    [class.selected]="demoBinary() === 'no'"
+                    (click)="setBinaryAnswer('no')"
+                  >
+                    <span class="opt-icon">{{ demoBinary() === 'no' ? '●' : '○' }}</span>
+                    <span class="opt-text">[ 否 ] 暫不同意（將結束填答）</span>
+                  </button>
+                </div>
+                <div class="q-feedback-bar">
+                  <span class="feedback-icon">✓</span>
+                  <span>
+                    @if (demoBinary() === 'yes') {
+                      已完成勾選同意，系統即時驗證符合接續填答資格。
+                    } @else if (demoBinary() === 'no') {
+                      已選取不同意，系統將引導安全關閉問卷，避免無效資料入庫。
+                    } @else {
+                      請點擊上方選項測試二元選取效果。
+                    }
+                  </span>
+                </div>
+              </div>
+            }
+
+            <!-- 2. 單選條件跳題 -->
+            @if (activeTab().type === 'jump') {
+              <div class="runner-q-card">
+                <div class="q-header">
+                  <span class="q-num-tag">02</span>
+                  <div class="q-title-wrap">
+                    <p class="q-title">您平時進行學術研究或專案數據分析時，最常使用的作答設備為何？</p>
+                    <span class="q-req-badge">* (必填)</span>
+                  </div>
+                </div>
+                <div class="q-radio-group">
+                  <button
+                    type="button"
+                    class="btn-radio-opt"
+                    [class.selected]="demoJumpDevice() === 'desktop'"
+                    (click)="setJumpDevice('desktop')"
+                  >
+                    <span class="opt-icon">{{ demoJumpDevice() === 'desktop' ? '●' : '○' }}</span>
+                    <span class="opt-content">
+                      <span class="opt-main">電腦 / 筆記型電腦</span>
+                      <span class="opt-sub-pill">觸發條件跳題 ⚡</span>
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-radio-opt"
+                    [class.selected]="demoJumpDevice() === 'mobile'"
+                    (click)="setJumpDevice('mobile')"
+                  >
+                    <span class="opt-icon">{{ demoJumpDevice() === 'mobile' ? '●' : '○' }}</span>
+                    <span class="opt-content">
+                      <span class="opt-main">智慧型手機 / 平板裝置</span>
+                      <span class="opt-sub-pill subtle">無延伸題</span>
+                    </span>
+                  </button>
+                </div>
+
+                <!-- 動態展開之條件延伸子題 -->
+                @if (demoJumpDevice() === 'desktop') {
+                  <div class="nested-conditional-box">
+                    <div class="nested-branch-indicator" aria-hidden="true"></div>
+                    <div class="nested-inner">
+                      <div class="nested-badge-row">
+                        <span class="nested-chip">條件延伸題 (已動態展開)</span>
+                        <span class="nested-tip">僅選取「電腦 / 筆電」時顯示</span>
+                      </div>
+                      <p class="nested-q-title">2-1. 請問您主要使用的螢幕顯示規格為何？</p>
+                      <div class="nested-options-grid">
+                        <button
+                          type="button"
+                          class="btn-nested-opt"
+                          [class.selected]="demoJumpScreen() === '13-inch'"
+                          (click)="setJumpScreen('13-inch')"
+                        >
+                          13~14 吋 筆電螢幕
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-nested-opt"
+                          [class.selected]="demoJumpScreen() === '15-inch'"
+                          (click)="setJumpScreen('15-inch')"
+                        >
+                          15~16 吋 筆電螢幕
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-nested-opt"
+                          [class.selected]="demoJumpScreen() === '24-inch'"
+                          (click)="setJumpScreen('24-inch')"
+                        >
+                          24 吋以上 外接雙螢幕
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="nested-collapsed-hint">
+                    <span class="hint-icon">ℹ</span>
+                    <span>延伸條件題已自動隱藏，受訪者將直接前往第 3 題，完全免除多餘干擾。</span>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- 3. 多重複選 -->
+            @if (activeTab().type === 'multi') {
+              <div class="runner-q-card">
+                <div class="q-header">
+                  <span class="q-num-tag">03</span>
+                  <div class="q-title-wrap">
+                    <p class="q-title">您期望問卷後臺管理系統提供哪些進階數據分析功能？（可複選）</p>
+                    <span class="q-req-badge">* (必填 · 已選 {{ demoMulti().length }} 項)</span>
+                  </div>
+                </div>
+                <div class="q-checkbox-grid">
+                  <button
+                    type="button"
+                    class="btn-check-opt"
+                    [class.selected]="isMultiSelected('charts')"
+                    (click)="toggleMultiOption('charts')"
+                  >
+                    <span class="check-box-square">{{ isMultiSelected('charts') ? '✓' : '' }}</span>
+                    <div class="check-opt-texts">
+                      <span class="opt-main">即時統計圖表自動生成</span>
+                      <span class="opt-desc">柱狀圖、圓餅圖與趨勢分佈即時運算</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-check-opt"
+                    [class.selected]="isMultiSelected('export')"
+                    (click)="toggleMultiOption('export')"
+                  >
+                    <span class="check-box-square">{{ isMultiSelected('export') ? '✓' : '' }}</span>
+                    <div class="check-opt-texts">
+                      <span class="opt-main">CSV / Excel 原始矩陣匯出</span>
+                      <span class="opt-desc">提供乾淨無雜質之全量作答原始資料</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-check-opt"
+                    [class.selected]="isMultiSelected('duration')"
+                    (click)="toggleMultiOption('duration')"
+                  >
+                    <span class="check-box-square">{{ isMultiSelected('duration') ? '✓' : '' }}</span>
+                    <div class="check-opt-texts">
+                      <span class="opt-main">填答耗時與跳出率分析</span>
+                      <span class="opt-desc">掌握各題閱讀流暢度與填答停留瓶頸</span>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-check-opt"
+                    [class.selected]="isMultiSelected('cross')"
+                    (click)="toggleMultiOption('cross')"
+                  >
+                    <span class="check-box-square">{{ isMultiSelected('cross') ? '✓' : '' }}</span>
+                    <div class="check-opt-texts">
+                      <span class="opt-main">多維度題目交叉分析</span>
+                      <span class="opt-desc">自由分組對比不同年齡與族群偏好</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            }
+
+            <!-- 4. 五點量表 -->
+            @if (activeTab().type === 'scale') {
+              <div class="runner-q-card">
+                <div class="q-header">
+                  <span class="q-num-tag">04</span>
+                  <div class="q-title-wrap">
+                    <p class="q-title">整體而言，您對 SurveyFlow 介面流暢度與無障礙操作的評分：</p>
+                    <span class="q-req-badge">* (1最低，5最高)</span>
+                  </div>
+                </div>
+                <div class="q-scale-container">
+                  <div class="q-scale-buttons">
+                    @for (rating of [1, 2, 3, 4, 5]; track rating) {
+                      <button
+                        type="button"
+                        class="btn-scale-cell"
+                        [class.selected]="demoScale() === rating"
+                        (click)="setScaleRating(rating)"
+                      >
+                        <span class="cell-num">{{ rating }}</span>
+                        <span class="cell-label">
+                          @if (rating === 1) { 非常不滿意 }
+                          @else if (rating === 2) { 不滿意 }
+                          @else if (rating === 3) { 普通 }
+                          @else if (rating === 4) { 滿意 }
+                          @else { 非常滿意 }
+                        </span>
+                      </button>
+                    }
+                  </div>
+                  <div class="q-scale-summary">
+                    <span class="summary-score">目前評定：<strong>{{ demoScale() }} 分</strong></span>
+                    <span class="summary-sep">|</span>
+                    <span class="summary-label">
+                      {{ demoScale() >= 4 ? '正面極度肯定 · 滿意度達標' : (demoScale() === 3 ? '中立評價 · 穩定運作' : '待改進反饋') }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- 5. 開放文字簡答 -->
+            @if (activeTab().type === 'text') {
+              <div class="runner-q-card">
+                <div class="q-header">
+                  <span class="q-num-tag">05</span>
+                  <div class="q-title-wrap">
+                    <p class="q-title">請留下您對新版線上問卷系統的任何改進建議或心得回饋：</p>
+                    <span class="q-req-badge">* (必填 · 即時字數統計)</span>
+                  </div>
+                </div>
+                <div class="q-textarea-wrap">
+                  <textarea
+                    class="runner-textarea"
+                    rows="4"
+                    [value]="demoText()"
+                    (input)="onTextInput($event)"
+                    placeholder="請在此輸入您的真實回饋想法..."
+                  ></textarea>
+                  <div class="textarea-footer-bar">
+                    <span class="char-count">已輸入 {{ demoText().length }} 字 / 上限 300 字</span>
+                    <div class="sample-fill-actions">
+                      <button
+                        type="button"
+                        class="btn-fill-preset"
+                        (click)="fillSampleText('界面簡約黑白高對比，題目點選直覺流暢，條件跳題完全不拖泥帶水！')"
+                      >
+                        填入範例 A
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-fill-preset"
+                        (click)="fillSampleText('排版工整而且在手機上完全沒有橫向拖曳問題，體驗相當專業可靠。')"
+                      >
+                        填入範例 B
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- 6. 預約日期與時間 -->
+            @if (activeTab().type === 'datetime') {
+              <div class="runner-q-card">
+                <div class="q-header">
+                  <span class="q-num-tag">06</span>
+                  <div class="q-title-wrap">
+                    <p class="q-title">請選取您希望預約進行問卷系統諮詢或演示說明的時段：</p>
+                    <span class="q-req-badge">* (必填)</span>
+                  </div>
+                </div>
+                <div class="q-datetime-row">
+                  <div class="dt-input-col">
+                    <label class="dt-label" for="demoDateInput">預約日期</label>
+                    <input
+                      id="demoDateInput"
+                      type="date"
+                      class="runner-dt-input"
+                      [min]="todayDate"
+                      [value]="demoDate()"
+                      (change)="onDateChange($event)"
+                    />
+                  </div>
+                  <div class="dt-input-col">
+                    <label class="dt-label" for="demoTimeInput">預約時間</label>
+                    <input
+                      id="demoTimeInput"
+                      type="time"
+                      class="runner-dt-input"
+                      [value]="demoTime()"
+                      (change)="onTimeChange($event)"
+                    />
+                  </div>
+                </div>
+                <div class="dt-presets-row">
+                  <span class="preset-label">快捷預約：</span>
+                  <button type="button" class="btn-dt-pill" (click)="setDateTimePreset('2026-10-21', '10:00')">明日上午 10:00</button>
+                  <button type="button" class="btn-dt-pill" (click)="setDateTimePreset('2026-10-21', '14:30')">明日下午 14:30</button>
+                  <button type="button" class="btn-dt-pill" (click)="setDateTimePreset('2026-10-23', '16:00')">本週五下午 16:00</button>
+                </div>
+              </div>
+            }
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 第二區塊：三步驟問卷流程 -->
+<section class="section home-workflow" aria-labelledby="workflow-heading">
+  <div class="container">
+    <div class="section-title-group">
+      <span class="section-tag-chip">問卷旅程</span>
+      <h2 id="workflow-heading" class="section-heading">
+        三步驟流暢完成問卷發布
+      </h2>
+      <p class="section-lead">
+        清晰直覺的問卷工作流程，從題目設計、填答驗證到數據統計一氣呵成。
+      </p>
+    </div>
+
+    <div class="workflow-columns">
+      <!-- 步驟一 -->
+      <div class="workflow-card">
+        <div class="workflow-head">
+          <div class="workflow-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="workflow-svg-icon">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </div>
+          <div class="step-badge">步驟一</div>
+        </div>
+        <h3 class="step-title">建立題目與設定跳題</h3>
+        <p class="step-desc">
+          設定問卷標題、說明引言與開放填答時段。自由組合 6 大題型，設定各題必填屬性與單選題條件跳題規則。
+        </p>
+      </div>
+
+      <!-- 步驟二 -->
+      <div class="workflow-card">
+        <div class="workflow-head">
+          <div class="workflow-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="workflow-svg-icon">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+          <div class="step-badge">步驟二</div>
+        </div>
+        <h3 class="step-title">即時預覽與拖曳排序</h3>
+        <p class="step-desc">
+          一鍵切換受訪者視角預覽作答流程，並可開啟拖曳排序視窗自由調整題目順序，確認後立即套用。
+        </p>
+      </div>
+
+      <!-- 步驟三 -->
+      <div class="workflow-card">
+        <div class="workflow-head">
+          <div class="workflow-icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="workflow-svg-icon">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
+          <div class="step-badge">步驟三</div>
+        </div>
+        <h3 class="step-title">發布問卷與數據分析</h3>
+        <p class="step-desc">
+          可上架至公開大廳或取得專屬分享連結。後臺提供即時填答數據統計圖表，並支援多格式檔案下載。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 第三區塊：多元問卷主題 -->
+<section class="section home-topics" aria-labelledby="topics-heading">
+  <div class="container">
+    <div class="section-title-group">
+      <span class="section-tag-chip">問卷主題</span>
+      <h2 id="topics-heading" class="section-heading">
+        廣泛適用各類調查情境
+      </h2>
+      <p class="section-lead">
+        無論身處企業、校園或社群，SurveyFlow 都能提供穩定流暢的問卷填答與管理體驗。
+      </p>
+    </div>
+
+    <div class="topics-grid">
+      <article class="topic-card">
+        <div class="topic-icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="topic-svg-icon">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+        </div>
+        <h3 class="topic-title">顧客滿意度調查</h3>
+        <p class="topic-desc">服務品質綜合評估、售後滿意度追蹤、建議意見收集與滿意指標分析。</p>
+      </article>
+
+      <article class="topic-card">
+        <div class="topic-icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="topic-svg-icon">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <h3 class="topic-title">產品體驗與易用性研究</h3>
+        <p class="topic-desc">新功能上線可用性驗證、操作痛點回饋、介面易用度檢測與功能改進建議。</p>
+      </article>
+
+      <article class="topic-card">
+        <div class="topic-icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="topic-svg-icon">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            <polyline points="17 6 23 6 23 12"/>
+          </svg>
+        </div>
+        <h3 class="topic-title">市場商業調研</h3>
+        <p class="topic-desc">目標受眾消費習慣調查、產品定價接受度分析、市場競品偏好比對。</p>
+      </article>
+
+      <article class="topic-card">
+        <div class="topic-icon-wrap" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="topic-svg-icon">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <path d="M9 16l2 2 4-4"/>
+          </svg>
+        </div>
+        <h3 class="topic-title">活動與會後回饋</h3>
+        <p class="topic-desc">研討會與實體活動滿意度、議程安排評價、報名資訊確認與改善建議。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 第四區塊：常見問題說明 -->
+<section class="section home-faq" aria-labelledby="faq-heading">
+  <div class="container">
+    <div class="section-title-group">
+      <span class="section-tag-chip">常見解答</span>
+      <h2 id="faq-heading" class="section-heading">
+        常見問題說明
+      </h2>
+      <p class="section-lead">
+        關於問卷填答權限、題目跳題規則與數據匯出的常見說明。
+      </p>
+    </div>
+
+    <div class="faq-list">
+      <article class="faq-item">
+        <h3 class="faq-q">填寫問卷需要先註冊或登入帳號嗎？</h3>
+        <p class="faq-a">
+          <strong>不需要。</strong>受訪者透過問卷專屬連結或在大廳點選問卷即可直接進行填答，無須註冊會員。僅有需要「建立問卷」與「查閱統計數據」的會員才需登入。
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 class="faq-q">單選題的「條件關聯跳題」是如何運作的？</h3>
+        <p class="faq-a">
+          在單選題的選項中，可為特定選項設定觸發子題。當受訪者選取該選項時，後續關聯題目才會動態展開顯示；未選取時維持隱藏，避免受訪者閱讀無關題目。
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 class="faq-q">後臺提供哪些問卷數據分析功能？</h3>
+        <p class="faq-a">
+          後臺自動彙整各題目的回答次數、選項佔比百分比，量表題則提供平均分數計算。同時支援 CSV / Excel 等格式之原始填答資料匯出，方便進行深入分析。
+        </p>
+      </article>
+
+      <article class="faq-item">
+        <h3 class="faq-q">問卷在手機等行動裝置上能正常填寫嗎？</h3>
+        <p class="faq-a">
+          可以。全站採用嚴格的響應式設計（RWD），在手機、平板與桌上型電腦皆能自適應排版，無須左右橫向拖曳即可順暢作答。
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 第五區塊：行動呼籲區塊 -->
+<section class="section home-cta" aria-labelledby="cta-heading">
+  <div class="container">
+    <div class="cta-box">
+      <h2 id="cta-heading" class="cta-title">
+        開始建立您的第一份線上問卷
+      </h2>
+      <p class="cta-desc">
+        透過直覺的題目配置與流暢的作答體驗，快速收集受訪者的真實想法與寶貴回饋。
+      </p>
+      <div class="cta-actions">
+        <a routerLink="/survey-design" class="btn btn-hero-primary">
+          <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>立即建立問卷</span>
+        </a>
+        <a routerLink="/lobby" class="btn btn-hero-outline">
+          <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M8 10h8M8 14h5"/>
+          </svg>
+          <span>瀏覽問卷大廳</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

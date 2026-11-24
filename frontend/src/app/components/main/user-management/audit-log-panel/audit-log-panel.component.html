@@ -1,0 +1,131 @@
+<!-- 稽核日誌面板：篩選工具列 (操作者、事件類型)、雜湊鏈驗證結果、稽核紀錄表格與後端分頁 -->
+<div class="audit-panel">
+
+  <!-- 1. 篩選與驗證工具列 -->
+  <div class="audit-toolbar">
+    <form class="audit-filters" (submit)="$event.preventDefault(); applyFilters()">
+      <label class="audit-field">
+        <span class="audit-field-label">操作者帳號</span>
+        <input
+          type="text"
+          class="audit-input"
+          placeholder="完整帳號，例如 admin"
+          [value]="actorFilter()"
+          (input)="onActorInput($event)"
+        />
+      </label>
+      <label class="audit-field">
+        <span class="audit-field-label">事件類型</span>
+        <select class="audit-input" [value]="actionFilter()" (change)="onActionChange($event)">
+          <option value="">全部事件</option>
+          @for (option of actionOptions(); track option.code) {
+            <option [value]="option.code">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+      <div class="audit-filter-actions">
+        <button type="submit" class="btn btn-primary btn-sm">查詢</button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="clearFilters()">清除條件</button>
+      </div>
+    </form>
+
+    <button type="button" class="btn btn-ghost btn-sm btn-verify" [disabled]="isVerifying()" (click)="verifyChain()">
+      <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        <polyline points="9 12 11 14 15 10"></polyline>
+      </svg>
+      <span>{{ isVerifying() ? '驗證中...' : '驗證完整性' }}</span>
+    </button>
+  </div>
+
+  <!-- 2. 雜湊鏈驗證結果 -->
+  @if (verification(); as result) {
+    <div class="verify-result" [class.is-valid]="result.valid" [class.is-broken]="!result.valid" role="status" aria-live="polite">
+      <span class="verify-mark" aria-hidden="true">{{ result.valid ? '✓' : '!' }}</span>
+      <div class="verify-text">
+        <strong>{{ result.valid ? '稽核日誌完整' : '偵測到稽核日誌遭竄改' }}</strong>
+        <span>{{ result.message }}（驗證時間 {{ result.verifiedAt | date: 'yyyy/MM/dd HH:mm:ss' }}）</span>
+      </div>
+    </div>
+  }
+  @if (verifyError(); as message) {
+    <div class="verify-result is-broken" role="alert">
+      <span class="verify-mark" aria-hidden="true">!</span>
+      <div class="verify-text"><span>{{ message }}</span></div>
+    </div>
+  }
+
+  <!-- 3. 稽核紀錄表格 -->
+  <div class="audit-table-card">
+    @if (isLoading()) {
+      <div class="audit-state" role="status" aria-live="polite">
+        <p>正在載入稽核日誌，請稍候...</p>
+      </div>
+    } @else if (loadError()) {
+      <div class="audit-state audit-state-error" role="alert">
+        <h3>無法載入稽核日誌</h3>
+        <p>{{ loadError() }}</p>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="loadPage()">重新嘗試</button>
+      </div>
+    } @else if (entries().length === 0) {
+      <div class="audit-state">
+        <h3>查無符合條件的稽核紀錄</h3>
+        <p>請調整操作者或事件類型後再查詢。</p>
+      </div>
+    } @else {
+      <div class="audit-table-scroll">
+        <table mat-table [dataSource]="entries()" class="audit-table" aria-label="稽核日誌">
+
+          <ng-container matColumnDef="occurredAt">
+            <th mat-header-cell *matHeaderCellDef>時間</th>
+            <td mat-cell *matCellDef="let entry" class="cell-time">{{ entry.occurredAt | date: 'yyyy/MM/dd HH:mm:ss' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actor">
+            <th mat-header-cell *matHeaderCellDef>操作者</th>
+            <td mat-cell *matCellDef="let entry" class="cell-actor">{{ entry.actor ?? '匿名' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef>事件</th>
+            <td mat-cell *matCellDef="let entry">
+              <span class="action-pill">{{ entry.actionLabel }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="target">
+            <th mat-header-cell *matHeaderCellDef>對象</th>
+            <td mat-cell *matCellDef="let entry" class="cell-target">{{ getTargetLabel(entry) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="detail">
+            <th mat-header-cell *matHeaderCellDef>說明</th>
+            <td mat-cell *matCellDef="let entry" class="cell-detail">{{ entry.detail ?? '—' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="source">
+            <th mat-header-cell *matHeaderCellDef>來源 / 追蹤碼</th>
+            <td mat-cell *matCellDef="let entry" class="cell-source">
+              <span class="source-ip">{{ entry.clientIp ?? '—' }}</span>
+              <span class="source-trace" [attr.title]="entry.traceId ? '追蹤碼 ' + entry.traceId + '\n雜湊 ' + entry.hash : null">
+                {{ getShortTraceId(entry.traceId) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    }
+
+    <mat-paginator
+      [length]="totalCount()"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="pageSizeOptions"
+      (page)="onPage($event)"
+      aria-label="稽核日誌分頁"
+    ></mat-paginator>
+  </div>
+</div>

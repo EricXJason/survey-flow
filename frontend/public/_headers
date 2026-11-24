@@ -1,0 +1,29 @@
+# ==============================================================================
+# 檔案名稱: _headers
+# 責任描述: Cloudflare Pages 回應標頭規則
+#   - 全站：禁止 MIME 嗅探、僅允許同源 iframe 嵌入、跨站僅送出來源網域
+#   - 靜態資源 (favicon / robots / sitemap / llms.txt)：快取 1 天
+#   - 帶雜湊檔名之 JS / CSS：快取 1 年且標記 immutable
+# ==============================================================================
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/favicon.svg
+  Cache-Control: public, max-age=86400
+
+/robots.txt
+  Cache-Control: public, max-age=86400
+
+/sitemap.xml
+  Cache-Control: public, max-age=86400
+
+/llms.txt
+  Cache-Control: public, max-age=86400
+
+/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/*.css
+  Cache-Control: public, max-age=31536000, immutable

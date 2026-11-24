@@ -1,0 +1,308 @@
+<!--
+  ============================================================================
+  檔案名稱: hero.component.html
+  所屬模組: Presentation Layer / Home Hero
+  責任描述: 首頁簡約黑白中性主視覺區塊 (Minimalist Neutral Hero)
+            以黑白純淨風格為主、細節點綴，去除所有虛構裝飾代號與浮誇詞彙，
+            全面使用「問卷」與「會員」標準名詞
+  聯動關係:
+    - 上游依賴: variables.scss (Design Tokens)
+    - 下游消費: 嵌入 home.component.html 頂部
+  ============================================================================
+-->
+<section class="neutral-hero" aria-label="SurveyFlow 線上問卷系統">
+  <div class="container neutral-hero-inner">
+    <!-- 左側：系統定位與功能呼籲 -->
+    <div class="hero-copy">
+      <!-- 簡約標籤 -->
+      <div class="hero-label-chip">
+        <span>專業線上問卷平臺</span>
+      </div>
+
+      <!-- 核心標題 (黑白純淨、直接明確) -->
+      <h1 class="hero-title">
+        專業線上問卷設計<br/>
+        與數據分析系統
+      </h1>
+
+      <!-- 客觀實用副標題 -->
+      <p class="hero-desc">
+        完整支援是非題、單選題、多選題、簡答題、評分量表、日期與時間等 6 大題型。具備單選條件跳題、題目拖曳排序、即時數據統計分析與多格式資料匯出功能。
+      </p>
+
+      <!-- 操作按鈕 -->
+      <div class="hero-actions">
+        <a routerLink="/survey-design" class="btn btn-hero-primary">
+          <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          <span>建立問卷</span>
+        </a>
+        <a routerLink="/lobby" class="btn btn-hero-outline">
+          <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <path d="M8 10h8M8 14h5"/>
+          </svg>
+          <span>瀏覽問卷大廳</span>
+        </a>
+      </div>
+
+      <!-- 核心特色指標 (工整對齊 2x2 網格矩陣) -->
+      <div class="hero-features-strip" role="list" aria-label="問卷系統核心能力">
+        <!-- 特色 1: 6 大題型 -->
+        <div class="feat-item feat-item-1" role="listitem">
+          <div class="feat-icon-box" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feat-svg">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </div>
+          <div class="feat-text-wrap">
+            <span class="feat-num">6 大題型</span>
+            <span class="feat-desc">是非、選擇、文字、量表與時間</span>
+          </div>
+        </div>
+
+        <!-- 特色 2: 條件跳題 -->
+        <div class="feat-item feat-item-2" role="listitem">
+          <div class="feat-icon-box" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feat-svg">
+              <line x1="6" y1="3" x2="6" y2="15"/>
+              <circle cx="18" cy="6" r="3"/>
+              <circle cx="6" cy="18" r="3"/>
+              <path d="M18 9a9 9 0 0 1-9 9"/>
+            </svg>
+          </div>
+          <div class="feat-text-wrap">
+            <span class="feat-num">條件跳題</span>
+            <span class="feat-desc">單選動態展開關聯題目</span>
+          </div>
+        </div>
+
+        <!-- 特色 3: 即時統計 -->
+        <div class="feat-item feat-item-3" role="listitem">
+          <div class="feat-icon-box" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feat-svg">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
+          <div class="feat-text-wrap">
+            <span class="feat-num">即時統計</span>
+            <span class="feat-desc">頻率佔比與平均數計算</span>
+          </div>
+        </div>
+
+        <!-- 特色 4: 免登入填答 -->
+        <div class="feat-item feat-item-4" role="listitem">
+          <div class="feat-icon-box" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="feat-svg">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <div class="feat-text-wrap">
+            <span class="feat-num">免登入填答</span>
+            <span class="feat-desc">受訪者開啟連結直接作答</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右側：真實問卷互動預覽視窗 (可即時點選操作) -->
+    <div class="hero-preview-panel" role="region" aria-label="問卷填答即時互動預覽">
+      <div class="preview-card">
+        <!-- 視窗標題列 (Safari Mockup 精緻頂部控制器) -->
+        <div class="preview-card-head">
+          <button
+            type="button"
+            class="window-dots"
+            (click)="resetDemo()"
+            title="點擊重設為初始示範狀態"
+            aria-label="點擊重設為初始示範狀態"
+          >
+            <span class="dot red" aria-hidden="true"></span>
+            <span class="dot yellow" aria-hidden="true"></span>
+            <span class="dot green" aria-hidden="true"></span>
+          </button>
+        </div>
+
+        <div class="preview-card-body">
+          @if (!isSubmitted()) {
+            <!-- 示範題目一：單選題 (點擊切換觸發題目解鎖) -->
+            <div class="preview-q-card">
+              <div class="q-header-row">
+                <div class="q-num-chip">01</div>
+                <div class="q-title-wrap">
+                  <h3 class="q-desc-text">您平時最常使用的填答裝置為何？</h3>
+                  <span class="q-req-indicator">*（必填）</span>
+                </div>
+              </div>
+
+              <div class="q-options-list" role="radiogroup" aria-label="平時最常使用的填答裝置">
+                <button
+                  type="button"
+                  class="choice-option-pill"
+                  role="radio"
+                  [attr.aria-checked]="selectedDevice() === 'desktop'"
+                  [class.selected]="selectedDevice() === 'desktop'"
+                  (click)="selectDevice('desktop')"
+                  aria-label="選取桌上型電腦或筆記型電腦"
+                >
+                  <span class="custom-radio-circle" [class.checked]="selectedDevice() === 'desktop'">
+                    <span class="radio-inner-dot"></span>
+                  </span>
+                  <span class="choice-text">桌上型電腦 / 筆記型電腦</span>
+                </button>
+
+                <button
+                  type="button"
+                  class="choice-option-pill"
+                  role="radio"
+                  [attr.aria-checked]="selectedDevice() === 'mobile'"
+                  [class.selected]="selectedDevice() === 'mobile'"
+                  (click)="selectDevice('mobile')"
+                  aria-label="選取智慧型手機或平板電腦"
+                >
+                  <span class="custom-radio-circle" [class.checked]="selectedDevice() === 'mobile'">
+                    <span class="radio-inner-dot"></span>
+                  </span>
+                  <span class="choice-text">智慧型手機 / 平板電腦</span>
+                  <span class="unlock-inline-tag">解鎖子題 🔒</span>
+                </button>
+              </div>
+
+              <!-- 題目解鎖分支：當選取行動裝置時平滑展開關聯題目 -->
+              @if (selectedDevice() === 'mobile') {
+                <div class="sub-question-branch" aria-live="polite">
+                  <div class="branch-connector">
+                    <span class="branch-indicator-badge">
+                      <span class="branch-dot" aria-hidden="true"></span>
+                      已解鎖條件子題 · 依 Q1 選項動態展開
+                    </span>
+                  </div>
+
+                  <div class="sub-q-inner-card">
+                    <div class="q-header-row">
+                      <div class="q-num-chip sub-chip">01-1</div>
+                      <div class="q-title-wrap">
+                        <h4 class="q-desc-text sub-title">您的行動裝置作業系統為何？</h4>
+                      </div>
+                    </div>
+
+                    <div class="sub-options-grid" role="radiogroup" aria-label="行動裝置作業系統">
+                      <button
+                        type="button"
+                        class="choice-option-pill sub-opt-pill"
+                        role="radio"
+                        [attr.aria-checked]="selectedOs() === 'ios'"
+                        [class.selected]="selectedOs() === 'ios'"
+                        (click)="selectOs('ios')"
+                        aria-label="選取 iOS"
+                      >
+                        <span class="custom-radio-circle" [class.checked]="selectedOs() === 'ios'">
+                          <span class="radio-inner-dot"></span>
+                        </span>
+                        <span class="choice-text">iOS (Apple)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        class="choice-option-pill sub-opt-pill"
+                        role="radio"
+                        [attr.aria-checked]="selectedOs() === 'android'"
+                        [class.selected]="selectedOs() === 'android'"
+                        (click)="selectOs('android')"
+                        aria-label="選取 Android"
+                      >
+                        <span class="custom-radio-circle" [class.checked]="selectedOs() === 'android'">
+                          <span class="radio-inner-dot"></span>
+                        </span>
+                        <span class="choice-text">Android</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- 示範題目二：評分量表題 (1 至 5 分自由點擊) -->
+            <div class="preview-q-card">
+              <div class="q-header-row">
+                <div class="q-num-chip">02</div>
+                <div class="q-title-wrap">
+                  <h3 class="q-desc-text">整體而言，您對本次操作體驗的滿意程度？</h3>
+                  <span class="q-req-indicator">*（必填）</span>
+                </div>
+              </div>
+
+              <div class="scale-options-wrap" role="radiogroup" aria-label="滿意程度評分">
+                @for (score of [1, 2, 3, 4, 5]; track score) {
+                  <button
+                    type="button"
+                    class="scale-option-pill"
+                    role="radio"
+                    [attr.aria-checked]="selectedRating() === score"
+                    [class.selected]="selectedRating() === score"
+                    (click)="selectRating(score)"
+                    [attr.aria-label]="score + ' 分'"
+                  >
+                    <span class="scale-val">{{ score }}</span>
+                    <span class="scale-lbl">
+                      @if (score === 1) { 非常不滿意 }
+                      @else if (score === 2) { 不滿意 }
+                      @else if (score === 3) { 普通 }
+                      @else if (score === 4) { 滿意 }
+                      @else { 極度滿意 }
+                    </span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- 底部操作列：送出體驗問卷按鈕 -->
+            <div class="preview-actions-bar">
+              <button type="button" class="btn-preview-submit" (click)="submitDemo()">
+                <span>送出體驗問卷</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+              <button type="button" class="btn-preview-reset" (click)="resetDemo()" title="重設體驗問卷">
+                重設
+              </button>
+            </div>
+          } @else {
+            <!-- 提交完成回饋卡 -->
+            <div class="preview-success-view" aria-live="polite">
+              <div class="success-badge-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <h3 class="success-title">問卷已成功送出！</h3>
+              <p class="success-desc">
+                已親身體驗 SurveyFlow 的「條件邏輯題目解鎖」與無縫評分填答體驗。
+              </p>
+              <div class="success-summary-pills">
+                <span class="pill">填答裝置：{{ selectedDevice() === 'mobile' ? '智慧型手機/平板' : '桌上型電腦' }}</span>
+                @if (selectedDevice() === 'mobile' && selectedOs()) {
+                  <span class="pill">解鎖子題：{{ selectedOs() === 'ios' ? 'iOS' : 'Android' }}</span>
+                }
+                <span class="pill">體驗評分：{{ selectedRating() }} 分</span>
+              </div>
+              <button type="button" class="btn-preview-retry" (click)="resetDemo()">
+                <span>再次體驗題目解鎖</span>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,861 @@
+/**
+ * ============================================================================
+ * 檔案名稱: survey-runner.component.scss
+ * 所屬模組: 問卷填答與運行器模組 (Survey Runner & Response Module)
+ * 責任描述: survey-runner.component.ts 之元件樣式 — 負責受訪者端問卷填答介面呈現與校驗，涵蓋背景身分資料驗證、單選跳題解鎖邏輯（isQuestionVisible）、多選題 FormArray 同步、量表選取、離開守衛防呆及作答送出。
+ * 聯動關係:
+ *   - 上游依賴: variables.scss (Design Tokens / CSS 自訂變數)
+ *   - 下游消費: survey-runner.component.html
+ * ============================================================================
+ */
+
+:host {
+  display: block;
+  min-height: calc(100vh - var(--header-h) - 15rem);
+  background: var(--c-surface);
+}
+
+/* 填答端外層自適應外殼容器 */
+.runner-shell {
+  width: 100%;
+  min-height: 100%;
+  padding-block: clamp(var(--sp-6), 4vw, var(--sp-12));
+  padding-inline: clamp(2rem, 5.5vw, 3.6rem);
+  box-sizing: border-box;
+  background: var(--c-bg, #fbfbfa);
+  transition: background-color 0.35s ease;
+
+  .runner-paper {
+    border-top: 4px solid #0f172a;
+  }
+
+  .header-category-badge {
+    color: var(--c-neutral-800, #1e293b);
+    background: var(--c-neutral-100, #f1f5f9);
+    border: 1px solid var(--c-border, #e2e8f0);
+  }
+}
+
+/* 頂部快速返回導航條 */
+.runner-top-nav-wrap {
+  max-width: 88rem;
+  margin-inline: auto;
+  margin-bottom: var(--sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+}
+
+.btn-runner-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.6rem;
+  background: #ffffff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-full);
+  color: var(--c-neutral-700);
+  font-size: 1.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    background: var(--c-neutral-50);
+    color: var(--c-brand-600);
+    border-color: var(--c-brand-300);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    transform: translateX(-2px);
+
+    svg {
+      transform: translateX(-2px);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-brand-500);
+    outline-offset: 2px;
+  }
+}
+
+/* =====================================================
+   問卷填答主紙張卡片
+   ===================================================== */
+.runner-paper {
+  max-width: 88rem;
+  margin-inline: auto;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-top: 6px solid var(--c-primary-600);
+  border-radius: var(--r-xl);
+  padding: clamp(var(--sp-6), 5vw, var(--sp-12));
+  box-shadow: var(--shadow-card-elevated);
+  box-sizing: border-box;
+  width: 100%;
+
+  @media (max-width: 640px) {
+    padding: var(--sp-6) var(--sp-4);
+    border-radius: var(--r-lg);
+  }
+}
+
+/* 未開放 / 已截止說明卡片區塊 */
+.runner-unavailable-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(var(--sp-8), 6vw, var(--sp-12)) var(--sp-4);
+  animation: fadeIn 0.3s ease;
+
+  .unavailable-icon-badge {
+    width: 7.2rem;
+    height: 7.2rem;
+    border-radius: var(--r-full);
+    background: #fef2f2;
+    border: 2px solid #fecaca;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--sp-5);
+    box-shadow: 0 8px 24px -4px rgba(220, 38, 38, 0.15);
+  }
+
+  .unavailable-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 1.4rem;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: var(--r-full);
+    color: #991b1b;
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: var(--sp-4);
+  }
+
+  .unavailable-title {
+    font-size: clamp(2.2rem, 3.5vw, 2.8rem);
+    font-weight: 850;
+    color: var(--c-neutral-900);
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    margin: 0 0 var(--sp-4);
+    max-width: 60ch;
+  }
+
+  .unavailable-message-box {
+    max-width: 54ch;
+    margin-bottom: var(--sp-5);
+
+    .unavailable-desc {
+      font-size: 1.55rem;
+      color: var(--c-neutral-600);
+      line-height: 1.7;
+      margin: 0;
+    }
+  }
+
+  .unavailable-timerange-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1.6rem;
+    background: #f8fafc;
+    border: 1px solid var(--c-border);
+    border-radius: var(--r-md);
+    color: var(--c-neutral-700);
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: var(--sp-8);
+
+    svg {
+      color: var(--c-neutral-400);
+      flex-shrink: 0;
+    }
+  }
+
+  .unavailable-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-4);
+    flex-wrap: wrap;
+    width: 100%;
+  }
+}
+
+/* 預覽模式警示橫幅 */
+.runner-preview-alert {
+  background: var(--c-neutral-50, #f8fafc);
+  border: 1px solid var(--c-border, #e2e8f0);
+  color: var(--c-neutral-700, #334155);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-6);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+
+  .preview-badge {
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--r-xs);
+    flex-shrink: 0;
+  }
+
+  .preview-text {
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--c-neutral-700, #334155);
+  }
+}
+
+/* 問卷頁頭與說明資訊 */
+.runner-header {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.header-category-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-primary-700);
+  background: var(--c-primary-50);
+  border: 1px solid var(--c-primary-200);
+  padding: 0.25rem 0.85rem;
+  border-radius: var(--r-full);
+  width: fit-content;
+}
+
+.runner-title {
+  font-size: clamp(2.4rem, 3.6vw, 3.2rem);
+  font-weight: 800;
+  color: var(--c-neutral-900);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.time-limit-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--c-primary-800);
+  background: var(--c-primary-50);
+  border-left: 3px solid var(--c-primary-600);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+
+  .banner-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+
+    svg {
+      display: block;
+      width: 1.6rem;
+      height: 1.6rem;
+    }
+  }
+}
+
+.runner-desc-card {
+  background: var(--c-neutral-50);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-4) var(--sp-5);
+}
+
+.runner-description {
+  font-size: 1.5rem;
+  color: var(--c-neutral-700);
+  line-height: 1.7;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.runner-media-wrapper {
+  margin-top: var(--sp-3);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+
+  .runner-desc-image {
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    max-height: 52rem;
+    object-fit: contain;
+    border-radius: var(--r-md);
+    border: 1.5px solid var(--c-border);
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.08);
+    display: block;
+  }
+}
+
+.runner-divider {
+  height: 1px;
+  background: var(--c-border);
+  margin-block: clamp(var(--sp-6), 4vw, var(--sp-8));
+}
+
+/* =====================================================
+   填答表單與基本資料區塊
+   ===================================================== */
+.runner-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  width: 100%;
+}
+
+.runner-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  width: 100%;
+}
+
+.section-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-bottom: var(--sp-2);
+  border-bottom: 2px solid var(--c-primary-600);
+}
+
+.section-title {
+  font-size: 1.95rem;
+  font-weight: 800;
+  color: var(--c-neutral-900);
+  margin: 0;
+}
+
+.section-subtitle {
+  font-size: 1.35rem;
+  color: var(--c-neutral-600);
+}
+
+/* 基本資料輸入網格 */
+.demographic-inputs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-4);
+
+  @media (max-width: 640px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.field-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-width: 0;
+
+  &.field-item-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.field-label {
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--c-neutral-800);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.req-star {
+  color: var(--c-error);
+}
+
+.field-input,
+.field-select,
+.field-textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 1rem 1.4rem;
+  font-family: inherit;
+  font-size: 1.5rem;
+  color: var(--c-neutral-900);
+  background: #ffffff;
+  border: 1.5px solid var(--c-border-muted);
+  border-radius: var(--r-md);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  min-width: 0;
+
+  &:focus {
+    border-color: var(--c-primary-600);
+    box-shadow: 0 0 0 3px var(--c-primary-100);
+    outline: none;
+  }
+
+  &.has-error {
+    border-color: var(--c-error, #dc2626) !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+    background-color: #fffafa !important;
+
+    &:focus {
+      border-color: var(--c-error, #dc2626) !important;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2) !important;
+    }
+  }
+
+  &::placeholder {
+    color: var(--c-neutral-400);
+  }
+}
+
+.field-input-time,
+.field-input-date {
+  max-width: 28rem;
+}
+
+.field-error {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--c-error);
+  margin-top: 0.2rem;
+}
+
+/* =====================================================
+   問卷題目列表與卡片
+   ===================================================== */
+.runner-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  width: 100%;
+}
+
+.runner-question-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--r-xl);
+  padding: clamp(var(--sp-5), 4vw, var(--sp-6));
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+
+  &:hover, &:focus-within {
+    border-color: var(--c-primary-400);
+    box-shadow: var(--shadow-md);
+  }
+
+  /* 預覽模式下尚未解鎖之卡片外觀（微虛線、略帶柔和底色） */
+  &.is-preview-locked {
+    border: 1.5px dashed #cbd5e1;
+    background: #fbfcfe;
+    box-shadow: none;
+
+    &:hover {
+      border-color: #94a3b8;
+    }
+  }
+
+  /* 預覽模式下已被觸發解鎖之卡片外觀（清新微綠邊框與微光暈） */
+  &.is-preview-unlocked {
+    border: 1.5px solid #86efac;
+    box-shadow: 0 4px 12px -2px rgba(34, 197, 94, 0.12);
+  }
+}
+
+/* 條件跳題預覽橫幅提示條 */
+.conditional-preview-banner {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.9rem 1.4rem;
+  border-radius: var(--r-md);
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  color: #334155;
+  margin-bottom: 0.8rem;
+  transition: all 0.25s ease;
+
+  .banner-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .banner-content {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    font-size: 1.3rem;
+    line-height: 1.5;
+  }
+
+  .banner-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+    background: #e2e8f0;
+    color: #475569;
+    letter-spacing: 0.02em;
+  }
+
+  .banner-desc {
+    color: #334155;
+    font-weight: 500;
+
+    strong {
+      color: #0f172a;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+
+  /* 已由使用者選中觸發解鎖狀態 */
+  &.unlocked {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    color: #166534;
+
+    .banner-tag {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .banner-desc {
+      color: #166534;
+
+      strong {
+        color: #14532d;
+      }
+    }
+  }
+}
+
+.q-header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.q-num-chip {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: var(--c-primary-600);
+  padding: 0.3rem 0.8rem;
+  border-radius: var(--r-sm);
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.q-title-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  flex-grow: 1;
+}
+
+.q-desc-text {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--c-neutral-900);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.q-req-indicator {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--c-error);
+  flex-shrink: 0;
+}
+
+.q-image-container {
+  max-width: 100%;
+  width: 100%;
+  margin-top: var(--sp-2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+
+  .q-attached-image {
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    max-height: 40rem;
+    object-fit: contain;
+    border-radius: var(--r-md);
+    border: 1px solid var(--c-border);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    display: block;
+    margin-inline: auto;
+  }
+}
+
+.q-input-area {
+  margin-top: var(--sp-1);
+}
+
+/* 是非題選項橫列 */
+.tf-options-row {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+
+  .option-pill-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.85rem 1.8rem;
+    background: #ffffff;
+    border: 1.5px solid var(--c-border);
+    border-radius: var(--r-md);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--c-neutral-800);
+    cursor: pointer;
+    min-height: 4.4rem;
+    transition: all 0.15s ease;
+    // [Why]: 選項文字可能很長 (例如「是，已全面雲原生化 (Cloud-Native)」)，允許換行並平均分配寬度，手機上不會撐出畫面
+    flex: 1 1 22rem;
+    min-width: 0;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+
+    &:hover {
+      background: var(--c-neutral-50, #f8fafc);
+      border-color: #94a3b8;
+    }
+
+    // 是非題選中樣式 -> 統一採用系統標準深色主題，不用刻意紅綠區分
+    &.opt-yes.selected,
+    &.opt-yes:has(input:checked),
+    &.opt-no.selected,
+    &.opt-no:has(input:checked) {
+      background: #f8fafc !important;
+      border-color: #0f172a !important;
+      color: #0f172a !important;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.12) !important;
+      font-weight: 700 !important;
+    }
+
+    // 文字 span 是 flex 子項，需設 min-width: 0 才能在窄寬度下換行
+    > span {
+      min-width: 0;
+    }
+
+    input[type="radio"] {
+      flex-shrink: 0;
+      width: 1.8rem;
+      height: 1.8rem;
+      cursor: pointer;
+      accent-color: #0f172a;
+    }
+  }
+}
+
+/* 單選與複選選項清單 */
+.choice-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.choice-option-label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 1rem 1.4rem;
+  background: #ffffff;
+  border: 1.5px solid var(--c-border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  min-height: 4.4rem;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  width: 100%;
+
+  &:hover {
+    background: rgba(248, 250, 252, 0.95);
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+  }
+
+  &:has(input:checked) {
+    background: #ffffff !important;
+    border-color: #0f172a !important;
+    box-shadow: 
+      0 0 0 2px rgba(15, 23, 42, 0.12),
+      0 4px 12px -2px rgba(15, 23, 42, 0.05) !important;
+    transform: translateY(-1px);
+
+    .choice-text {
+      color: #0f172a !important;
+      font-weight: 700 !important;
+    }
+  }
+
+  input[type="radio"],
+  input[type="checkbox"] {
+    width: 2rem;
+    height: 2rem;
+    accent-color: #0f172a;
+    flex-shrink: 0;
+  }
+
+  .choice-text {
+    font-size: 1.5rem;
+    color: #1e293b;
+    line-height: 1.4;
+    word-break: break-word;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* 李克特與評分量表選項群組 */
+.scale-options-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  width: 100%;
+}
+
+.scale-option-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 1.6rem;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 10px;
+  cursor: pointer;
+  min-height: 4.6rem;
+  min-width: 5rem;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  user-select: none;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  }
+
+  &:has(input:checked),
+  &.selected {
+    background: #0f172a !important;
+    border-color: #0f172a !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+      0 0 0 2px rgba(15, 23, 42, 0.12),
+      0 8px 18px -2px rgba(15, 23, 42, 0.22) !important;
+
+    .scale-text {
+      color: #ffffff !important;
+      font-weight: 700 !important;
+    }
+  }
+
+  /* 隱藏量表卡片內部多餘的原生圓鈕，卡片本身即為選取按鈕 */
+  input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    margin: 0;
+  }
+
+  .scale-text {
+    font-size: 1.45rem;
+    font-weight: 600;
+    color: var(--c-neutral-800, #1e293b);
+    line-height: 1.2;
+    white-space: nowrap !important;
+    word-break: keep-all !important;
+    transition: color var(--transition-fast, 0.15s ease);
+  }
+}
+
+/* =====================================================
+   問卷送出操作區
+   ===================================================== */
+.runner-footer-action {
+  margin-top: var(--sp-4);
+  display: flex;
+  justify-content: center;
+}
+
+.runner-submit-btn {
+  width: 100%;
+  max-width: 44rem;
+  padding: var(--sp-4) var(--sp-8);
+  font-size: 1.7rem;
+  font-weight: 800;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: var(--c-neutral-400);
+    border-color: var(--c-neutral-400);
+  }
+}
+
+.mt-2 { margin-top: var(--sp-2); }
+
+/* 產業「其他」自訂輸入框：與上方下拉選單保持間距 */
+.field-input-other {
+  margin-top: 0.8rem;
+}
+
+// 載入問卷中的提示 (資料回來、表單建立後才顯示填答內容)
+.runner-loading {
+  padding: 6rem 2rem;
+  text-align: center;
+  font-size: 1.5rem;
+  color: var(--c-neutral-600);
+}

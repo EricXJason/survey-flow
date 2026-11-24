@@ -1,0 +1,20 @@
+/*
+ * ============================================================================
+ * 檔案名稱: tsconfig.app.json
+ * 責任描述: 應用程式建置用 TypeScript 組態：繼承 tsconfig.json，以 src/main.ts 為入口並輸出至 out-tsc/app
+ * 參考文件: TypeScript 組態 https://www.typescriptlang.org/tsconfig ；Angular 編譯選項 https://angular.dev/reference/configs/angular-compiler-options
+ * ============================================================================
+ */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/app",
+    "types": []
+  },
+  "files": [
+    "src/main.ts"
+  ],
+  "include": [
+    "src/**/*.d.ts"
+  ]
+}

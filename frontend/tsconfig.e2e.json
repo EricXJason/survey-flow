@@ -1,0 +1,15 @@
+/*
+ * ============================================================================
+ * 檔案名稱: tsconfig.e2e.json
+ * 責任描述: E2E 測試 (Playwright) 之 TypeScript 型別檢查設定，只供 tsc --noEmit 檢查使用；
+ *           實際執行由 Playwright 自行編譯，不會進入 Angular 建置
+ * ============================================================================
+ */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/e2e",
+    "types": ["node"]
+  },
+  "include": ["playwright.config.ts", "e2e/**/*.ts"]
+}
